@@ -56,6 +56,21 @@ def test_setup_status_and_remove_autostart_use_temp_appdata(tmp_path):
     assert not bat_path.exists()
 
 
+def test_autostart_status_redacts_api_key(tmp_path):
+    setup_autostart(
+        appdata=tmp_path,
+        script_path=tmp_path / "christine_final.py",
+        python_exe=tmp_path / "python.exe",
+        api_key="secret",
+    )
+
+    status = autostart_status(appdata=tmp_path)
+
+    assert "已啟用" in status
+    assert "secret" not in status
+    assert "set ANTHROPIC_API_KEY=<redacted>" in status
+
+
 def test_auto_register_once_writes_flag_only_after_success(tmp_path):
     result = auto_register_once(
         data_dir=tmp_path / "data",

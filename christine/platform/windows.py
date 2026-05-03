@@ -37,6 +37,15 @@ def _bat_path(appdata: str | Path) -> Path:
     return startup_folder(appdata) / "Christine.bat"
 
 
+def _redact_autostart_content(content: str) -> str:
+    return "\n".join(
+        "set ANTHROPIC_API_KEY=<redacted>"
+        if line.upper().startswith("SET ANTHROPIC_API_KEY=")
+        else line
+        for line in content.splitlines()
+    )
+
+
 def setup_autostart(appdata, script_path, python_exe, api_key="") -> str:
     try:
         bat_path = _bat_path(appdata)
@@ -59,6 +68,7 @@ def autostart_status(appdata) -> str:
                 content = bat_path.read_text(encoding="utf-8")
             except Exception:
                 content = ""
+            content = _redact_autostart_content(content)
             return f"✓ 已啟用 → {bat_path}\n--- 內容 ---\n{content}"
         return f"✗ 未啟用（可用『自動開機 on』啟用）\n  預期位置：{bat_path}"
     except Exception as exc:
