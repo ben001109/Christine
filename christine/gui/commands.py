@@ -31,3 +31,15 @@ def handle_gui_command(
     if command == "__SCREENCAP__":
         return ask("幫老闆分析目前螢幕上的畫面")
     return ask(command)
+
+
+def process_next_gui_command(queues, **dependencies) -> bool:
+    command = queues.next_command()
+    if command is None:
+        return False
+    try:
+        reply = handle_gui_command(command, **dependencies)
+    except Exception as exc:
+        reply = "err:" + str(exc)
+    queues.submit_output(reply)
+    return True

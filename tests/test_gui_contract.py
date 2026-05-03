@@ -1,5 +1,5 @@
 from christine.gui.app import GuiMessage, GuiQueues
-from christine.gui.commands import handle_gui_command
+from christine.gui.commands import handle_gui_command, process_next_gui_command
 
 
 def test_gui_queues_store_user_and_assistant_messages():
@@ -78,3 +78,14 @@ def test_handle_gui_command_routes_generation_and_screen_commands():
 
     assert gen_reply == "reply:圖片生成結果：圖片已生成"
     assert screen_reply == "reply:幫老闆分析目前螢幕上的畫面"
+
+
+def test_process_next_gui_command_moves_reply_to_output_queue():
+    queues = GuiQueues()
+    queues.submit_command("hello")
+
+    processed = process_next_gui_command(queues, ask=lambda text: "reply:" + text)
+
+    assert processed is True
+    assert queues.drain_outputs() == ["reply:hello"]
+    assert process_next_gui_command(queues, ask=lambda text: text) is False
