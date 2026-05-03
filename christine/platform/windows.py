@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime
+import subprocess
 from pathlib import Path
 
 from .base import PlatformCapabilities
@@ -72,6 +74,33 @@ def autostart_remove(appdata) -> str:
         return "~ 原本就沒註冊，無需移除"
     except Exception as exc:
         return "err:" + str(exc)
+
+
+def auto_register_once(data_dir, appdata, script_path, python_exe, api_key="", is_windows=True):
+    if not is_windows:
+        return None
+    flag = Path(data_dir) / "_autostart_registered.flag"
+    if flag.is_file():
+        return None
+    result = setup_autostart(appdata, script_path, python_exe, api_key)
+    if result.startswith("ok"):
+        flag.parent.mkdir(parents=True, exist_ok=True)
+        flag.write_text(datetime.datetime.now().isoformat() + "\n" + result, encoding="utf-8")
+    return result
+
+
+def get_startup_programs(runner=subprocess.run) -> str:
+    try:
+        result = runner(
+            'powershell -c "Get-CimInstance Win32_StartupCommand | Select-Object Name,Command | Format-Table -AutoSize"',
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        return result.stdout.strip()[:400] if result.stdout.strip() else "none"
+    except Exception:
+        return "err"
 
 
 CAPABILITIES = PlatformCapabilities("windows", True, True, True, True)

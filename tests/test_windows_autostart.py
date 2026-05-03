@@ -1,9 +1,11 @@
 from pathlib import Path
 
 from christine.platform.windows import (
+    auto_register_once,
     autostart_remove,
     autostart_status,
     build_autostart_batch,
+    get_startup_programs,
     setup_autostart,
     startup_folder,
 )
@@ -52,3 +54,39 @@ def test_setup_status_and_remove_autostart_use_temp_appdata(tmp_path):
     removed = autostart_remove(appdata=tmp_path)
     assert "已移除開機啟動" in removed
     assert not bat_path.exists()
+
+
+def test_auto_register_once_writes_flag_only_after_success(tmp_path):
+    result = auto_register_once(
+        data_dir=tmp_path / "data",
+        appdata=tmp_path / "appdata",
+        script_path=tmp_path / "christine_final.py",
+        python_exe=tmp_path / "python.exe",
+        api_key="",
+        is_windows=True,
+    )
+
+    assert result and result.startswith("ok:")
+    assert (tmp_path / "data" / "_autostart_registered.flag").is_file()
+
+    second = auto_register_once(
+        data_dir=tmp_path / "data",
+        appdata=tmp_path / "appdata",
+        script_path=tmp_path / "christine_final.py",
+        python_exe=tmp_path / "python.exe",
+        api_key="",
+        is_windows=True,
+    )
+    assert second is None
+
+
+def test_get_startup_programs_uses_runner_output():
+    class Result:
+        stdout = "Name Command\nChristine pythonw christine_final.py\n"
+
+    def runner(*args, **kwargs):
+        return Result()
+
+    output = get_startup_programs(runner=runner)
+
+    assert "Christine" in output
