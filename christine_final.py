@@ -119667,6 +119667,8 @@ try:
         if m:
             n = int(m.group(1) or 3)
             r = brain_dream(n)
+            if isinstance(r, str):
+                return r
             return f"✓ 做了 {r} 次夢（replay 鞏固）"
 
         # ── V1484 混合模式：每句話都讓大腦「預處理 + 學習」，但把回覆權留給 LLM ──

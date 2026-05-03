@@ -4,7 +4,7 @@ from pathlib import Path
 def _v1480_block() -> str:
     text = Path("christine_final.py").read_text(encoding="utf-8")
     start = text.index("V1480  Christine 自己的大腦")
-    end = text.index("V1483 AutoBoot", start)
+    end = text.index("except Exception as _e_v180:", start)
     return text[start:end]
 
 
@@ -24,3 +24,13 @@ def test_v1480_preserves_legacy_brain_globals():
     assert 'globals()["brain_understand"] = brain_understand' in block
     assert "_V1480_CFG" in block
     assert "_V1480_BRAIN" in block
+
+
+def test_v1480_dream_command_does_not_wrap_unavailable_as_success():
+    block = _v1480_block()
+    start = block.index("r = brain_dream(n)")
+    end = block.index("# ── V1484 混合模式", start)
+    dream_command = block[start:end]
+
+    assert "if isinstance(r, str):" in dream_command
+    assert "return r" in dream_command
