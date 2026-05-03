@@ -6034,6 +6034,8 @@ def _continue_after_truncation(prompt, recent, partial_reply, route_tier="normal
 # ║  職責: build_prompt → pick tools → _claude_create → tool loop → 返回     ║
 # ║  此函式在載入過程中會被後續 ask() 覆蓋，但透過 _prev_ask_giga 鏈保留。  ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
+from christine.conversation.router import dedupe_tool_specs
+
 def ask(inp):
     global mem
     rs("chat"); conv.append({"role":"user","content":inp})
@@ -6047,12 +6049,7 @@ def ask(inp):
     else:
         tools = pick(inp)
     # 去除重複工具（防 API 400 error）
-    _seen_names={}
-    for _t in tools:
-        if isinstance(_t,dict):
-            _n=_t.get('name') or _t.get('function',{}).get('name','')
-            if _n: _seen_names[_n]=_t
-    tools=list(_seen_names.values())
+    tools = dedupe_tool_specs(tools)
     route_tier=_choose_dialogue_tier(inp, tools)
     mdl=_model_for_task(route_tier)
     output_budget=_choose_output_budget(inp, route_tier)
