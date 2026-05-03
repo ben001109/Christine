@@ -98,7 +98,8 @@ def detect_hardware():
 # §2  套用計算預算
 # ══════════════════════════════════════════════════════════════
 def apply_compute_budget(hw: dict, cpu_cores: int | None = None,
-                         gpu_frac: float = 0.80, use_gpu: bool = True):
+                         gpu_frac: float = 0.80, use_gpu: bool = True,
+                         allow_torch: bool = True):
     """按照論文 §3.4 的 architectural ceiling κ 哲學：
        不把所有資源吃光，只給她一份合理的配額。"""
     # ── CPU ──
@@ -106,11 +107,12 @@ def apply_compute_budget(hw: dict, cpu_cores: int | None = None,
     env = build_cpu_thread_env(cpu_cores)
 
     # ── torch 層級：現在就設 ──
-    try:
-        import torch
-        torch.set_num_threads(cpu_cores)
-        torch.set_num_interop_threads(max(1, cpu_cores // 2))
-    except Exception: pass
+    if allow_torch:
+        try:
+            import torch
+            torch.set_num_threads(cpu_cores)
+            torch.set_num_interop_threads(max(1, cpu_cores // 2))
+        except Exception: pass
 
     # ── GPU ──
     gpu_ready = False
@@ -200,7 +202,8 @@ def main():
     print(f"  {_D}[2/3] 套用 CPU/GPU 計算預算 …{_R}", flush=True)
     env_delta, cpu_cores, gpu_ready = apply_compute_budget(
         hw, cpu_cores=args.cpu, gpu_frac=args.gpu,
-        use_gpu=(not args.nogpu) and (not args.notorch))
+        use_gpu=(not args.nogpu) and (not args.notorch),
+        allow_torch=not args.notorch)
     for k, v in env_delta.items():
         os.environ[k] = v
 

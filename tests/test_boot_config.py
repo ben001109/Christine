@@ -46,3 +46,9 @@ def test_launcher_uses_basic_hardware_builder_for_notorch_path():
     text = Path("boot_christine.py").read_text(encoding="utf-8")
 
     assert "build_basic_hardware_info(" in text
+
+
+def test_launcher_disables_torch_side_effects_for_notorch_path():
+    text = Path("boot_christine.py").read_text(encoding="utf-8")
+
+    assert "allow_torch=not args.notorch" in text
