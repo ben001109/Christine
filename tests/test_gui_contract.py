@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from christine.gui.app import GuiMessage, GuiQueues, create_legacy_queue_adapters
 from christine.gui.commands import handle_gui_command, process_next_gui_command
 
@@ -104,3 +106,12 @@ def test_legacy_queue_adapters_preserve_list_style_append_pop_bool():
     assert output_queue.pop(0) == "reply"
     assert queues.next_command() is None
     assert queues.drain_outputs() == []
+
+
+def test_monolith_gui_queues_delegate_to_christine_gui_modules():
+    text = Path("christine_final.py").read_text(encoding="utf-8")
+
+    assert "from christine.gui.app import create_legacy_queue_adapters" in text
+    assert "from christine.gui.commands import process_next_gui_command" in text
+    assert "_christine_gui_queues, _gui_input_queue, _gui_output_queue = create_legacy_queue_adapters()" in text
+    assert "process_next_gui_command(" in text

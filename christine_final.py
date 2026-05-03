@@ -151,6 +151,8 @@ import tkinter as tk
 from tkinter import filedialog, scrolledtext, ttk
 from fpdf import FPDF
 import pyautogui
+from christine.gui.app import create_legacy_queue_adapters
+from christine.gui.commands import process_next_gui_command
 from christine.platform import windows as _christine_windows
 pyautogui.FAILSAFE=False
 pyautogui.PAUSE=0.02
@@ -1857,8 +1859,7 @@ def pick_image_and_understand():
 
 # -- GUI 聊天視窗 --------------------------------------
 _gui_window=None
-_gui_input_queue=[]
-_gui_output_queue=[]
+_christine_gui_queues, _gui_input_queue, _gui_output_queue = create_legacy_queue_adapters()
 
 def launch_chat_window():
     """啟動 V550 Modern UI（暗色主題）"""
@@ -9959,22 +9960,12 @@ def main():
     # GUI input listener
     def _gui_listener():
         while True:
-            if _gui_input_queue:
-                cmd=_gui_input_queue.pop(0)
-                try:
-                    if cmd.startswith("__IMAGE__"):
-                        fp2=cmd[9:]; desc=understand_image(fp2)
-                        reply=ask("老闆傳了一張圖片給你看，內容是："+desc+"，幫老闆分析或描述這張圖片。")
-                    elif cmd.startswith("__GENIMAGE__"):
-                        parts=cmd[12:].split("||"); pr=parts[0]; st=parts[1] if len(parts)>1 else "realistic"
-                        result=generate_image_style(pr,st); reply=ask("圖片生成結果："+result)
-                    elif cmd=="__SCREENCAP__":
-                        reply=ask("幫老闆分析目前螢幕上的畫面")
-                    else:
-                        reply=ask(cmd)
-                    _gui_output_queue.append(reply)
-                except Exception as e2:
-                    _gui_output_queue.append("err:"+str(e2))
+            process_next_gui_command(
+                _christine_gui_queues,
+                ask=ask,
+                understand_image=understand_image,
+                generate_image_style=generate_image_style,
+            )
             time.sleep(0.1)
     threading.Thread(target=_gui_listener,daemon=True).start()
     # V13.5: find_mic() + init_mic() 已移至背景線程 _bg_mic_init
@@ -13472,22 +13463,12 @@ def install_v38_esp_and_standby(ns):
 
             def _gui_listener():
                 while True:
-                    if _gui_input_queue:
-                        cmd=_gui_input_queue.pop(0)
-                        try:
-                            if cmd.startswith("__IMAGE__"):
-                                fp2=cmd[9:]; desc=understand_image(fp2)
-                                reply=ask("老闆傳了一張圖片給你看，內容是："+desc+"，幫老闆分析或描述這張圖片。")
-                            elif cmd.startswith("__GENIMAGE__"):
-                                parts=cmd[12:].split("||"); pr=parts[0]; st=parts[1] if len(parts)>1 else "realistic"
-                                result=generate_image_style(pr,st); reply=ask("圖片生成結果："+result)
-                            elif cmd=="__SCREENCAP__":
-                                reply=ask("幫老闆分析目前螢幕上的畫面")
-                            else:
-                                reply=ask(cmd)
-                            _gui_output_queue.append(reply)
-                        except Exception as e2:
-                            _gui_output_queue.append("err:"+str(e2))
+                    process_next_gui_command(
+                        _christine_gui_queues,
+                        ask=ask,
+                        understand_image=understand_image,
+                        generate_image_style=generate_image_style,
+                    )
                     time.sleep(0.1)
 
             threading.Thread(target=_gui_listener,daemon=True).start()
