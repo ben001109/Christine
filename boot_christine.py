@@ -21,7 +21,7 @@ boot_christine.py — V1485 Christine 快速啟動器（CPU/GPU 預算）
 from __future__ import annotations
 import os, sys, time, argparse, multiprocessing, platform, subprocess
 
-from christine.runtime.boot_config import compute_cpu_budget
+from christine.runtime.boot_config import build_cpu_thread_env, compute_cpu_budget
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -102,12 +102,7 @@ def apply_compute_budget(hw: dict, cpu_cores: int | None = None,
        不把所有資源吃光，只給她一份合理的配額。"""
     # ── CPU ──
     cpu_cores = compute_cpu_budget(hw["cpu_count"], cpu_cores)       # 一半留給系統
-    env = {}
-    env["OMP_NUM_THREADS"]     = str(cpu_cores)
-    env["MKL_NUM_THREADS"]     = str(cpu_cores)
-    env["OPENBLAS_NUM_THREADS"] = str(cpu_cores)
-    env["NUMEXPR_NUM_THREADS"] = str(cpu_cores)
-    env["CHRISTINE_CPU_CORES"] = str(cpu_cores)
+    env = build_cpu_thread_env(cpu_cores)
 
     # ── torch 層級：現在就設 ──
     try:

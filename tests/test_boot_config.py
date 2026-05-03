@@ -1,4 +1,4 @@
-from christine.runtime.boot_config import build_basic_hardware_info, compute_cpu_budget
+from christine.runtime.boot_config import build_basic_hardware_info, build_cpu_thread_env, compute_cpu_budget
 
 
 def test_compute_cpu_budget_defaults_to_half_with_minimum_two():
@@ -25,4 +25,16 @@ def test_build_basic_hardware_info_matches_launcher_shape():
         "ram_gb": 31.5,
         "gpu": None,
         "torch": None,
+    }
+
+
+def test_build_cpu_thread_env_sets_thread_limits():
+    env = build_cpu_thread_env(6)
+
+    assert env == {
+        "OMP_NUM_THREADS": "6",
+        "MKL_NUM_THREADS": "6",
+        "OPENBLAS_NUM_THREADS": "6",
+        "NUMEXPR_NUM_THREADS": "6",
+        "CHRISTINE_CPU_CORES": "6",
     }

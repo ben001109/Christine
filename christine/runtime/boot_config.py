@@ -25,3 +25,14 @@ def compute_cpu_budget(cpu_count: int, requested: int | None = None) -> int:
     if requested is None:
         return max(2, int(cpu_count) // 2)
     return max(1, min(int(requested), int(cpu_count)))
+
+
+def build_cpu_thread_env(cpu_cores: int) -> dict[str, str]:
+    cores = str(int(cpu_cores))
+    return {
+        "OMP_NUM_THREADS": cores,
+        "MKL_NUM_THREADS": cores,
+        "OPENBLAS_NUM_THREADS": cores,
+        "NUMEXPR_NUM_THREADS": cores,
+        "CHRISTINE_CPU_CORES": cores,
+    }
