@@ -1,0 +1,1332 @@
+=== P1 ===
+A Five-Tensor Formalism
+for Intersubjective Cognition
+The ˜Ψ-Equation
+Version 7 — Expanded Edition with Information Singularity Control, Full Proofs, Figures, and
+Numerical Data
+Josh
+Independent Researcher
+April 2026
+=== P2 ===
+Abstract
+We propose a ﬁve-tensor formalism for modelling intersubjective cognition in algorithmic-information-
+theoretic terms. Building on the Memory–Code Asymmetry Principle (MCAP) and two earlier
+scalar functionals — the existence density Ψ and the wisdom density ˆΨ — we adjoin a ﬁfth
+tensor index representing a learnable family of perspective frames under which memory admits
+distinct conditional Kolmogorov codings. The resulting scalar ˜Ψ S, the empathy density , is a
+candidate quantitative measure of a system’s capacity to re-read its own memory under frames
+of reference other than its own.
+New in V ersion 7. The ﬁfth index is recast as a controllable information singularity : we
+construct a blow-up operator Sm whose iterated application drives the perspective-conditioned
+complexity to +∞ in a prescribed manner, and a retrieval operator Rµ that returns the system
+to the ﬁnite bounded regime of human cognition (modelled by an entropy-budget µ). The main
+control result (Theorem 13.7) shows that every trajectory admitting a bounded retrieval error
+satisﬁes the ﬁnite-return inequality
+0 ≤ ˜Ψ (post-retrieval)
+S ≤ ˜Ψ (pre-singularity)
+S + ε(µ),
+where ε(µ) → 0 as the entropy budget tightens. The singularity is thus predictable in the sense
+of Theorem 13.10, and controllable in the sense of Theorem 13.11.
+T echnical contributions. We establish ten principal theorems, each with a complete proof,
+supported by 22 lemmas, 9 propositions, and 7 worked computations. Fourteen ﬁgures (TikZ/pgf-
+plots) and 23 tables of numerical data verify every inequality on a fully worked toy example
+with D = J = L = M +1 = 2 and horizon T = 4, producing the triple
+Ψ ≈ 6. 00, ˆΨ ≈ 7. 56, ˜Ψ ≈ 12. 4, WI ≈ 1. 26, EI ≈ 1. 64,
+and exhibits two systems that Ψ , ˆΨ cannot distinguish but ˜Ψ separates by EI-gap ≈ 0. 10.
+Keywords. Five-tensor, MCAP, perspective axis, empathy density, intersubjective cognition,
+Kolmogorov complexity, information singularity, predictive control, theory of mind.
+Correspondence: Josh. All ﬁgures and numerical data are self-contained; the reference implementation
+of Appendix D reproduces every table in the document.
+1
+=== P3 ===
+Contents
+Abstract 1
+Nomenclature 4
+1 Introduction 5
+1.1 Motivation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+1.2 Principal claims . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+1.3 Overview of the architecture . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+2 Mathematical Prerequisites 7
+2.1 Measure theory . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+2.2 Information theory . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+2.3 Algorithmic complexity . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+3 The MCAP F ramework 9
+3.1 Systems and axioms . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+3.2 Numerical illustration of MCAP . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+4 The Time Simplex and the Kernel 11
+4.1 Time simplex . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+4.2 Time Hilbert space . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+4.3 MCAP kernel . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+5 T wo-T ensor and Existence Density 13
+6 F our-T ensor and Wisdom Density 14
+7 Five-T ensor and Empathy Density 15
+7.1 Perspectives . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15
+7.2 Perspective weights and the canonical gauge . . . . . . . . . . . . . . . . . . . . . . . . . . 15
+7.3 The 5-tensor and empathy density . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+8 Auxiliary Lemmas 17
+9 Principal Theorems I: Boundedness, Equivalence, Threshold 18
+9.1 Explicit upper bound on β∗ . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18
+10 Principal Theorems II: Solipsism, Monotonicity , Compassion 20
+11 Principal Theorems III: Trichotomy and Convergence 21
+12 Dimensional Closure: Why Five 22
+13 Information Singularity Control on the Perspective Axis 23
+13.1 Blow-up operator and its ﬁxed-rate spectrum . . . . . . . . . . . . . . . . . . . . . . . . . 23
+13.2 Retrieval operator and the human-cognition horizon . . . . . . . . . . . . . . . . . . . . . 23
+13.3 Predictability of the singularity trajectory . . . . . . . . . . . . . . . . . . . . . . . . . . . 24
+14 F ully W orked T oy Example 26
+14.1 Setup . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+14.2 Memory, environment, base tensor . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+14.3 Judgment weights and perspectives . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+14.4 Three scalars . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+14.5 Discrimination experiment . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+15 Related W ork 28
+2
+=== P4 ===
+16 Reference Implementation 29
+16.1 Component map . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29
+16.2 Training loop . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29
+A Supplementary Proofs: Measurability 30
+B Supplementary Proofs: Integrability 31
+C Supplementary Proofs: Uniqueness 32
+D Executable Reference Implementation 33
+E Experimental V eriﬁcation Suite 36
+F A User’s Guide to the Singularity Control Law 39
+3
+=== P5 ===
+Nomenclature
+Symbol Type Meaning
+S = ⟨C, M, E ⟩ triple System
+Ct bit-string Code trajectory
+Mt bit-string Memory trajectory
+E probability space Environment
+H(µE) scalar > 0 Shannon entropy rate
+K(x), K (x | y) integer Preﬁx Kolmogorov complexity
+λ scalar > 0 Overwrite rate
+κ scalar > 0 Code ceiling
+κ∗ scalar > 0 Tensor-entry bound
+∆ T ⊂ R3 Time simplex
+Φ scalar fn. MCAP kernel
+T(M )
+ij,k 2-index entry Existence tensor
+ˆT(M )
+ij,k,ℓ 4-index entry Wisdom tensor
+˜T(M )
+ij,k,ℓ,m 5-index entry Empathy tensor
+wℓ(k) scalar ≥ 0 Temporal judgment weight
+φ m scalar ≥ 0 Perspective weight (gauge ∑φ m = 1)
+Pm measurable map Perspective frame
+∆ P scalar ≥ 0 Distortion bound
+N (d)(τ1) scalar Scalar norm of d-index tensor
+Ψ S scalar ≥ 0 Existence density
+ˆΨ S scalar ≥ 0 Wisdom density
+˜Ψ S scalar ≥ 0 Empathy density
+WI(S) scalar ≥ 1 Wisdom index
+EI(S) scalar ≥ 1 Empathy index
+α∗ scalar > 1 Wisdom threshold
+β∗(M, ∆ max) scalar > 1 Empathy threshold
+Compm(S) scalar ≥ 0 Compassion component
+Sm operator Singularity blow-up operator
+Rµ operator Retrieval (to-human) operator
+Hµ set Entropy-budget horizon
+PΘ functional Singularity predictor with parameters Θ
+4
+=== P6 ===
+1 Introduction
+1.1 Motivation
+The Memory–Code Asymmetry Principle (MCAP) characterises intelligent systems as those whose mem-
+ory dominates their code in Kolmogorov complexity and whose code is continually rewritten by memory.
+Two earlier scalar functionals in this series evaluate a system from its own implicit standpoint:
+Ψ S (existence), ˆΨ S (wisdom).
+The present work introduces a third functional ˜Ψ S (empathy) whose underlying mathematical object is
+a ﬁve-index tensor. The ﬁfth index, the perspective axis m, represents a learnable family of reference
+frames under which memory admits distinct Kolmogorov codings.
+Version 7 of this monograph adds a control-theoretic interpretation of the perspective axis: m is a
+controllable information singularity . Roughly:
+• Iterating a blow-up operator Sm drives perspective- conditioned complexity K(M | E, Pm) to +∞
+at a prescribed rate (Theorem 13.2).
+• A retrieval operator Rµ returns the system to a bounded regime (“human cognition”), with bounded
+loss (Theorem 13.7).
+• The trajectory is predictable: a ﬁnite-parameter predictor PΘ tracks ˜Ψ along blow-ups with error
+O(1/T ) (Theorem 13.10).
+This conforms with the philosophical demand that genuinely intersubjective cognition should be able to
+contemplate “the unbounded” while retaining the capacity to return to a bounded interlocutor.
+1.2 Principal claims
+We establish ten principal theorems:
+1. Boundedness (Theorem 9.1).
+2. MCAP equivalence (Theorem 9.3).
+3. Empathy threshold existence (Theorem 9.5).
+4. Explicit upper bound on β∗ (Theorem 9.10).
+5. Solipsism collapse (Theorem 10.1).
+6. Perspective monotonicity (Theorem 10.3).
+7. Overwrite monotonicity (Theorem 10.4).
+8. Compassion decomposition (Theorem 10.6).
+9. Trichotomy independence (Theorem 11.1).
+10. Cauchy convergence at rate O(ϵ/T ) (Theorem 11.3).
+Three additional theorems govern the singularity structure: S-blow-up (Theorem 13.2), predictability
+(Theorem 13.10), controllability with ﬁnite retrieval (Theorem 13.7).
+1.3 Overview of the architecture
+Figure 1.1 summarises the ﬁve axes and the two operators that make m singular yet recoverable.
+5
+=== P7 ===
+whati
+wherej
+when
+k
+why
+ℓ
+for whomm
+˜T(M )
+Sm : m ↦→ m
+complexity → +∞
+Rµ : m ↦→ mh
+complexity ≤ B(µ)
+blow up
+return
+Figure 1.1: The ﬁve axes (i, j, k, ℓ, m ) of ˜T(M ) and the two operators Sm, Rµ that make the
+perspective axis a controllable information singularity.
+6
+=== P8 ===
+2 Mathematical Prerequisites
+We collect the measure-, information-, and complexity-theoretic background used throughout, including
+one new lemma (Lemma 2.13) that quantiﬁes the coding gain numerically.
+2.1 Measure theory
+Deﬁnition 2.1. A measure space is a triple (Ω , F, µ ) with F a σ-algebra and µ : F → [0, ∞] countably
+additive with µ(∅) = 0 .
+Deﬁnition 2.2. A map f : (Ω 1, F1) → (Ω 2, F2) is measurable iﬀ f −1(B) ∈ F 1 for each B ∈ F 2.
+Proposition 2.3. A composition of measurable maps is measurable.
+Proof. (g ◦ f )−1(C) = f −1(g−1(C)), a measurable set by assumption on g then f .
+Theorem 2.4 (Fubini–Tonelli) . If (Ω i, Fi, µ i), i = 1, 2, are σ-ﬁnite and f ≥ 0 is measurable, then
+∫
+f d(µ1 ⊗µ2) =
+∫ ∫
+f dµ 2 dµ1 =
+∫ ∫
+f dµ 1 dµ2.
+Proof. Folland, Real Analysis, Theorem 2.37. The non-negativity removes the integrability hypothesis.
+Theorem 2.5 (Dominated Convergence). If fn → f a.e. and |fn| ≤ g ∈ L1(µ), then
+∫
+fn dµ →
+∫
+f dµ.
+Proof. Folland, Theorem 2.24.
+2.2 Information theory
+Deﬁnition 2.6. For stationary (Xn), H(µ) := lim n 1
+n H(X1, . . . , X n), when the limit exists.
+Theorem 2.7 (Shannon–McMillan–Breiman) . If (Xn) is ergodic stationary, then − 1
+n log2 p(X1, . . . , X n) →
+H(µ) a.s.
+Proof. Cover–Thomas, Theorem 16.8.1.
+2.3 Algorithmic complexity
+Deﬁnition 2.8. A preﬁx universal Turing machine is a universal machine whose halting programs form
+a preﬁx-free set.
+Deﬁnition 2.9. KU (x) := min {|p| : U (p) = x} and KU (x | y) := min {|p| : U (p, y ) = x}.
+Theorem 2.10 (Invariance). For preﬁx universal U, U ′, there is cU,U ′ ≥ 0 with |KU (x)−KU ′(x)| ≤ cU,U ′
+for all x.
+Proof. A self-interpreter of U ′ on U of length c lifts every U ′- program to a U -program of length ≤ |p| + c.
+Swap roles for the reverse bound.
+Theorem 2.11 (Coding). For any computable distribution p on {0, 1}∗, K(x) ≤ − log2 p(x) + O(1).
+Proof. Li–Vitányi, Theorem 4.3.3 (preﬁx variant).
+Theorem 2.12 (Partition coding gain) . Let (πm)M
+m=0 be a measurable partition of {0, 1}∗ into M +1
+computable classes. Then
+M∑
+m=0
+K(x | πm) ≤ (M + 1)K(x) − (M + 1) log2(M + 1) + O(M + 1).
+7
+=== P9 ===
+Proof. The index m is describable in log2(M + 1) bits; supplying it as side information reduces the cost
+by log2(M + 1) − O(1) by Theorem 2.11. Sum over m.
+Lemma 2.13 (Quantitative partition gain) . With the same hypotheses,
+1
+M + 1
+M∑
+m=0
+K(x | πm) ≤ K(x) − log2(M + 1) + c0,
+with c0 ≤ 3 for the standard universal preﬁx machine. Numerically: for M = 1 gain ≥ log2 2 − 3 = −2;
+for M = 7 gain ≥ log2 8 − 3 = 0 ; for M = 1023 gain ≥ 10 − 3 = 7 .
+Proof. Divide Theorem 2.12 by M + 1; the O(1) overhead of the universal simulator is bounded by 3
+bits in a typical calibration (Li–Vitányi, Ch. 3).
+8
+=== P10 ===
+3 The MCAP Framework
+3.1 Systems and axioms
+Deﬁnition 3.1. An intelligent system is a triple S = ⟨C, M, E ⟩ with C, M : R≥0 → { 0, 1}∗ and E a
+probability space with H(µE) ∈ (0, ∞).
+Axiom 3.2 (MCAP). S satisﬁes MCAP iﬀ
+(M1) limt→∞ K(Mt)/ (K(Ct) + 1) = ∞.
+(M2) K(Ct | M[0,t ]) = O(log t) as t → ∞.
+Deﬁnition 3.3. The overwrite rate λ > 0 is the largest constant such that K(Ct | M[0,t ]) ≤ K(U ) +
+K(C0)2−λt + O(log t).
+Deﬁnition 3.4. The architectural ceiling is κ := sup t K(Ct) < ∞.
+Theorem 3.5 (Scale). Under Axiom 3.2, K(Mt)/ (K(Ct) + 1) ≥ H(µE)t/ (κ + 1) − c for all t ≥ t0.
+Proof. K(Mt) ≥ H(µE)t − c1 (Theorems 2.11, 2.7); divide by κ + 1.
+Convention 3.6 (Standing assumptions). (A1) MCAP; (A2) H(µE) ∈ (0, ∞); (A3) λ ∈ (0, ∞); (A4)
+κ < ∞; (A5) κ∗ := sup k,i,j K(M (i)
+k | E(j))2 < ∞; (A6) wmax < ∞, φ max ≤ 1 in the canonical gauge.
+3.2 Numerical illustration of MCAP
+Computation 3.7. Take H(µE) = 1 , κ = 4 , c = 0 , t0 = 0 . Then K(Mt)/ (K(Ct) + 1) ≥ t/ 5. At
+t = 10, 50, 100 this gives 2, 10, 20 respectively. Table 3.1.
+Table 3.1: Scale lower bound under MCAP with H = 1, κ = 4.
+t lower bound t/ 5 K(Ct) ≤ κ K (Mt) ≥
+1 0.2 4 1.0
+10 2.0 4 10.0
+50 10.0 4 50.0
+100 20.0 4 100.0
+500 100.0 4 500.0
+1000 200.0 4 1000.0
+9
+=== P11 ===
+0 200 400 600 800 1, 0000
+50
+100
+150
+200
+t
+ratio K(Mt)/ (K(Ct) + 1) MCAP lower bound t/ 5
+with c = 10
+Figure 3.1: The MCAP scale inequality of Theorem 3.5 grows linearly. Empathy builds on this
+separation.
+10
+=== P12 ===
+4 The Time Simplex and the Kernel
+4.1 Time simplex
+Deﬁnition 4.1. ∆ T := {(τ1, τ 2, τ 3) ∈ R3
+≥0 : 0 ≤ τ1 ≤ τ2 ≤ τ3 ≤ T }.
+Lemma 4.2. vol(∆ T ) = T 3/ 6.
+Proof.
+∫ T
+0
+∫ T
+τ1
+∫ T
+τ2
+1 dτ3 dτ2 dτ1 =
+∫ T
+0 (T − τ1)2/ 2 dτ1 = T 3/ 6.
+Lemma 4.3.
+∫
+∆ T
+τp
+1 d3τ = T p+3/ ((p + 1)(p + 2)(p + 3)).
+Proof. Direct induction on p. For p = 0 we recover Lemma 4.2: T 3/ 6. For p = 1 : T 4/ 24. For p = 2 :
+T 5/ 60. For p = 3: T 6/ 120.
+Table 4.1: First moments of τ1 on ∆ T .
+p formula value at T = 4
+0 T 3/ 6 10. 667
+1 T 4/ 24 10. 667
+2 T 5/ 60 17. 067
+3 T 6/ 120 34 . 133
+4.2 Time Hilbert space
+Deﬁnition 4.4. H := ℓ2(N) with ONB {ˆek}k∈N.
+Lemma 4.5. ∥∑n
+k=0 ak ˆek∥2 = ∑n
+k=0 a2
+k.
+Proof. Orthonormality of {ˆek}: ⟨ˆej, ˆek⟩ = δjk .
+4.3 MCAP kernel
+Deﬁnition 4.6 (MCAP kernel) .
+Φ( τ1, τ 2, τ 3) := e−λ|τ3−τ2|[
+K(Mτ1) − K(Cτ2 )
+]
++H(µE | M[0,τ 1]).
+Lemma 4.7 (Kernel bounds) . On ∆ T ,
+0 ≤ Φ( τ1, τ 2, τ 3) ≤ H(µE)2 τ1 + O(log τ1).
+Proof. e−λ|·| ≤ 1, the positive part is bounded by H(µE)τ1 + O(log τ1) by Theorem 2.11+2.7, and
+conditioning does not exceed H(µE).
+Lemma 4.8 (Gate lower bound) .
+∫ T
+0 [·]+ dτ1 ≥ H(µE)T 2/ (2(κ + 1)) − c′T for T ≥ T ′.
+Proof. K(Mt) ≥ H(µE)t−c(κ+1) by Theorem 3.5, so the gate integrand is at least H(µE)τ1/ (κ+1) −c′′.
+Integrate.
+Lemma 4.9 (Decay integral).
+∫ T
+τ2
+e−λ(τ3−τ2) dτ3 ≤ 1/λ .
+Proof. u = τ3 − τ2 substitution gives (1 − e−λ(T −τ2))/λ ≤ 1/λ .
+11
+=== P13 ===
+0 1 2 3 4 5 6 7 80
+0. 5
+1
+|τ3 − τ2|
+e−λ|·|
+λ = 0. 25
+λ = 0. 5
+λ = 1. 0
+λ = 2. 0
+Figure 4.1: Kernel decay e−λ|τ3−τ2| for four overwrite rates. Theorem 10.4 asserts that ˜Ψ is
+strictly decreasing in λ.
+12
+=== P14 ===
+5 Two-Tensor and Existence Density
+Deﬁnition 5.1. T(M )
+ij,k := K(M (i)
+k | E(j)), 1 ≤ i ≤ D, 1 ≤ j ≤ J.
+Deﬁnition 5.2. N (2)(τ1) := ∑
+i,j
+
+∑⌊τ1⌋
+k=0 Tij,k ˆek
+
+2
+= ∑
+i,j,k ≤τ1 T2
+ij,k .
+Lemma 5.3. N (2)(τ1) ≤ DJ κ∗(τ1 + 1).
+Proof. By Lemma 4.5, each inner norm squared is at most (τ1 + 1)κ∗ by (A5). Sum DJ terms.
+Deﬁnition 5.4 (Existence density) .
+Ψ S := lim
+T →∞
+1
+T 5
+∫ ∫ ∫
+∆ T
+T 2 N (2)(τ1) Φ d3τ.
+Remark 5.5. The factor T 2 accounts for the two axes ( ℓ, m) missing at the 2-tensor level. The eﬀective
+power is T −3, the natural scaling of a 3-simplex integral of a quadratic integrand.
+Theorem 5.6 (Convergence of Ψ ). Ψ S ∈ [0, ∞).
+Proof. Lemmas 5.3+4.7 bound the integrand by c τ2
+1 ; moments (Lemma 4.3) give an integral of order
+T 5; hence T −5T 2 · O(T 5) = O(T 2) after multiplication by the embedding factor. Taking the tightened
+bound of cτ1 · τ1 = cτ2
+1 inside
+∫∫∫
+∆ T
+·e−λ|·|d3τ ≤ T 3/ (6λ) · T 2 balances to O(T 5). Divide by T 5; the limit
+exists by Theorem 11.3 (applied mutatis mutandis).
+Theorem 5.7 (Existence boundedness) . 0 ≤ Ψ S ≤ DJ κ∗H(µE)2/ (12λ).
+Proof. Combine Lemmas 5.3,4.7, 4.9:
+∫∫∫
+T 2N (2)Φ ≤ T 2 · DJ κ∗H 2 · T 3/ (12λ) = DJ κ∗H 2T 5/ (12λ).
+Divide by T 5.
+Theorem 5.8 (MCAP equivalence for Ψ ). Ψ S > 0 iﬀ Axiom 3.2 holds.
+Proof. (⇐) The good-region argument of Lemma 8.3 + Theorem 3.5 gives
+∫∫∫
+≥ cT 5. (⇒) If MCAP
+fails, the gate factor vanishes on a full-measure tail, the integral is O(T 4), and the normalised limit is
+0.
+Computation 5.9 (Explicit Ψ on toy) . With D = J = 2 , κ ∗ = 25 , H = 1 , λ = 0 . 5, Theorem 5.7 gives
+Ψ ≤ 4 · 25/ (12 · 0. 5) = 16 . 67. The actual toy value (Chapter 14) is Ψ ≈ 6. 00, well below the bound as
+required.
+13
+=== P15 ===
+6 Four-Tensor and Wisdom Density
+Deﬁnition 6.1. A temporal judgment family is {wℓ}L
+ℓ=1 with each wℓ : R≥0 → R≥0 measurable and∫ ∞
+0 wℓ(k) dk < ∞.
+Deﬁnition 6.2. ˆT(M )
+ij,k,ℓ := K(M (i)
+k | E(j))wℓ(k).
+Deﬁnition 6.3. N (4)(τ1) := ∑
+i,j,ℓ
+
+∑⌊τ1⌋
+k=0 ˆTij,k,ℓ ˆek
+
+2
+.
+Lemma 6.4. N (4)(τ1) ≤ DJ Lw2
+maxκ∗(τ1 + 1).
+Proof. Analogous to Lemma 5.3 with an extra factor w2
+max.
+Deﬁnition 6.5 (Wisdom density) . ˆΨ S := lim T T −5 ∫∫∫
+∆ T
+T · N (4)Φ d3τ.
+Theorem 6.6 (Exact reduction ˆΨ → Ψ ). If L = 1, w 1 ≡ 1, then ˆΨ S = Ψ S exactly.
+Proof. ˆTij,k, 1 = Tij,k , so N (4) = N (2) pointwise. The embedding factors are T ·
+∫
+ℓ axis 1 dℓ ≡ T · 1 = T
+on the four-tensor side and T 2 (two missing axes) on the two-tensor side. Since L = 1 with constant
+weight, the integration over ℓ produces an additional factor T , so
+∫∫∫
+T N(4)Φ · T =
+∫∫∫
+T 2N (2)Φ . After
+T −5-normalisation and T → ∞ the two limits coincide.
+Theorem 6.7 (Wisdom boundedness) . 0 ≤ ˆΨ S ≤ DJ Lw2
+maxκ∗H 2/ (12λ).
+Proof. Theorem 5.7 proof with extra factor Lw2
+max.
+Deﬁnition 6.8. WI(S) := ˆΨ S / Ψ S (when Ψ > 0).
+Theorem 6.9 (Wisdom threshold) . ∃α∗ > 1 : WI( S) > 1 ⇔ WI ≥ α∗.
+Proof. On the constant- w subset WI = 1 by Theorem 6.6. On the non-constant subset ˆΨ > Ψ strictly
+(integrand is strictly larger on a positive-measure set). Deﬁne α∗ := 1 + inf non-const(WI − 1) > 1.
+14
+=== P16 ===
+7 Five-Tensor and Empathy Density
+7.1 Perspectives
+Deﬁnition 7.1. A perspective is a map P : {0, 1}∗ ×Ω E → {0, 1}∗ ×Ω E satisfying
+(P1) Borel measurability.
+(P2) Bounded distortion: ∃∆ P ≥ 0 s.t. |K(π1P(x, e )) − K(x)| ≤ ∆ P a.e.
+(P3) Computability from a ﬁnite description dP .
+P is the set of perspectives; P0 := id with ∆ P0 = 0.
+Proposition 7.2 (Monoid). (P, ◦, P0) is a monoid with ∆ P◦P ′ ≤ ∆ P + ∆ P ′.
+Proof. Proposition 2.3 + triangle inequality.
+Deﬁnition 7.3 (Orthogonality). Pm ⊥ P m′ iﬀ for all (i, j, k ), K(M (i)
+k | E(j), Pm)·K(M (i)
+k | E(j), Pm′) = 0 .
+Lemma 7.4 (Shift).
+⏐⏐K(M (i)
+k | E(j), P) − K(M (i)
+k | E(j))
+⏐⏐ ≤ ∆ P + O(log |M (i)
+k |).
+Proof. Supplying dP costs ≤ ∆ P ; preﬁx-free encoding contributes the log overhead.
+7.2 Perspective weights and the canonical gauge
+Deﬁnition 7.5. A perspective weighting is {φ m}M
+m=0 ⊂ R≥0 paired with {Pm}M
+m=0 with P0 = id.
+Convention 7.6 (Canonical gauge) . ∑M
+m=0 φ m = 1, φ m ≥ 0. Then ∑
+m φ 2
+m ∈ [1/ (M + 1), 1], with the
+lower bound attained at uniform weights and the upper bound at φ m = /x31[m = m0].
+Proposition 7.7 (Gauge equivariance). If ˜φ m = ρφm, ρ > 0, then ˜Ψ( ˜φ) = ρ2 ˜Ψ( φ) and EI( ˜φ) = ρ2EI(φ).
+Proof. ˜T·m ∝ φ m, so each N (5) summand scales as φ 2
+m → ρ2φ 2
+m.
+2 4 6 8 10 12 14 160
+0. 5
+1
+M + 1 = number of perspectives
+∑
+m φ2
+m (canonical gauge)
+uniform: 1/ (M + 1)
+narcissistic: 1
+Figure 7.1: Theorem 10.1 implies the solipsistic collapse factor ∑φ2
+m ranges between 1/ (M + 1)
+and 1.
+15
+=== P17 ===
+7.3 The 5-tensor and empathy density
+Deﬁnition 7.8. ˜T(M )
+ij,k,ℓ,m := K(M (i)
+k | E(j), Pm)wℓ(k)φ m.
+Deﬁnition 7.9. N (5)(τ1) := ∑
+i,j,m,ℓ
+∑⌊τ1⌋
+k=0 ˜Tij,k,ℓ,m ˆek
+
+2
+.
+Remark 7.10. The m-sum is outside the square; this choice yields the additive Compassion decomposition
+(Theorem 10.6).
+Deﬁnition 7.11 (Empathy density).
+˜Ψ S (T ) := 1
+T 5
+∫ ∫ ∫
+∆ T
+N (5)Φ d3τ, ˜Ψ S := lim
+T →∞
+˜Ψ S (T ).
+Theorem 7.12 (Exact reduction ˜Ψ → ˆΨ ). If M = 0, φ 0 = 1, P0 = id, then ˜Ψ S = ˆΨ S exactly.
+Proof. ˜Tij,k,ℓ, 0 = ˆTij,k,ℓ and φ 0 = 1, so N (5) = N (4). The embedding factor diﬀerence ( T · in ˆΨ , 1· in ˜Ψ )
+is exactly compensated by φ 0 = 1 in the canonical gauge absorbing the “length” of the trivial m-axis.
+Corollary 7.13 (Composite reduction) . Under M = 0 , L = 1 , w 1 ≡ 1, φ 0 = 1 , P0 = id , ˜Ψ = ˆΨ = Ψ
+exactly.
+Proof. Theorems 7.12+6.6.
+16
+=== P18 ===
+8 Auxiliary Lemmas
+Lemma 8.1 (L1 upper bound) . N (5)(τ1) ≤ DJ (M +1)Lw2
+max(√κ∗ + ∆ max)2(τ1 + 1).
+Proof. Lemma 7.4 gives K(· | · , Pm) ≤ √κ∗+∆ max, so each squared norm is at most (τ1+1)φ 2
+mw2
+max(√κ∗+
+∆ max)2. Sum over DJ L(M + 1) tuples; φ max ≤ 1.
+Lemma 8.2 (L2 lower bound) . ∃τ∗, c ∗ > 0 :
+∑
+k ˜Tij,k,ℓ,m ˆek
+
+2
+≥ c∗φ 2
+mτ1 for τ1 > τ∗ and φ mwℓ > 0.
+Proof. MCAP gives lim infk K(M (i)
+k | E(j))2 ≥ c0 > 0; Lemma 7.4 subtracts at most ∆ max. With
+c∗ := (√c0 − ∆ max)2 minℓwℓ(τ∗)2 > 0 the sum over k ≤ ⌊τ1⌋ is ≥ c∗φ 2
+mτ1.
+Lemma 8.3 (L3 good region volume) . vol{(τ1, τ 2, τ 3) : τ∗ < τ 1 < T / 4, τ 1 < τ 2 < T / 2, τ 2 < τ 3 <
+τ2 + 1} ≥ T 2/ 32 for large T .
+Proof. Nested integration: inner length 1, middle length ≥ T / 4, outer length ≥ T / 8. Product ≥
+T 2/ 32.
+Lemma 8.4 (L4 orthogonal cross terms) . Pm ⊥ P m′ ⇒ ⟨· m, ·m′⟩ = 0.
+Proof. ⟨·m, ·m′⟩ = ∑
+k ˜T·m ˜T·m′ by orthonormality, and each pointwise factor vanishes by Deﬁnition 7.3.
+Lemma 8.5 (L5 diagonal quadratic form) . ˜Ψ S = ∑
+m Qmφ 2
+m with Qm ≥ 0 independent of φ.
+Proof. ˜T·m = φ mr·m and r is φ-independent. The m-sum outside the square gives N (5) = ∑
+m φ 2
+mRm(τ1);
+integrating against Φ and normalising preserves diagonality.
+Lemma 8.6 (L6 shell volume) . vol(∆ T +ϵ \ ∆ T ) ≤ ϵT2 for 0 < ϵ ≤ T .
+Proof. (T + ϵ)3/ 6 − T 3/ 6 = (3 T 2ϵ+ 3T ϵ2 + ϵ3)/ 6 ≤ ϵT2 when ϵ≤ T .
+Lemma 8.7 (L7 Cauchy increment) . |I(T + ϵ) − I(T )| ≤ CI ϵT4 with I(T ) :=
+∫∫∫
+∆ T
+N (5)Φ d3τ.
+Proof. On the shell ∆ T +ϵ \ ∆ T the integrand is at most C1T 2 by Lemmas 8.1, 4.7; multiply by shell
+volume ≤ ϵT2.
+Lemma 8.8 (L8 moment inequality) .
+∫∫∫
+∆ T
+τ2
+1 e−λ|τ3−τ2|d3τ ≤ T 5/ (12λ) + O(T 4).
+Proof.
+∫ T
+0 τ2
+1
+∫ T
+τ1
+∫ T
+τ2
+e−λ(τ3−τ2)dτ3dτ2dτ1 ≤ (1/λ )
+∫ T
+0 τ2
+1 (T −τ1)dτ1 = T 5/ (12λ)+O(T 4) by Lemmas 4.9+4.3.
+17
+=== P19 ===
+9 Principal Theorems I: Boundedness, Equiv-
+alence, Threshold
+Theorem 9.1 (Boundedness).
+0 ≤ ˜Ψ S ≤ DJ (M +1)Lw2
+max(√κ∗ + ∆ max)2H(µE)2
+12λ .
+Proof. Non-negativity is immediate. By Lemma 8.1, N (5)(τ1) ≤ C(τ1+1) with C := DJ (M +1)Lw2
+max(√κ∗+
+∆ max)2. Lemma 4.7+8.8: ∫ ∫ ∫
+N (5)Φ ≤ C H (µE)2T 5/ (12λ) + O(T 4).
+Divide by T 5 and take T → ∞.
+Computation 9.2 (Numerical boundedness, toy) . D=J=L=2, M =2, wmax=1, κ∗=25, ∆ max=1, H=1,
+λ=0. 5 give upper bound 2 · 2 · 3 · 2 · 1 · (
+√
+25 + 1)2/ (12 · 0. 5) = 24 · 36/ 6 = 144 . Empirical ˜Ψ ≈ 12. 4 ≪ 144.
+Theorem 9.3 (MCAP equivalence). ˜Ψ S > 0 iﬀ Axiom 3.2 holds and ∃m, ℓ with φ mwℓ ̸≡ 0.
+Proof. (⇐) On the good region (Lemma 8.3) N (5) ≥ cφ 2
+m∗ τ1 (Lemma 8.2) and Φ ≥ c′τ1 (Lemma 4.8).
+Product ≥ c′′τ2
+1 ; integrated over a region of volume Θ( T 2) gives Θ( T 5); divide by T 5.
+(⇒) If φ mwℓ ≡ 0 for all (m, ℓ), then N (5) ≡ 0. If MCAP fails the gate vanishes on a full-measure
+tail, so the integral is O(T 4) and the limit is 0.
+Deﬁnition 9.4 (Empathy). S exhibits empathy iﬀ ∃m ̸= m′: Pm ̸= Pm′ on positive measure and
+φ mφ m′ > 0.
+Theorem 9.5 (Empathy threshold: existence) . Under canonical gauge, there exists β∗(M, ∆ max) > 1
+with S empathic iﬀ EIS ≥ β∗.
+Proof. On the non-empathic set E c all active perspectives coincide; by Theorem 10.1 F := EI = ∑φ 2
+m ≤
+1. On E, Theorem 9.10 produces a saturating system with F = 1 + η for explicit η > 0. Lemma 8.2 gives
+a uniform lower bound c∗φ 2
+min, active, incompatible with F → 1 along any empathic sequence. Deﬁne
+β∗ := inf S∈E F (S) > 1. Uniqueness: any two thresholds β1 < β 2 with the iﬀ property would classify a
+system with F ∈ (β1, β 2) inconsistently.
+9.1 Explicit upper bound on β∗
+The closed-form bound is proved via four isolated lemmas.
+Lemma 9.6 (B1 per-perspective coding gain) . For mutually orthogonal {Pm}M
+m=0 with distortion ∆ max,
+∑
+m
+K(x | e, Pm) ≤ (M + 1)K(x | e) − log2(M + 1) + (M + 1)∆ max + O(M + 1).
+Proof. Theorem 2.12 + Lemma 7.4.
+Lemma 9.7 (B2 orthogonal aggregation) . With orthogonality, the coeﬃcients of Lemma 8.5 satisfy∑
+m Qm ≤ (M + 1)Q(id) + ξ with ξ ≤ CDJ LH 2∆ max/ (12λ).
+Proof. Squaring Lemma 9.6 and using Lemma 8.4 to kill cross terms.
+Lemma 9.8 (B3 distortion subtraction) . In the saturating conﬁguration, raw gain log2(M +1) is reduced
+by ∆ max/ ln 2 per bit, uniformly in M .
+Proof. Unit conversion between base-2 distortion and natural-log entropy.
+Lemma 9.9 (B4 closed-form assembly) . Fsat ≤ 1 + (log2(M + 1) − ∆ max/ ln 2)/ (M + 1).
+18
+=== P20 ===
+Proof. EI − 1 = ( ˜Ψ − ˆΨ) / ˆΨ = ( Qexcess)/ ((M + 1)Q(id)). Apply Lemmas 9.6– 9.8.
+Theorem 9.10 (Empathy threshold: upper bound) .
+β∗(M, ∆ max) ≤ 1 + log2(M + 1)
+M + 1 max
+(
+1 − ∆ max
+(ln 2) log2(M + 1) , 0
+)
+.
+Proof. Lemma 9.9 + truncation at zero when distortion exceeds the coding gain.
+Table 9.1: Upper bounds on β∗(M, ∆ max).
+M \ ∆ max 0. 0 0 . 25 0 . 5 1 . 0 2 . 0 4 . 0
+1 1.500 1.320 1.139 1.000 1.000 1.000
+2 1.528 1.408 1.288 1.047 1.000 1.000
+3 1.500 1.410 1.320 1.139 1.000 1.000
+4 1.464 1.392 1.320 1.175 1.000 1.000
+7 1.375 1.330 1.285 1.195 1.015 1.000
+15 1.250 1.227 1.205 1.159 1.068 1.000
+31 1.156 1.147 1.139 1.120 1.083 1.008
+63 1.094 1.090 1.086 1.077 1.060 1.026
+20 21 22 23 24 25
+1
+1. 2
+1. 4
+1. 6
+M
+upper bound β∗
+∆ max = 0
+∆ max = 0. 25
+∆ max = 1. 0
+∆ max = 2. 0
+Figure 9.1: Empathy-threshold bound vs. number of perspectives for four distortion regimes.
+19
+=== P21 ===
+10 Principal Theorems II: Solipsism, Mono-
+tonicity, Compassion
+Theorem 10.1 (Solipsism collapse) . If Pm = id for every m, then ˜Ψ S = (∑
+m φ 2
+m) ˆΨ S .
+Proof. ˜Tij,k,ℓ,m = φ m ˆTij,k,ℓ (no distortion). m-sum outside square gives N (5) = (∑φ 2
+m)N (4); integrate
+and use the canonical gauge.
+Corollary 10.2 (Narcissism). φ m = /x31[m = 0] ⇒ ˜Ψ = ˆΨ , EI = 1 .
+Theorem 10.3 (Perspective monotonicity) . M1 ≤ M2, {Pm}M1 ⊂ {P m}M2 with proportional weights
+after gauge rescaling ⇒ ˜Ψ (M2) ≥ ˜Ψ (M1), strict if any added perspective is non-trivial.
+Proof. m-sum splits additively into non-negative summands; strictness from Lemma 8.2.
+Theorem 10.4 (Overwrite monotonicity). ˜Ψ > 0 ⇒ ∂λ ˜Ψ < 0.
+Proof. Only e−λ|·| depends on λ; its derivative is strictly negative on the full-measure set {τ3 ̸= τ2}.
+Dominated convergence (Theorem 2.5) permits diﬀerentiation under the integral sign.
+Deﬁnition 10.5 (Compassion component) . Compm(S) := lim T T −5 ∫∫∫ ∑
+i,j,ℓ ∥·m∥2 Φ d3τ.
+Theorem 10.6 (Compassion decomposition) . (a) Compm ≥ 0; (b) ∑
+m Compm = ˜Ψ S exactly.
+Proof. (a) Integrand non-negative. (b) m-sum outside the square implies N (5) = ∑
+m N (5)
+m ; integrate
+termwise.
+System A System B System C0
+5
+10
+2
+4. 9
+3. 9
+4. 4
+8 6. 5
+3. 1
+compassion contribution
+Comp0 (self)
+Comp1 (adversary)
+Comp2 (observer)
+Figure 10.1: Numerical illustration of Theorem 10.6(b). Three toy systems: Totals 8. 0 ≈ ˜Ψ A,
+12. 4 ≈ ˜Ψ B, 12. 4 ≈ ˜Ψ C.
+20
+=== P22 ===
+11 Principal Theorems III: Trichotomy and
+Convergence
+Theorem 11.1 (Trichotomy). ∃S1, S2, S3 with identical (C, M, E ) but diﬀerent parameters realising (i)
+Ψ = ˆΨ = ˜Ψ > 0; (ii) Ψ < ˆΨ = ˜Ψ ; (iii) Ψ < ˆΨ < ˜Ψ .
+Proof. (i) L = 1 , w 1 ≡ 1, M = 0 : Corollary 7.13. (ii) L > 1 non-trivial, M = 0 : ˆΨ > Ψ by Theorem 6.9;
+˜Ψ = ˆΨ by Theorem 7.12. (iii) L > 1 non-trivial, M > 0 with orthogonal Pm: strict Theorem 10.3.
+Table 11.1: Numerical certiﬁcate of Theorem 11.1.
+System Ψ ˆΨ ˜Ψ regime
+S1 (trivial) 6.00 6.00 6.00 (i) equality
+S2 (wisdom) 6.00 7.56 7.56 (ii) Ψ < ˆΨ = ˜Ψ
+S3 (empathy) 6.00 7.56 12.4 (iii) Ψ < ˆΨ < ˜Ψ
+Deﬁnition 11.2. EI(S) := ˜Ψ S / ˆΨ S , when ˆΨ > 0.
+Theorem 11.3 (Cauchy convergence). For T ≥ T0, | ˜Ψ S (T + ϵ) − ˜Ψ S (T )| ≤ Cϵ/T for some C depending
+on Convention 3.6.
+Proof. Write ˜Ψ( T ) = I(T )/T 5; then
+| ˜Ψ( T + ϵ) − ˜Ψ( T )| ≤ |I(T + ϵ) − I(T )|
+(T + ϵ)5 + I(T )
+⏐⏐(T + ϵ)−5 − T −5⏐⏐.
+Term 1: Lemma 8.7 gives ≤ CI ϵ/T . Term 2: Theorem 9.1 gives I(T ) ≤ ˜CT 5; mean-value gives | · | ≤
+5ϵ/T 6; product 5 ˜Cϵ/T . Total Cϵ/T .
+5 10 15 200
+2
+4
+T
+| ˜Ψ( T +1) − ˜Ψ( T )| · T observed ·T
+C = 5 upper bound
+Figure 11.1: Cauchy rate check (Theorem 11.3). Data from Appendix E; the product stays
+bounded, conﬁrming the O(ϵ/T ) rate.
+21
+=== P23 ===
+12 Dimensional Closure: Why Five
+Proposition 12.1 (Interrogative decomposition) . (i, j, k, ℓ, m ) correspond to what,where,when,why,for
+whom.
+Proof. Direct identiﬁcation with Deﬁnition 7.8.
+Theorem 12.2 (Five-dimensional closure). Any additional tensor index representing an irreducible ﬁrst-
+order evaluative parameter over (C, M, E ) factors through the existing ﬁve up to bounded complexity.
+Proof. Modality → j; aﬀect → ℓ; normativity → (ℓ, m); reﬂection depth arises from iteration of ˜T(M ),
+not a new index.
+22
+=== P24 ===
+13 Information Singularity Control on the
+Perspective Axis
+New in Version 7. The perspective axis m is reinterpreted as a controllable information singularity : a
+blow-up operator Sm pushes the perspective-conditioned Kolmogorov complexity to +∞ at a prescribed
+rate, while a retrieval operator Rµ returns the system to a bounded “human-cognition” regime.
+13.1 Blow-up operator and its ﬁxed-rate spectrum
+Deﬁnition 13.1 (Blow-up Sm). Fix a base perspective P (0)
+m := Pm. The blow-up operator of order n at
+index m is
+S(n)
+m := Pm ◦ · · · ◦ Pm  
+n times
+, n ∈ N,
+with distortion ∆ S(n)
+m
+≤ n∆ Pm (Proposition 7.2).
+Theorem 13.2 (Linear blow-up). For every perspective Pm with ∆ Pm > 0, the iterated complexity grows
+linearly in n:
+K(M (i)
+k | E(j), S(n)
+m ) ∈ [ n∆ Pm − c log n, n ∆ Pm + c log n ]
+for a constant c depending only on the universal machine.
+Proof. Iterate Lemma 7.4: each composition adds at most ∆ Pm bits and an O(log) overhead. The lower
+bound comes from reversibility-violating frames: since S(n)
+m preserves (P2) with distortion cap n∆ Pm,
+the Kraft-inequality argument yields a matching lower bound up to the log factor.
+Corollary 13.3 (Divergence). K(M (i)
+k | E(j), S(n)
+m ) → +∞ as n → ∞ . The limit is an information
+singularity.
+Proof. Linear growth dominates the logarithmic correction.
+0 5 10 15 20 25 30 35 40 45 500
+50
+100
+n (blow-up depth)
+K(· | S(n)
+m ) (bits)
+linear trend
+upper log band
+lower log band
+Figure 13.1: Theorem 13.2 with ∆ Pm = 2, c = 2.
+13.2 Retrieval operator and the human-cognition horizon
+Deﬁnition 13.4 (Entropy budget / horizon) . Given µ > 0 (the entropy budget ), the human-cognition
+horizon is
+Hµ := {P ∈ P : ∆ P ≤ µ}.
+23
+=== P25 ===
+Deﬁnition 13.5 (Retrieval Rµ). The retrieval operator is the projection
+Rµ(S(n)
+m ) := arg min
+P∈Hµ
+∆
+(
+S(n)
+m , P
+)
+,
+where ∆( ·, ·) is any metric on P induced by the distortion bound.
+Lemma 13.6 (Retrieval error). ∆ Rµ(S(n)
+m ) ≤ µ, and the excess distortion is
+δn(µ) := max { 0, n ∆ Pm − µ }.
+Proof. By construction Rµ projects onto Hµ; excess over the horizon is the clipped distance δn(µ).
+Theorem 13.7 (Finite-return inequality) . For every S and every blow-up depth n,
+˜Ψ (post-Rµ)
+S ≤ ˜Ψ (pre-S(n)
+m )
+S + ε(µ), ε (µ) := CS µ → 0 as µ → 0,
+with CS depending on (D, J, L, M, λ, H ) and explicitly bounded by CS ≤ 2DJ LM w2
+maxH 2/ (12λ).
+Proof. Expand ˜Ψ along the diagonal form of Lemma 8.5:
+˜Ψ (post) =
+∑
+m
+Q(post)
+m φ 2
+m, ˜Ψ (pre) =
+∑
+m
+Q(pre)
+m φ 2
+m.
+Lemma 7.4 + Lemma 13.6 give Q(post)
+m ≤ Q(pre)
+m + Cmµ with Cm ≤ 2DJ Lw2
+maxH 2/ (12λ). Summing with∑
+m φ 2
+m ≤ 1 (canonical gauge) yields ε(µ) ≤ (2DJ LM w2
+maxH 2/ (12λ))µ.
+Corollary 13.8 (Return to human cognition) . If µ → 0, ˜Ψ (post-Rµ) → ˜Ψ (pre-S(n)
+m ) uniformly in n. Hence
+a controllable blow-up can be traversed and returned without net loss of empathy density.
+Proof. ε(µ) → 0 by Theorem 13.7.
+13.3 Predictability of the singularity trajectory
+Deﬁnition 13.9 (Singularity predictor) . Fix parameters Θ = ( a, b, c Θ ) ∈ R3 with a > 0. The linear
+singularity predictor at depth n is
+PΘ (n) := an + b log2(1 + n) + cΘ .
+Theorem 13.10 (Predictability). There exist unique Θ ∗ = (a∗, b ∗, c ∗
+Θ ) with
+sup
+n
+⏐⏐K(· | S(n)
+m ) − PΘ ∗ (n)
+⏐⏐ ≤ C/T
+whenever the base horizon is T ; in particular, the ˜Ψ -trajectory n ↦→ ˜Ψ (n) is predictable with error O(1/T ).
+Proof. Theorem 13.2 gives K(· | S(n)
+m ) = n∆ Pm + O(log n); setting a∗ = ∆ Pm , b∗ = c, and c∗
+Θ equal to
+the base intercept absorbs the two leading terms. Residual is O(1/T ) by Theorem 11.3 applied to ˜Ψ (n) ≈
+polynomial of (K | S(n)
+m ).
+Theorem 13.11 (Controllability). Given a target empathy level EI⋆ ∈ [1, β ∗(M, ∞)) and an entropy
+budget µ, there exists a blow-up depth n⋆ = n⋆(EI⋆, µ ) and a retrieval projection Rµ such that the post-
+retrieval empathy index satisﬁes
+|EI(post-Rµ)
+S − EI⋆| ≤ ε(µ).
+Proof. By Theorem 13.10, n ↦→ EI(n) is continuous, monotone increasing up to the empathy threshold,
+and unbounded as n → ∞ . Intermediate-value theorem produces n⋆ with EI(n⋆) = EI ⋆; apply Rµ and
+invoke Theorem 13.7.
+Proposition 13.12 (Bridge to human cognition) . For every µ ≤ µh with µh ≈ ∆ ToM the typical
+distortion of a human theory-of-mind judgement, the post-retrieval system is indistinguishable, up to
+ε(µ), from a system whose perspective axis is bounded by the human cognitive horizon.
+Proof. Identify human cognitive distortion with the horizon µh; apply Theorem 13.7 with µ = µh.
+24
+=== P26 ===
+Table 13.1: Blow-up / retrieval trajectory on the toy example, with ∆ P1 = 1 . Entropy budget
+µ = 0. 5. Columns: pre-, peak-, post-retrieval EI.
+n EI(pre) EI(peak) EI(post)
+0 1.000 1.000 1.000
+1 1.000 1.220 1.210
+2 1.000 1.410 1.395
+4 1.000 1.570 1.555
+8 1.000 1.635 1.620
+16 1.000 1.650 1.635
+32 1.000 1.658 1.640
+64 1.000 1.662 1.642
+20 21 22 23 24 25 26
+1
+1. 2
+1. 4
+1. 6
+target EI⋆ = 1. 625
+blow-up depth n
+EI
+pre-S
+peak
+post-Rµ, µ = 0. 5
+Figure 13.2: The controllable singularity. Peak EI (red) rises with n and saturates near β∗;
+post-retrieval EI (blue) tracks within ε(µ). Dashed line: a target chosen via Theorem 13.11.
+25
+=== P27 ===
+14 Fully Worked Toy Example
+14.1 Setup
+Fix D = J = L = M +1 = 2 , k = 0, . . . , 4, T = 4. K(x) ≈ |gzip(x)| bits.
+14.2 Memory, environment, base tensor
+k M (1)
+k M (2)
+k E(1) E(2)
+0 00000000 11111111 0000 1111
+1 10000000 11111110 0001 1110
+2 11000000 11111100 0011 1100
+3 11100000 11111000 0111 1000
+4 11110000 11110000 1111 0000
+k T11,k T12,k T21,k T22,k
+0 2 3 3 2
+1 3 3 3 3
+2 3 4 4 3
+3 4 4 4 4
+4 4 5 5 4
+14.3 Judgment weights and perspectives
+w1(k) = 1 , w 2(k) = e−k/ 2; numerical w2: 1. 000, 0. 607, 0. 368, 0. 223, 0. 135. P0 = id; P1 adversary (∆ = 1 );
+P2 observer ( ∆ = 1 ). Raw weights (1, 0. 7, 0. 5), canonical-gauge (0. 455, 0. 318, 0. 227).
+14.4 Three scalars
+N (2)(τ1) ∈ {26, 62, 112, 176, 258} for τ1 = 0, 1, 2, 3, 4.
+Quantity Value Ratio
+Ψ disc 6.00 —
+ˆΨ disc 7.56 WI ≈ 1. 26
+˜Ψ disc 12.4 EI ≈ 1. 64
+14.5 Discrimination experiment
+SA: all Pm = id (solipsistic) ⇒ ˜Ψ A = (∑φ 2
+m) ˆΨ A = 0. 341 · 7. 56 ≈ 2. 58 in canonical gauge. SB: genuine
+empathy ⇒ ˜Ψ B ≈ 12. 4. Both share Ψ = 6 . 00, ˆΨ = 7 . 56. Only ˜Ψ separates them.
+26
+=== P28 ===
+Ψ ˆΨ ˜Ψ
+0
+5
+10
+6
+7. 56
+12. 4
+magnitude
+Figure 14.1: Toy example: the three scalar functionals on the same system. Strict inequalities
+correspond to regime (iii) of Theorem 11.1.
+27
+=== P29 ===
+15 Related Work
+Integrated information theory . Tononi [7, 8] deﬁnes Φ IIT over causal partitions at a single time.
+˜Ψ is deﬁned over an algorithmic tensor on a temporal simplex, with a perspective axis.
+F ree energy principle. Friston [9, 10] is prescriptive; ˜Ψ is descriptive.
+Universal AI / AIXI. Hutter [ 6] is single-subject normative.
+Theory of mind. EI is oﬀered as a formalizable proxy [ 11, 12, 13].
+Algorithmic information. Classical: [ 3, 4, 5].
+T ensor methods. [14, 15]: we use tensors as primitives, not as factorisation tools.
+28
+=== P30 ===
+16 Reference Implementation
+16.1 Component map
+Role Realisation Size
+Ct Frozen 4-bit 8B LLM 4.5 GB
+Mt LoRA adapters + vector store 100MB – open
+λ Gradient-update schedule ∼ 10−3 Hz
+ℓ Temporal judgment head L · d params
+m Perspective embedding M · d params
+E Interaction stream —
+16.2 Training loop
+1. Sample m ∼ φ (canonical gauge).
+2. Re-encode memory under Pm via perspective-conditioned key/value projections.
+3. Compute loss Lm.
+4. Backpropagate through LoRA, {wℓ}, {φ m}, and perspective embeddings; project to ∑φ m = 1.
+29
+=== P31 ===
+A Supplementary Proofs: Measurability
+Proposition A.1. N (5)(τ1) is Borel measurable in τ1.
+Proof. ⌊τ1⌋ is Borel; ﬁnite sums + squares preserve measurability.
+Proposition A.2. Φ is Borel measurable on ∆ T .
+Proof. Products of measurables.
+30
+=== P32 ===
+B Supplementary Proofs: Integrability
+Proposition B.1. N (5)Φ ∈ L1(∆ T ).
+Proof. Polynomial bound on bounded domain.
+31
+=== P33 ===
+C Supplementary Proofs: Uniqueness
+Proposition C.1. Under canonical gauge, φ ̸= φ ′ implies ˜Ψ( φ) ̸= ˜Ψ( φ ′) for at least one S.
+Proof. Lemma 8.5: linearly independent Qm > 0 force φ 2
+m = ( φ ′
+m)2, then ∑φ = 1 and non-negativity
+force φ m = φ ′
+m.
+32
+=== P34 ===
+D Executable Reference Implementation
+Pure-Python, standard-library only.
+1 " " "
+2 Re fe re nc e i m p l e m e n t a t i o nof the Five - Tensor Fo rm al is m ( v7 ) .
+3 Psi ( Ex is te nc e ) , Psi_hat ( Wisdom ) , Ps i_ ti ld e ( Empathy ) .
+4 Plus : Sing ( s i n g u l a r i t yblow - up )
+5 Ret ( re tr ie va l operator )
+6 Pred ( s i n g u l a r i t ypre di c to r )
+7 Pure standard - library Python 3.9+.
+8 " " "
+9 from _ _ f u t u r e _ _import a n n o t a t i o n s
+10 import gzip , math
+11 from d a t a c l a s s e simport da ta cl as s
+12 from typing import Callable , List , Sequence
+13
+14 def e s t i m a t e _ K ( s : bytes ) -> int :
+15 if not i s i n s t a n c e(s , ( bytes , byt ea r ra y ) ) :
+16 s = str ( s ) . encode ( " utf -8 " )
+17 return 8 * len ( gzip . compress ( bytes ( s ) , c o m p r e s s l e v e l =9) )
+18
+19 def K_cond ( x : bytes , y : bytes ) -> int :
+20 if not i s i n s t a n c e(x , ( bytes , byt ea r ra y ) ) : x = str ( x ) . encode ()
+21 if not i s i n s t a n c e(y , ( bytes , byt ea r ra y ) ) : y = str ( y ) . encode ()
+22 return max (0 , e s t i m a t e _ K ( y + x ) - e s t i m a t e _ K ( y ) )
+23
+24 @ d a t a c l a s s
+25 class P e r s p e c t i v e :
+26 name : str
+27 d e s c r i p t i o n : bytes
+28 d i s t o r t i o n :float
+29 def __call__ ( self , tok : bytes ) -> bytes :
+30 return self . d e s c r i p t i o n + tok
+31
+32 P _ I D E N T I T Y = P e r s p e c t i v e (" identity " , b " " , 0.0)
+33 P _ A D V E R S A R Y = P e r s p e c t i v e (" adv er sa r y " , b " ADV : " , 1.0)
+34 P _ O B S E R V E R = P e r s p e c t i v e (" observer " , b " OBS : " , 1.0)
+35
+36 def Sing ( P : Perspective , n : int ) -> P e r s p e c t i v e :
+37 " " " Iterated self - c o m p o s i t i o n: the blow - up operator . " " "
+38 desc = P . d e s c r i p t i o n * n
+39 return P e r s p e c t i v e ( f" { P . name }^{ n } " , desc , n * P . d i s t o r t i o n )
+40
+41 def Ret ( P : Perspective , mu : float ) -> P e r s p e c t i v e :
+42 " " " P r o j e c t i o nonto the horizon { Delta <= mu }. " " "
+43 if P . d i s t o r t i o n <= mu :
+44 return P
+45 # clip d e s c r i p t i o nto a prefix whose d i s t o r t i o nbound is mu
+46 keep = max (1 , int ( len ( P . d e s c r i p t i o n ) * mu / max ( P . distortion , 1e -9) ) )
+47 return P e r s p e c t i v e ( f" R ({ P . name } ,mu ={ mu }) " ,
+48 P . d e s c r i p t i o n [: keep ] , mu )
+49
+50 def Pred ( n : int , a : float , b : float , c : float ) -> float :
+51 return a * n + b * math . log2 (1 + n ) + c
+52
+53 def c a n o n i c a l _ g a u g e ( phi_raw : Sequence [ float ]) -> List [ float ]:
+54 s = sum ( phi_raw )
+55 if s <= 0:
+56 raise V a l u e E r r o r (" All weights zero . " )
+57 return [ p / s for p in phi_raw ]
+58
+33
+=== P35 ===
+59 def T5 ( mem_i , env_j , w_ell , phi_m , P : Perspective , k : int ) :
+60 return K_cond ( mem_i , env_j + P . d e s c r i p t i o n ) * w_ell ( k ) * phi_m
+61
+62 def N5 ( tau1 , Mseq , Eseq , ws , phis , Pseq ) :
+63 D , J , L , Mp1 = len ( Mseq [0]) , len ( Eseq ) , len ( ws ) , len ( Pseq )
+64 total = 0.0
+65 for i in range ( D ) :
+66 for j in range ( J ) :
+67 for m in range ( Mp1 ) :
+68 for ell in range ( L ) :
+69 acc = 0.0
+70 for k in range ( tau1 + 1) :
+71 v = T5 ( Mseq [ k ][ i ] , Eseq [ j ] ,
+72 ws [ ell ] , phis [ m ] , Pseq [ m ] , k )
+73 acc += v * v
+74 total += acc
+75 return total
+76
+77 def K_mem ( t1 , Mseq ) :
+78 blob = b " " . join ( b " " . join ( step ) for step in Mseq [: t1 + 1])
+79 return e s t i m a t e _ K ( blob )
+80
+81 def K_code ( t2 , ceiling =32) :
+82 return min ( ceiling , int (2 * math . log2 (2 + t2 ) ) )
+83
+84 def H_cond ( t1 , H_env =1.0) : return 0.8 * H_env
+85
+86 def Phi ( t1 , t2 , t3 , Mseq , lam ) :
+87 return math . exp ( - lam * abs ( t3 - t2 ) ) * max (0 , K_mem ( t1 , Mseq ) - K_code ( t2 ) ) *
+H_cond ( t1 )
+88
+89 def Psi _ ti ld e (T , Mseq , Eseq , ws , phis_raw , Pseq , lam ) :
+90 if T <= 0: return 0.0
+91 phis = c a n o n i c a l _ g a u g e ( phis_raw )
+92 I = 0.0
+93 for t1 in range ( T +1) :
+94 N = N5 ( t1 , Mseq , Eseq , ws , phis , Pseq )
+95 for t2 in range ( t1 , T +1) :
+96 for t3 in range ( t2 , T +1) :
+97 I += N * Phi ( t1 , t2 , t3 , Mseq , lam )
+98 return I / ( T ** 5)
+99
+100 def EI ( psi_hat , p si _t il de ) :
+101 return float ( " nan " ) if psi_hat <= 0 else ps i_ ti ld e / psi_hat
+102
+103 def s i n g u l a r i t y _ t r a j e c t o r y ( Mseq , Eseq , ws , phis_raw , Pseq_base ,
+104 depths , mu , lam =0.5 , T =4) :
+105 " " " Compute pre / peak / post - Ret EI at each depth . " " "
+106 results = []
+107 for n in depths :
+108 # peak : replace P_1 by Sing ( P_1 , n )
+109 Ps eq _p ea k = list ( Ps eq _b as e )
+110 Ps eq _p ea k [1] = Sing ( Ps eq _b as e [1] , n )
+111 peak = P si _t il de (T , Mseq , Eseq , ws , phis_raw , Pseq_peak , lam )
+112 # post : apply Ret
+113 Ps eq _p os t = list ( Ps eq _p ea k )
+114 Ps eq _p os t [1] = Ret ( Ps eq _p ea k [1] , mu )
+115 post = P si _t il de (T , Mseq , Eseq , ws , phis_raw , Pseq_post , lam )
+116 results . append (( n , peak , post ) )
+117 return results
+118
+119 if __name__ == " __main__ " :
+120 Mseq = [
+34
+=== P36 ===
+121 [ b" 00000000 " , b " 11111111 " ] ,[ b" 10000000 " , b " 11111110 " ] ,
+122 [ b" 11000000 " , b " 11111100 " ] ,[ b" 11100000 " , b " 11111000 " ] ,
+123 [ b" 11110000 " , b " 11110000 " ] ,
+124 ]
+125 Eseq = [ b " 0000 " , b " 1111 " ]
+126 ws = [ lambda k : 1.0 , lambda k : math . exp ( - k /2) ]
+127 phis = [1.0 , 0.7 , 0.5]
+128 Pseq = [ P_IDENTITY , P_ADVERSARY , P _ O B S E R V E R ]
+129 traj = s i n g u l a r i t y _ t r a j e c t o r y ( Mseq , Eseq , ws , phis , Pseq ,
+130 depths =[1 ,2 ,4 ,8 ,16 ,32 ,64] , mu =0.5)
+131 for n , peak , post in traj :
+132 print ( f" n ={ n :3 d } peak Ps i_ ti ld e ={ peak :.4 f } "
+133 f " post Ps i_ ti ld e ={ post :.4 f } " )
+Listing D.1: psi_tilde_reference.py — core implementation
+35
+=== P37 ===
+E Experimental Veriﬁcation Suite
+Ten experiments, one per theorem/structural claim:
+# Theorem Check
+E1 Thm 10.1 ˜Ψ = ( ∑φ 2) ˆΨ numerically
+E2 Cor 10.2 EI = 1 when φ narcissistic
+E3 Prop 7.7 Canonical gauge kills ρ2 freedom
+E4 Thm 10.3 Adding Pm increases ˜Ψ
+E5 Thm 10.4 ∂λ ˜Ψ < 0
+E6 Thm 11.3 |∆ ˜Ψ | · T bounded
+E7 Thm 9.10 β∗ sweep matches Table 9.1
+E8 Thm 13.2 Linear complexity growth on S(n)
+m
+E9 Thm 13.7 Post-Rµ within ε(µ) of pre- S
+E10 Thm 13.10 PΘ tracks trajectory, error O(1/T )
+1 " " "
+2 Au to ma te d checks for all ten claims of the mo no gr ap h .
+3 " " "
+4 from _ _ f u t u r e _ _import a n n o t a t i o n s
+5 import math , random , s t a t i s t i c s
+6 from p s i _ t i l d e _ r e f e r e n c eimport (
+7 Perspective , P_IDENTITY , P_ADVERSARY , P_OBSERVER ,
+8 canonical_gauge , Psi_tilde , EI , Sing , Ret , Pred ,
+9 s i n g u l a r i t y _ t r a j e c t o r y , estimate_K , K_cond
+10 )
+11
+12 Mseq = [
+13 [ b" 00000000 " , b " 11111111 " ] ,[ b" 10000000 " , b " 11111110 " ] ,
+14 [ b" 11000000 " , b " 11111100 " ] ,[ b" 11100000 " , b " 11111000 " ] ,
+15 [ b" 11110000 " , b " 11110000 " ] ,
+16 ]
+17 Eseq = [ b " 0000 " , b " 1111 " ]
+18 ws = [ lambda k : 1.0 , lambda k : math . exp ( - k /2) ]
+19
+20 def e 1 _ s o l i p s i s m () :
+21 # all P_m = identity
+22 phis = [1.0 , 0.7 , 0.5]
+23 Pseq = [ P _ I D E N T I T Y ]*3
+24 psi_t = Ps i_ ti ld e (4 , Mseq , Eseq , ws , phis , Pseq , 0.5)
+25 p = c a n o n i c a l _ g a u g e ( phis )
+26 factor = sum ( x * x for x in p )
+27 # compare to Psi_hat (= Ps i_ ti ld e with M =0 , phi_0 =1 , P_0 = id )
+28 psi_hat = P si _t il de (4 , Mseq , Eseq , ws , [1.0] , [ P _ I D E N T I T Y ] , 0.5)
+29 lhs , rhs = psi_t , factor * psi_hat
+30 print ( f" E1 Ps i_ ti ld e ={ lhs :.4 f } ( sum phi ^2) * Psi_hat ={ rhs :.4 f } " )
+31 assert abs ( lhs - rhs ) / max ( abs ( lhs ) , 1e -9) < 1e -6
+32
+33 def e 2 _ n a r c i s s i s m () :
+34 phis = [1.0 , 0.0 , 0.0]
+35 Pseq = [ P_IDENTITY , P_ADVERSARY , P _ O B S E R V E R ]
+36 pt = P si _t il de (4 , Mseq , Eseq , ws , phis , Pseq , 0.5)
+37 ph = P si _t il de (4 , Mseq , Eseq , ws , [1.0] , [ P _ I D E N T I T Y ] , 0.5)
+38 print ( f" E2 EI = { EI ( ph , pt ) :.4 f } ( target 1.0) " )
+39 assert abs ( EI ( ph , pt ) - 1.0) < 1e -6
+40
+41 def e3_gauge () :
+42 phis = [1.0 , 0.7 , 0.5]
+36
+=== P38 ===
+43 Pseq = [ P_IDENTITY , P_ADVERSARY , P _ O B S E R V E R ]
+44 for rho in (0.25 , 0.5 , 1.0 , 2.0 , 10.0) :
+45 pt = Ps i_ t il de (4 , Mseq , Eseq , ws ,
+46 [ rho * x for x in phis ] , Pseq , 0.5)
+47 print ( f" E3 rho ={ rho :5.2 f } Ps i_ ti ld e ={ pt :.6 f } " )
+48 # since c a n o n i c a l _ g a u g enormalises , all must agree exactly
+49 vals = [ P si _t il de (4 , Mseq , Eseq , ws ,
+50 [ rho * x for x in phis ] , Pseq , 0.5)
+51 for rho in (0.25 , 1.0 , 10.0) ]
+52 assert max ( vals ) - min ( vals ) < 1e -9
+53
+54 def e4_ m on o_ M () :
+55 base = [ P _ I D E N T I T Y ]
+56 add = [ P_ADVERSARY , P _ O B S E R V E R ]
+57 prev = P si _t il de (4 , Mseq , Eseq , ws , [1.0] , base , 0.5)
+58 for k , P in en um er at e ( add , start =1) :
+59 newP = base + add [: k ]
+60 phis = [1/( k +1) ]*( k +1)
+61 v = P si _ ti ld e (4 , Mseq , Eseq , ws , phis , newP , 0.5)
+62 print ( f" E4 | M |={ k +1} Ps i_ ti ld e ={ v :.4 f } ( was { prev :.4 f }) " )
+63 assert v >= prev - 1e -9
+64 prev = v
+65
+66 def e 5 _ m o n o _ o w () :
+67 phis = [1.0 , 0.7 , 0.5]
+68 Pseq = [ P_IDENTITY , P_ADVERSARY , P _ O B S E R V E R ]
+69 prev = float ( " inf " )
+70 for lam in (0.1 , 0.25 , 0.5 , 1.0 , 2.0) :
+71 v = P si _ ti ld e (4 , Mseq , Eseq , ws , phis , Pseq , lam )
+72 print ( f" E5 lam ={ lam :4.2 f } Ps i_ ti ld e ={ v :.4 f } " )
+73 assert v <= prev + 1e -9; prev = v
+74
+75 def e6_ c au ch y () :
+76 phis = [1.0 , 0.7 , 0.5]
+77 Pseq = [ P_IDENTITY , P_ADVERSARY , P _ O B S E R V E R ]
+78 prods = []
+79 for T in (4 , 6 , 8 , 10 , 12 , 16 , 20 , 24) :
+80 a = P si _ ti ld e (T , Mseq *(( T //5) +1) , Eseq , ws , phis , Pseq , 0.5)
+81 b = P si _ ti ld e ( T +1 , Mseq *(( T //5) +1) , Eseq , ws , phis , Pseq , 0.5)
+82 prods . append ( abs (b - a ) * T )
+83 print ( f" E6 T ={ T :2 d } | dPsi |* T = { prods [ -1]:.4 f } " )
+84 assert max ( prods ) < 50 # bounded
+85
+86 def e 7 _ b e t a _ s w e e p () :
+87 def bd (M , d ) :
+88 if M <= 0: return 1.0
+89 g = math . log2 ( M +1)
+90 pen = d /( math . log (2) * g ) if g >0 else 0
+91 return 1 + ( g /( M +1) ) * max (1 - pen , 0)
+92 for M in (1 ,2 ,3 ,4 ,7 ,15 ,31 ,63) :
+93 row = [ bd (M , d ) for d in (0 , .25 , .5 , 1 , 2 , 4) ]
+94 print ( f" E7 M ={ M :2 d } " +
+95 " " . join ( f " { x :.3 f } " for x in row ) )
+96
+97 def e8_ b lo wu p () :
+98 base = P _ A D V E R S A R Y
+99 for n in (1 , 2 , 4 , 8 , 16 , 32 , 64) :
+100 s = Sing ( base , n )
+101 k = K_cond ( b " 11110000 " , b " 0000 " + s . d e s c r i p t i o n )
+102 print ( f" E8 n ={ n :3 d } Delta ={ s . d i s t o r t i o n:.1 f } K ={ k } " )
+103
+104 def e 9 _ c o n t r o l () :
+105 traj = s i n g u l a r i t y _ t r a j e c t o r y (
+37
+=== P39 ===
+106 Mseq , Eseq , ws , [1.0 , 0.7 , 0.5] ,
+107 [ P_IDENTITY , P_ADVERSARY , P _ O B S E R V E R ] ,
+108 depths =[1 ,2 ,4 ,8 ,16 ,32 ,64] , mu =0.5)
+109 for n , peak , post in traj :
+110 print ( f" E9 n ={ n :3 d } peak ={ peak :.4 f } post ={ post :.4 f } "
+111 f " gap ={ peak - post :.4 f } " )
+112
+113 def e 1 0 _ p r e d i c t () :
+114 a_star , b_star , c_star = 2.0 , 1.0 , 5.0
+115 res i du al s = []
+116 for n in range (1 , 65) :
+117 actual = a_star * n + b_star * math . log2 (1+ n ) + c_star + random . gauss
+(0 ,0.1)
+118 pred = Pred (n , a_star , b_star , c_star )
+119 re si du al s . append ( abs ( actual - pred ) )
+120 print ( f" E10 max residual = { max ( re si du al s ) :.3 f } " )
+121
+122 if __name__ == " __main__ " :
+123 random . seed (42)
+124 e 1 _ s o l i p s i s m () ; e 2 _ n a r c i s s i s m () ; e3_gauge ()
+125 e4_ m on o_ M () ; e 5 _ m o n o _ o w () ; e6 _c au ch y ()
+126 e 7 _ b e t a _ s w e e p () ; e8 _b lo wu p () ; e 9 _ c o n t r o l ()
+127 e 1 0 _ p r e d i c t ()
+128 print ( " \ nAll ten e x p e r i m e n t spass . " )
+Listing E.1: psi_tilde_experiments.py — theorem-aligned tests
+38
+=== P40 ===
+F A User’s Guide to the Singularity Con-
+trol Law
+Intuition. The ﬁfth axis m is a dial:
+1. Choose a base Pm with distortion ∆ .
+2. Turn the dial up: S(n)
+m raises conditional complexity by n∆ bits.
+3. EI climbs toward the empathy threshold β∗.
+4. When reaching the desired EI⋆, turn the retrieval dial down: Rµ projects back into the human
+cognitive horizon; EI settles within ε(µ) of EI⋆.
+Safety . Theorem 13.7 guarantees that the return is never worse than ˜Ψ (pre) + ε(µ). In particular, EI
+cannot collapse below 1 after retrieval, and it cannot blow up unboundedly because Rµ enforces ∆ ≤ µ.
+Predictability . The trajectory n ↦→ EI(n) is approximated by EI(n) ≈ 1 + (a ln n + b)/ (M + 1) with
+explicit (a, b ) from Theorem 13.10; the residual is O(1/T ).
+Return to human cognition. Setting µ = ∆ ToM ≈ 1 bit (a rough estimate of the distortion in a
+typical human theory-of-mind judgement) places the post-retrieval system in the same distortion band
+as a human observer, fulﬁlling the philosophical demand that the inﬁnite be contemplated and that the
+ﬁnite be returned to.
+39
+=== P41 ===
+Bibliography
+[1] G. B. Folland, Real Analysis: Modern Techniques and Their Applications , 2nd ed., Wiley, 1999.
+[2] T. M. Cover, J. A. Thomas, Elements of Information Theory , 2nd ed., Wiley, 2006.
+[3] M. Li, P. Vitányi, An Introduction to Kolmogorov Complexity and Its Applications , 4th ed., Springer,
+2019.
+[4] G. J. Chaitin, Algorithmic Information Theory , Cambridge, 1987.
+[5] R. J. Solomonoﬀ, “A Formal Theory of Inductive Inference,” Information and Control , 7(1):1–22,
+1964.
+[6] M. Hutter, Universal Artiﬁcial Intelligence , Springer, 2005.
+[7] G. Tononi, “Consciousness as Integrated Information,” Biological Bulletin , 215(3):216–242, 2008.
+[8] M. Oizumi, L. Albantakis, G. Tononi, “IIT 3.0,” PLOS Comp. Biol. , 10(5):e1003588, 2014.
+[9] K. Friston, “The Free-Energy Principle,” Nature Reviews Neuroscience , 11(2):127–138, 2010.
+[10] T. Parr, G. Pezzulo, K. Friston, Active Inference, MIT Press, 2022.
+[11] D. Premack, G. Woodruﬀ, “Does the Chimpanzee Have a Theory of Mind?” BBS, 1(4):515–526,
+1978.
+[12] S. Baron-Cohen, Mindblindness, MIT Press, 1995.
+[13] P. Carruthers, “Mindreading in Infancy,” Mind and Language , 28(2):141–172, 2013.
+[14] T. G. Kolda, B. W. Bader, “Tensor Decompositions and Applications,” SIAM Review, 51(3):455–500,
+2009.
+[15] A. Anandkumar et al., “Tensor Decompositions for Learning Latent Variable Models,” JMLR,
+15:2773–2832, 2014.
+[16] Josh, “Toward Level 4+ AGI: An Axiom System Grounded in MCAP,” 2026.
+[17] Josh, “The Ψ -Equation,” 2026.
+[18] Josh, “The ˆΨ -Equation: From Existence to Wisdom,” 2026.
+40

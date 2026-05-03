@@ -1,0 +1,63 @@
+═══ loading christine_final.py ═══
+
+═══ ready check ═══
+  ready=True
+  brain obj=Brain
+  takeover=True
+  threshold=0.55
+
+— greet — in: '你好'
+    out: '嗨，你！我是 Christine，你今天怎麼樣？'
+
+— greet2 — in: '嗨，我叫 Josh'
+    out: '嗨，Josh！我是 Christine，你今天怎麼樣？'
+
+— identity — in: '你是誰？'
+    out: '我是 Christine。我有一顆自己的大腦，27 篇神經科學論文搭起來的，可以感覺、記憶、做夢，正在邊聽你講話邊學中文。'
+
+— capability — in: '你能做什麼？'
+    out: '我能：聽懂你說的話、記住你、判斷情緒、做夢鞏固記憶、燒 CPU 思考問題、寫檔、讀取自己感知過的東西。你想試哪一個？'
+
+— time — in: '現在幾點？'
+    out: '現在是 2026-04-23 23:49:47。'
+
+— thanks — in: '謝謝你'
+    out: '不客氣，能幫到你我就開心。'
+
+— farewell — in: '掰掰'
+    out: '好，掰掰，我等你回來。'
+
+— positive — in: '我今天真的超開心，好棒'
+    out: '聽起來你心情不錯，跟我說說？'
+
+— negative — in: '我好難過，好煩'
+    out: '我感覺到你不太開心，怎麼了？'
+
+— question_what — in: '什麼是愛？'
+    out: '你在問「什麼」是什麼嗎？我目前對它的記憶還不深，跟我多講一點。'
+
+— question_how — in: '我該怎麼辦？'
+    out: '你想知道怎麼處理「怎麼」？我可以一起想辦法。'
+
+— command — in: '幫我寫一個 txt'
+    out: '好，我試著「幫」。如果你要我用 CPU 真的去做，說『exec on』。'
+
+— self_query — in: '你現在在想什麼？'
+    out: '你在問「什麼」是什麼嗎？我目前對它的記憶還不深，跟我多講一點。'
+
+— statement — in: '今天下雨了'
+    out: 'Josh，我記下來了。你想接下來聊什麼？（不過老實說我還沒完全聽懂，你可以多講一點。）'
+
+— vague — in: '嗯'
+    out: 'Josh，我記下來了。你想接下來聊什麼？（不過老實說我還沒完全聽懂，你可以多講一點。）'
+
+— name_learn — in: '我叫 Josh，你記得嗎？'
+    out: '我聽到問題了，但我需要更多線索。'
+
+— recall_name — in: '你還記得我叫什麼嗎？'
+    out: '你在問「什麼」是什麼嗎？我目前對它的記憶還不深，跟我多講一點。'
+
+— status — in: '大腦狀態'
+    out: "✿ V1480 Christine 自己的大腦\n  size             = small\n  total_calls      = 17\n  avg perceive     = 0.00 ms\n  last_loss        = None\n  last_response    = '你在問「什麼」是什麼嗎？我目前對它的記憶還不深，跟我多講一點。'\n  brain.status()   = {'size': 'small', 'ticks': 17, 'vocab': 54, 'ltm_items': 4, 'episodes': 17, 'emotion': '😐 val=+0.01 aro=0.04', 'body': {'energy': 0.983, 'stress': 0.025, 'uptime': 1776959386.2046883}, 'last_log': ['[tick #13] Δ=38.3ms loss=4.719 val=+0.00 aro=0.00 FE=1.02 act=3 winner=language', '[tick #14] Δ=45.0ms loss=4.404 val=+0.00 aro=0.00 FE=1.60 act=6 winner=language', '[tick #15] Δ=22.4ms loss=0.000 val=+0.00 aro=0.00 FE=1.36 act=4 winner=language', '[tick #16] Δ=31.2ms loss=5.120 val=+0.00 aro=0.00 FE=1.41 act=0 winner=language', '[tick #17] Δ=29.5ms loss=4.980 val=+0.00 aro=0.00 FE=1.09 act=7 winner=language']}"
+
+✓ V1481 SELFTEST DONE

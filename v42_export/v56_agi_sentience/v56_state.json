@@ -1,0 +1,844 @@
+{
+  "total_online_learns": 24,
+  "total_predictions": 18,
+  "total_emotion_updates": 75,
+  "total_tom_inferences": 117,
+  "total_transfers": 18,
+  "total_active_inferences": 42,
+  "emotion_state": {
+    "valence": -0.64,
+    "arousal": 0.9075,
+    "dominance": 0.5,
+    "curiosity": 0.7793298750819402,
+    "empathy": 0.985,
+    "confidence": 0.985
+  },
+  "emotion_memory": [
+    {
+      "trigger": "user_praise",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.75,
+        "arousal": 0.45,
+        "dominance": 0.5,
+        "curiosity": 0.7,
+        "empathy": 0.8,
+        "confidence": 0.7999999999999999
+      },
+      "timestamp": 1776165153.6124773
+    },
+    {
+      "trigger": "task_success",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.7699999999999999,
+        "arousal": 0.395,
+        "dominance": 0.5,
+        "curiosity": 0.7,
+        "empathy": 1.0,
+        "confidence": 0.8749999999999999
+      },
+      "timestamp": 1776165153.6124773
+    },
+    {
+      "trigger": "user_praise",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.4707751433247125,
+        "arousal": 0.5573097726512878,
+        "dominance": 0.5,
+        "curiosity": 0.6076944975276712,
+        "empathy": 0.873083492583014,
+        "confidence": 0.8134653706734246
+      },
+      "timestamp": 1776165153.6124773
+    },
+    {
+      "trigger": "user_happy",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.5707751433247125,
+        "arousal": 0.6073097726512878,
+        "dominance": 0.5,
+        "curiosity": 0.6076944975276712,
+        "empathy": 0.923083492583014,
+        "confidence": 0.8134653706734246
+      },
+      "timestamp": 1776165153.6124773
+    },
+    {
+      "trigger": "task_success",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.6707751433247124,
+        "arousal": 0.6323097726512878,
+        "dominance": 0.5,
+        "curiosity": 0.6076944975276712,
+        "empathy": 0.923083492583014,
+        "confidence": 0.8884653706734246
+      },
+      "timestamp": 1776165153.6124773
+    },
+    {
+      "trigger": "learning_new",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.7207751433247125,
+        "arousal": 0.6823097726512879,
+        "dominance": 0.5,
+        "curiosity": 0.7076944975276712,
+        "empathy": 0.923083492583014,
+        "confidence": 0.8884653706734246
+      },
+      "timestamp": 1776165153.6124773
+    },
+    {
+      "trigger": "deep_conversation",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.7957751433247124,
+        "arousal": 0.6823097726512879,
+        "dominance": 0.5,
+        "curiosity": 0.7576944975276713,
+        "empathy": 0.998083492583014,
+        "confidence": 0.8884653706734246
+      },
+      "timestamp": 1776165153.6124773
+    },
+    {
+      "trigger": "user_praise",
+      "intensity": 1.0,
+      "state_snapshot": {
+        "valence": 1.0,
+        "arousal": 0.8573097726512878,
+        "dominance": 0.5,
+        "curiosity": 0.7826944975276713,
+        "empathy": 1.0,
+        "confidence": 0.9884653706734245
+      },
+      "timestamp": 1776165153.6134515
+    },
+    {
+      "trigger": "user_praise",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": -0.85,
+        "arousal": 1.0,
+        "dominance": 0.5,
+        "curiosity": 0.7826944975276713,
+        "empathy": 1.0,
+        "confidence": 1.0
+      },
+      "timestamp": 1776165153.6134515
+    },
+    {
+      "trigger": "user_happy",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": -0.75,
+        "arousal": 1.0,
+        "dominance": 0.5,
+        "curiosity": 0.7826944975276713,
+        "empathy": 1.0,
+        "confidence": 1.0
+      },
+      "timestamp": 1776165153.6134515
+    },
+    {
+      "trigger": "user_happy",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": -0.65,
+        "arousal": 1.0,
+        "dominance": 0.5,
+        "curiosity": 0.7826944975276713,
+        "empathy": 1.0,
+        "confidence": 1.0
+      },
+      "timestamp": 1776165153.6134515
+    },
+    {
+      "trigger": "user_praise",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": -0.49,
+        "arousal": 0.9575,
+        "dominance": 0.5,
+        "curiosity": 0.7735597726512877,
+        "empathy": 0.985,
+        "confidence": 1.0
+      },
+      "timestamp": 1776165169.6398337
+    },
+    {
+      "trigger": "task_success",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": -0.4700000000000001,
+        "arousal": 0.9025,
+        "dominance": 0.5,
+        "curiosity": 0.7735597726512877,
+        "empathy": 1.0,
+        "confidence": 1.0
+      },
+      "timestamp": 1776165169.6398337
+    },
+    {
+      "trigger": "user_praise",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.37536337398158803,
+        "arousal": 0.5963593476042197,
+        "dominance": 0.5,
+        "curiosity": 0.6133545524156854,
+        "empathy": 0.873083492583014,
+        "confidence": 0.8230834925830139
+      },
+      "timestamp": 1776165169.6408134
+    },
+    {
+      "trigger": "user_happy",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.475363373981588,
+        "arousal": 0.6463593476042198,
+        "dominance": 0.5,
+        "curiosity": 0.6133545524156854,
+        "empathy": 0.923083492583014,
+        "confidence": 0.8230834925830139
+      },
+      "timestamp": 1776165169.6408134
+    },
+    {
+      "trigger": "task_success",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.575363373981588,
+        "arousal": 0.6713593476042198,
+        "dominance": 0.5,
+        "curiosity": 0.6133545524156854,
+        "empathy": 0.923083492583014,
+        "confidence": 0.8980834925830139
+      },
+      "timestamp": 1776165169.6408134
+    },
+    {
+      "trigger": "learning_new",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.625363373981588,
+        "arousal": 0.7213593476042198,
+        "dominance": 0.5,
+        "curiosity": 0.7133545524156854,
+        "empathy": 0.923083492583014,
+        "confidence": 0.8980834925830139
+      },
+      "timestamp": 1776165169.6408134
+    },
+    {
+      "trigger": "deep_conversation",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.700363373981588,
+        "arousal": 0.7213593476042198,
+        "dominance": 0.5,
+        "curiosity": 0.7633545524156854,
+        "empathy": 0.998083492583014,
+        "confidence": 0.8980834925830139
+      },
+      "timestamp": 1776165169.6408134
+    },
+    {
+      "trigger": "user_praise",
+      "intensity": 1.0,
+      "state_snapshot": {
+        "valence": 1.0,
+        "arousal": 0.8963593476042198,
+        "dominance": 0.5,
+        "curiosity": 0.7883545524156854,
+        "empathy": 1.0,
+        "confidence": 0.9980834925830138
+      },
+      "timestamp": 1776165169.6408134
+    },
+    {
+      "trigger": "user_praise",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": -0.85,
+        "arousal": 1.0,
+        "dominance": 0.5,
+        "curiosity": 0.7883545524156854,
+        "empathy": 1.0,
+        "confidence": 1.0
+      },
+      "timestamp": 1776165169.6408134
+    },
+    {
+      "trigger": "user_happy",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": -0.75,
+        "arousal": 1.0,
+        "dominance": 0.5,
+        "curiosity": 0.7883545524156854,
+        "empathy": 1.0,
+        "confidence": 1.0
+      },
+      "timestamp": 1776165169.6408134
+    },
+    {
+      "trigger": "user_happy",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": -0.65,
+        "arousal": 1.0,
+        "dominance": 0.5,
+        "curiosity": 0.7883545524156854,
+        "empathy": 1.0,
+        "confidence": 1.0
+      },
+      "timestamp": 1776165169.6408134
+    },
+    {
+      "trigger": "user_praise",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": -0.49,
+        "arousal": 0.9575,
+        "dominance": 0.5,
+        "curiosity": 0.7789368247949011,
+        "empathy": 0.985,
+        "confidence": 1.0
+      },
+      "timestamp": 1776165195.1201282
+    },
+    {
+      "trigger": "task_success",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": -0.4700000000000001,
+        "arousal": 0.9025,
+        "dominance": 0.5,
+        "curiosity": 0.7789368247949011,
+        "empathy": 1.0,
+        "confidence": 1.0
+      },
+      "timestamp": 1776165195.1201282
+    },
+    {
+      "trigger": "user_praise",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.37536337398158803,
+        "arousal": 0.5963593476042197,
+        "dominance": 0.5,
+        "curiosity": 0.613768289559937,
+        "empathy": 0.873083492583014,
+        "confidence": 0.8230834925830139
+      },
+      "timestamp": 1776165195.1201282
+    },
+    {
+      "trigger": "user_happy",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.475363373981588,
+        "arousal": 0.6463593476042198,
+        "dominance": 0.5,
+        "curiosity": 0.613768289559937,
+        "empathy": 0.923083492583014,
+        "confidence": 0.8230834925830139
+      },
+      "timestamp": 1776165195.1201282
+    },
+    {
+      "trigger": "task_success",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.575363373981588,
+        "arousal": 0.6713593476042198,
+        "dominance": 0.5,
+        "curiosity": 0.613768289559937,
+        "empathy": 0.923083492583014,
+        "confidence": 0.8980834925830139
+      },
+      "timestamp": 1776165195.1201282
+    },
+    {
+      "trigger": "learning_new",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.625363373981588,
+        "arousal": 0.7213593476042198,
+        "dominance": 0.5,
+        "curiosity": 0.713768289559937,
+        "empathy": 0.923083492583014,
+        "confidence": 0.8980834925830139
+      },
+      "timestamp": 1776165195.1201282
+    },
+    {
+      "trigger": "deep_conversation",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": 0.700363373981588,
+        "arousal": 0.7213593476042198,
+        "dominance": 0.5,
+        "curiosity": 0.763768289559937,
+        "empathy": 0.998083492583014,
+        "confidence": 0.8980834925830139
+      },
+      "timestamp": 1776165195.1201282
+    },
+    {
+      "trigger": "user_praise",
+      "intensity": 1.0,
+      "state_snapshot": {
+        "valence": 1.0,
+        "arousal": 0.8963593476042198,
+        "dominance": 0.5,
+        "curiosity": 0.788768289559937,
+        "empathy": 1.0,
+        "confidence": 0.9980834925830138
+      },
+      "timestamp": 1776165195.1201282
+    },
+    {
+      "trigger": "user_praise",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": -0.85,
+        "arousal": 1.0,
+        "dominance": 0.5,
+        "curiosity": 0.788768289559937,
+        "empathy": 1.0,
+        "confidence": 1.0
+      },
+      "timestamp": 1776165195.121107
+    },
+    {
+      "trigger": "user_happy",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": -0.75,
+        "arousal": 1.0,
+        "dominance": 0.5,
+        "curiosity": 0.788768289559937,
+        "empathy": 1.0,
+        "confidence": 1.0
+      },
+      "timestamp": 1776165195.121107
+    },
+    {
+      "trigger": "user_happy",
+      "intensity": 0.5,
+      "state_snapshot": {
+        "valence": -0.65,
+        "arousal": 1.0,
+        "dominance": 0.5,
+        "curiosity": 0.788768289559937,
+        "empathy": 1.0,
+        "confidence": 1.0
+      },
+      "timestamp": 1776165195.121107
+    }
+  ],
+  "user_mental_model": {
+    "believed_knowledge": [],
+    "current_goals": [],
+    "emotional_state": "sad",
+    "expertise_level": {
+      "programming": 1.0
+    },
+    "preferences": {},
+    "frustration": 0.0,
+    "confusion": 0.0,
+    "satisfaction": 0.9500000000000001
+  },
+  "learned_facts": {
+    "Python": [
+      {
+        "content": "Python是什麼？ Python是一種程式語言，由Guido van Rossum在1991年創建。",
+        "source": "conversation",
+        "confidence": 1.0,
+        "learned_at": 1776165153.6095452,
+        "access_count": 15
+      }
+    ],
+    "user_preference": [
+      {
+        "content": "喜歡吃拉麵",
+        "source": "conversation",
+        "confidence": 1.0,
+        "learned_at": 1776165153.6095452,
+        "access_count": 22
+      }
+    ],
+    "不對，應該是React不": [
+      {
+        "content": "不對，應該是React不是Vue 抱歉，已更正！",
+        "source": "conversation",
+        "confidence": 1.0,
+        "learned_at": 1776165153.6095452,
+        "access_count": 23
+      }
+    ],
+    "correction": [
+      {
+        "content": "，應該是React不是Vue 抱歉，已更正！",
+        "source": "conversation",
+        "confidence": 1.0,
+        "learned_at": 1776165153.6095452,
+        "access_count": 23
+      }
+    ],
+    "測試0是什麼？ 測試0": [
+      {
+        "content": "測試0是什麼？ 測試0是第0個測試。",
+        "source": "conversation",
+        "confidence": 1.0,
+        "learned_at": 1776165153.6095452,
+        "access_count": 15
+      }
+    ],
+    "測試1是什麼？ 測試1": [
+      {
+        "content": "測試1是什麼？ 測試1是第1個測試。",
+        "source": "conversation",
+        "confidence": 1.0,
+        "learned_at": 1776165153.6115007,
+        "access_count": 13
+      }
+    ],
+    "測試2是什麼？ 測試2": [
+      {
+        "content": "測試2是什麼？ 測試2是第2個測試。",
+        "source": "conversation",
+        "confidence": 1.0,
+        "learned_at": 1776165153.6115007,
+        "access_count": 12
+      }
+    ],
+    "測試3是什麼？ 測試3": [
+      {
+        "content": "測試3是什麼？ 測試3是第3個測試。",
+        "source": "conversation",
+        "confidence": 1.0,
+        "learned_at": 1776165153.6115007,
+        "access_count": 11
+      }
+    ],
+    "測試4是什麼？ 測試4": [
+      {
+        "content": "測試4是什麼？ 測試4是第4個測試。",
+        "source": "conversation",
+        "confidence": 1.0,
+        "learned_at": 1776165153.6115007,
+        "access_count": 11
+      }
+    ],
+    "測試5是什麼？ 測試5": [
+      {
+        "content": "測試5是什麼？ 測試5是第5個測試。",
+        "source": "conversation",
+        "confidence": 1.0,
+        "learned_at": 1776165153.6115007,
+        "access_count": 9
+      }
+    ],
+    "測試6是什麼？ 測試6": [
+      {
+        "content": "測試6是什麼？ 測試6是第6個測試。",
+        "source": "conversation",
+        "confidence": 0.9500000000000003,
+        "learned_at": 1776165153.6115007,
+        "access_count": 7
+      }
+    ],
+    "測試7是什麼？ 測試7": [
+      {
+        "content": "測試7是什麼？ 測試7是第7個測試。",
+        "source": "conversation",
+        "confidence": 1.0,
+        "learned_at": 1776165153.6115007,
+        "access_count": 9
+      }
+    ],
+    "測試8是什麼？ 測試8": [
+      {
+        "content": "測試8是什麼？ 測試8是第8個測試。",
+        "source": "conversation",
+        "confidence": 0.8000000000000002,
+        "learned_at": 1776165153.6115007,
+        "access_count": 4
+      }
+    ],
+    "測試9是什麼？ 測試9": [
+      {
+        "content": "測試9是什麼？ 測試9是第9個測試。",
+        "source": "conversation",
+        "confidence": 0.8500000000000002,
+        "learned_at": 1776165153.6115007,
+        "access_count": 5
+      }
+    ],
+    "測試10是什麼？ 測試10": [
+      {
+        "content": "測試10是什麼？ 測試10是第10個測試。",
+        "source": "conversation",
+        "confidence": 0.7000000000000001,
+        "learned_at": 1776165153.6115007,
+        "access_count": 2
+      }
+    ],
+    "測試11是什麼？ 測試11": [
+      {
+        "content": "測試11是什麼？ 測試11是第11個測試。",
+        "source": "conversation",
+        "confidence": 0.7500000000000001,
+        "learned_at": 1776165153.6115007,
+        "access_count": 3
+      }
+    ],
+    "測試12是什麼？ 測試12": [
+      {
+        "content": "測試12是什麼？ 測試12是第12個測試。",
+        "source": "conversation",
+        "confidence": 0.8000000000000002,
+        "learned_at": 1776165153.6115007,
+        "access_count": 4
+      }
+    ],
+    "測試13是什麼？ 測試13": [
+      {
+        "content": "測試13是什麼？ 測試13是第13個測試。",
+        "source": "conversation",
+        "confidence": 0.7500000000000001,
+        "learned_at": 1776165153.6115007,
+        "access_count": 3
+      }
+    ],
+    "測試14是什麼？ 測試14": [
+      {
+        "content": "測試14是什麼？ 測試14是第14個測試。",
+        "source": "conversation",
+        "confidence": 0.7000000000000001,
+        "learned_at": 1776165153.6115007,
+        "access_count": 2
+      }
+    ],
+    "測試15是什麼？ 測試15": [
+      {
+        "content": "測試15是什麼？ 測試15是第15個測試。",
+        "source": "conversation",
+        "confidence": 0.7500000000000001,
+        "learned_at": 1776165153.6115007,
+        "access_count": 3
+      }
+    ],
+    "測試16是什麼？ 測試16": [
+      {
+        "content": "測試16是什麼？ 測試16是第16個測試。",
+        "source": "conversation",
+        "confidence": 0.7000000000000001,
+        "learned_at": 1776165153.6115007,
+        "access_count": 2
+      }
+    ],
+    "測試17是什麼？ 測試17": [
+      {
+        "content": "測試17是什麼？ 測試17是第17個測試。",
+        "source": "conversation",
+        "confidence": 0.6,
+        "learned_at": 1776165153.6115007,
+        "access_count": 0
+      }
+    ],
+    "測試18是什麼？ 測試18": [
+      {
+        "content": "測試18是什麼？ 測試18是第18個測試。",
+        "source": "conversation",
+        "confidence": 0.65,
+        "learned_at": 1776165153.6115007,
+        "access_count": 1
+      }
+    ],
+    "測試19是什麼？ 測試19": [
+      {
+        "content": "測試19是什麼？ 測試19是第19個測試。",
+        "source": "conversation",
+        "confidence": 0.7000000000000001,
+        "learned_at": 1776165153.6115007,
+        "access_count": 2
+      }
+    ]
+  },
+  "user_patterns": {
+    "greeting:你好": {
+      "code_request:寫Python": {
+        "count": 3,
+        "last_seen": 1776165195.1201282
+      },
+      "code_request:寫JavaScript": {
+        "count": 3,
+        "last_seen": 1776165195.1201282
+      },
+      "query:你好啊老闆": {
+        "count": 3,
+        "last_seen": 1776165195.122082
+      }
+    },
+    "code_request:寫Python": {
+      "greeting:你好": {
+        "count": 3,
+        "last_seen": 1776165195.1201282
+      }
+    },
+    "code_request:寫JavaScript": {
+      "greeting:你好": {
+        "count": 3,
+        "last_seen": 1776165195.1201282
+      }
+    }
+  },
+  "skill_embeddings": {
+    "python_debugging": {
+      "domain": "程式",
+      "description": "用Python除錯和排錯",
+      "tools_used": [
+        "debugger",
+        "print"
+      ],
+      "success_rate": 0.9,
+      "usage_count": 0,
+      "learned_at": 1776165195.121107
+    },
+    "circuit_design": {
+      "domain": "電路",
+      "description": "設計電路和PCB佈線",
+      "tools_used": [
+        "oscilloscope",
+        "multimeter"
+      ],
+      "success_rate": 0.8,
+      "usage_count": 0,
+      "learned_at": 1776165195.121107
+    },
+    "recipe_cooking": {
+      "domain": "料理",
+      "description": "料理和烹飪各種菜色",
+      "tools_used": [
+        "oven",
+        "knife"
+      ],
+      "success_rate": 0.85,
+      "usage_count": 0,
+      "learned_at": 1776165195.121107
+    },
+    "music_theory": {
+      "domain": "音樂",
+      "description": "音樂理論和和聲分析",
+      "tools_used": [
+        "piano",
+        "notation"
+      ],
+      "success_rate": 0.7,
+      "usage_count": 0,
+      "learned_at": 1776165195.121107
+    }
+  },
+  "world_beliefs": {
+    "user_timezone": {
+      "value": "US/Pacific",
+      "confidence": 0.9625000000000001,
+      "last_updated": 1776165195.121107,
+      "update_count": 6
+    },
+    "fact_0": {
+      "value": "value_0",
+      "confidence": 0.5750000000000001,
+      "last_updated": 1776165195.121107,
+      "update_count": 3
+    },
+    "fact_1": {
+      "value": "value_1",
+      "confidence": 0.6250000000000001,
+      "last_updated": 1776165195.121107,
+      "update_count": 3
+    },
+    "fact_2": {
+      "value": "value_2",
+      "confidence": 0.675,
+      "last_updated": 1776165195.121107,
+      "update_count": 3
+    },
+    "fact_3": {
+      "value": "value_3",
+      "confidence": 0.7250000000000001,
+      "last_updated": 1776165195.121107,
+      "update_count": 3
+    },
+    "fact_4": {
+      "value": "value_4",
+      "confidence": 0.775,
+      "last_updated": 1776165195.121107,
+      "update_count": 3
+    },
+    "fact_5": {
+      "value": "value_5",
+      "confidence": 0.8250000000000001,
+      "last_updated": 1776165195.121107,
+      "update_count": 3
+    },
+    "fact_6": {
+      "value": "value_6",
+      "confidence": 0.8750000000000001,
+      "last_updated": 1776165195.121107,
+      "update_count": 3
+    },
+    "fact_7": {
+      "value": "value_7",
+      "confidence": 0.9250000000000002,
+      "last_updated": 1776165195.121107,
+      "update_count": 3
+    },
+    "fact_8": {
+      "value": "value_8",
+      "confidence": 0.9750000000000001,
+      "last_updated": 1776165195.121107,
+      "update_count": 3
+    },
+    "fact_9": {
+      "value": "value_9",
+      "confidence": 1.0,
+      "last_updated": 1776165195.121107,
+      "update_count": 3
+    },
+    "uncertain_fact": {
+      "value": "maybe_true",
+      "confidence": 0.275,
+      "last_updated": 1776165195.121107,
+      "update_count": 3
+    },
+    "last_topic": {
+      "value": "你好",
+      "confidence": 0.8750000000000001,
+      "last_updated": 1776165195.122082,
+      "update_count": 3
+    }
+  },
+  "domain_bridges": {
+    "程式|電路": "都是邏輯結構：函數↔模組，變數↔信號，除錯↔量測",
+    "音樂|數學": "和弦是頻率比例，節奏是時間分割，和聲是波疊加",
+    "料理|化學": "食材是反應物，溫度是催化條件，口味是產物分析",
+    "寫作|程式": "結構化思考，抽象→具體，重構↔修辭，測試↔校對",
+    "遊戲|策略": "資源管理，風險評估，時機判斷，博弈論應用",
+    "運動|學習": "刻意練習，肌肉記憶↔神經可塑性，漸進超負荷",
+    "投資|機率": "期望值計算，風險分散，貝氏更新，凱利公式",
+    "設計|心理": "格式塔原則，色彩心理學，認知負荷，使用者行為"
+  },
+  "free_energy": 0.0,
+  "prediction_hits": 0,
+  "prediction_misses": 0
+}

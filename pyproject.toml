@@ -1,0 +1,63 @@
+[project]
+name = "christine"
+version = "0.1.0"
+description = "Christine local AI desktop assistant"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "anthropic>=0.49.0",
+    "edge-tts>=7.0.0",
+    "fpdf>=1.7.2",
+    "imageio-ffmpeg>=0.6.0",
+    "numpy>=1.26.0",
+    "psutil>=5.9.0",
+    "pyautogui>=0.9.54",
+    "pydantic>=2.0.0",
+    "speechrecognition>=3.10.0",
+    "sqlalchemy>=2.0.0",
+    "pyaudiowpatch>=0.2.12; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+gpu = [
+    "torch>=2.3.0",
+]
+llm = [
+    "llama-cpp-python>=0.2.90",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.13.0",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+extend-exclude = [
+    "ARC-AGI",
+    "backups",
+    "brain/generated",
+    "christine_final.py",
+    "christine_final_BROKEN_20260420_082246.py",
+    "data",
+    "level5_logs",
+    "mirrors",
+    "self_replicas",
+    "unity_projects",
+    "v42_export",
+]
+
+[tool.pyright]
+pythonVersion = "3.10"
+exclude = [
+    "ARC-AGI",
+    "backups",
+    "brain/generated",
+    "data",
+    "level5_logs",
+    "mirrors",
+    "self_replicas",
+    "unity_projects",
+    "v42_export",
+]

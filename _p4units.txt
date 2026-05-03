@@ -1,0 +1,40 @@
+﻿31: plots) and 23 tables of numerical data verify every inequality on a fully worked toy example
+32: with D = J = L = M +1 = 2 and horizon T = 4, producing the triple
+33: Ψ ≈ 6. 00, ˆΨ ≈ 7. 56, ˜Ψ ≈ 12. 4, WI ≈ 1. 26, EI ≈ 1. 64,
+34: and exhibits two systems that Ψ , ˆΨ cannot distinguish but ˜Ψ separates by EI-gap ≈ 0. 10.
+101: H(µE) scalar > 0 Shannon entropy rate
+212: Deﬁnition 2.6. For stationary (Xn), H(µ) := lim n 1
+216: H(µ) a.s.
+236: Proof. The index m is describable in log2(M + 1) bits; supplying it as side information reduces the cost
+247: bits in a typical calibration (Li–Vitányi, Ch. 3).
+253: probability space with H(µE) ∈ (0, ∞).
+260: Theorem 3.5 (Scale). Under Axiom 3.2, K(Mt)/ (K(Ct) + 1) ≥ H(µE)t/ (κ + 1) − c for all t ≥ t0.
+261: Proof. K(Mt) ≥ H(µE)t − c1 (Theorems 2.11, 2.7); divide by κ + 1.
+262: Convention 3.6 (Standing assumptions). (A1) MCAP; (A2) H(µE) ∈ (0, ∞); (A3) λ ∈ (0, ∞); (A4)
+266: Computation 3.7. Take H(µE) = 1 , κ = 4 , c = 0 , t0 = 0 . Then K(Mt)/ (K(Ct) + 1) ≥ t/ 5. At
+294: Lemma 4.2. vol(∆ T ) = T 3/ 6.
+304: 0 (T − τ1)2/ 2 dτ1 = T 3/ 6.
+310: Proof. Direct induction on p. For p = 0 we recover Lemma 4.2: T 3/ 6. For p = 1 : T 4/ 24. For p = 2 :
+314: 0 T 3/ 6 10. 667
+330: +H(µE | M[0,τ 1]).
+332: 0 ≤ Φ( τ1, τ 2, τ 3) ≤ H(µE)2 τ1 + O(log τ1).
+333: Proof. e−λ|·| ≤ 1, the positive part is bounded by H(µE)τ1 + O(log τ1) by Theorem 2.11+2.7, and
+334: conditioning does not exceed H(µE).
+337: 0 [·]+ dτ1 ≥ H(µE)T 2/ (2(κ + 1)) − c′T for T ≥ T ′.
+338: Proof. K(Mt) ≥ H(µE)t−c(κ+1) by Theorem 3.5, so the gate integrand is at least H(µE)τ1/ (κ+1) −c′′.
+396: Theorem 5.7 (Existence boundedness) . 0 ≤ Ψ S ≤ DJ κ∗H(µE)2/ (12λ).
+407: Computation 5.9 (Explicit Ψ on toy) . With D = J = 2 , κ ∗ = 25 , H = 1 , λ = 0 . 5, Theorem 5.7 gives
+408: Ψ ≤ 4 · 25/ (12 · 0. 5) = 16 . 67. The actual toy value (Chapter 14) is Ψ ≈ 6. 00, well below the bound as
+563: Proof. (T + ϵ)3/ 6 − T 3/ 6 = (3 T 2ϵ+ 3T ϵ2 + ϵ3)/ 6 ≤ ϵT2 when ϵ≤ T .
+593: max(√κ∗ + ∆ max)2H(µE)2
+600: Computation 9.2 (Numerical boundedness, toy) . D=J=L=2, M =2, wmax=1, κ∗=25, ∆ max=1, H=1,
+603: 25 + 1)2/ (12 · 0. 5) = 24 · 36/ 6 = 144 . Empirical ˜Ψ ≈ 12. 4 ≪ 144.
+611: Deﬁnition 9.4 (Empathy). S exhibits empathy iﬀ ∃m ̸= m′: Pm ̸= Pm′ on positive measure and
+709: Figure 10.1: Numerical illustration of Theorem 10.6(b). Three toy systems: Totals 8. 0 ≈ ˜Ψ A,
+775: Proof. Iterate Lemma 7.4: each composition adds at most ∆ Pm bits and an O(log) overhead. The lower
+789: m ) (bits)
+877: Table 13.1: Blow-up / retrieval trajectory on the toy example, with ∆ P1 = 1 . Entropy budget
+903: 14 Fully Worked Toy Example
+905: Fix D = J = L = M +1 = 2 , k = 0, . . . , 4, T = 4. K(x) ≈ |gzip(x)| bits.
+944: Figure 14.1: Toy example: the three scalar functionals on the same system. Strict inequalities
+1293: m raises conditional complexity by n∆ bits.

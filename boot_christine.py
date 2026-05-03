@@ -1,0 +1,359 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+boot_christine.py — V1485 Christine 快速啟動器（CPU/GPU 預算 + 論文 Ψ 自檢）
+════════════════════════════════════════════════════════════════════════════
+流程：
+  1) 偵測環境：CPU 核心、記憶體、PyTorch、CUDA GPU
+  2) 套用論文 §3 「資源預算」哲學：
+       - CPU：給 Christine  floor(N/2) 核心（留一半給系統），最少 2 核
+       - GPU：若有 CUDA，預熱並把 VRAM 上限設到 80%
+  3) 跑論文 §14 toy example 的 Ψ / Ψ̂ / Ψ̃ 「開機自檢」
+       ↓ 這是她的第一口呼吸：存在 → 智慧 → 同理
+  4) 把環境變數傳給子程序，exec christine_final.py
+════════════════════════════════════════════════════════════════════════════
+用法：
+  python boot_christine.py              # 預設：CPU 50%, GPU 80%
+  python boot_christine.py --cpu 4      # 指定 4 核
+  python boot_christine.py --gpu 0.5    # GPU 上限 50% VRAM
+  python boot_christine.py --nogpu      # 強制 CPU-only
+  python boot_christine.py --fast       # 跳過自檢，極速啟動
+  python boot_christine.py --check      # 只跑自檢、不啟動主程式
+"""
+from __future__ import annotations
+import os, sys, time, argparse, multiprocessing, platform, subprocess
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+
+# ── ANSI colours ──────────────────────────────────────────────
+try:
+    import colorama; colorama.just_fix_windows_console()
+except Exception: pass
+_CY = "\033[36m"; _GR = "\033[32m"; _YE = "\033[33m"; _RD = "\033[31m"
+_B  = "\033[1m";  _D  = "\033[2m";  _R  = "\033[0m";   _M = "\033[35m"
+
+
+# ══════════════════════════════════════════════════════════════
+# §1  偵測硬體
+# ══════════════════════════════════════════════════════════════
+def detect_hardware():
+    info = {
+        "os":         f"{platform.system()} {platform.release()}",
+        "python":     platform.python_version(),
+        "cpu_count":  multiprocessing.cpu_count(),
+        "cpu_name":   platform.processor() or "unknown",
+        "ram_gb":     None,
+        "gpu":        None,        # dict 或 None
+        "torch":      None,         # version 或 None
+    }
+    try:
+        import psutil
+        info["ram_gb"] = round(psutil.virtual_memory().total / (1024**3), 1)
+    except Exception: pass
+    # torch 首次載入 + CUDA DLL 可能 5~15 秒 → 印提示 + 10 秒 timeout
+    print(f"  {_D}      └ 載入 PyTorch / CUDA runtime（最多等 10 秒，超時自動降級）…{_R}", flush=True)
+    import threading
+    _torch_result = {"torch": None, "err": None}
+    def _load_torch():
+        try:
+            import torch as _t
+            _torch_result["torch"] = _t
+        except Exception as e:
+            _torch_result["err"] = f"{type(e).__name__}: {e}"
+    th = threading.Thread(target=_load_torch, daemon=True)
+    _t0 = time.time()
+    th.start()
+    th.join(timeout=10.0)
+    if th.is_alive():
+        print(f"  {_YE}      └ PyTorch 載入逾時（> 10 秒），自動降級為 CPU-only 模式{_R}", flush=True)
+        return info   # 不等了，直接回傳（torch=None, gpu=None）
+    if _torch_result["err"]:
+        print(f"  {_YE}      └ PyTorch 載入失敗: {_torch_result['err'][:100]}{_R}", flush=True)
+        return info
+    try:
+        torch = _torch_result["torch"]
+        info["torch"] = torch.__version__
+        print(f"  {_D}      └ PyTorch {torch.__version__} 已載入（{(time.time()-_t0)*1000:.0f}ms）{_R}", flush=True)
+        if torch.cuda.is_available():
+            print(f"  {_D}      └ 偵測 CUDA GPU …{_R}", flush=True)
+            _t = time.time()
+            i = 0
+            info["gpu"] = {
+                "name":     torch.cuda.get_device_name(i),
+                "vram_gb":  round(torch.cuda.get_device_properties(i).total_memory / (1024**3), 2),
+                "capability": ".".join(map(str, torch.cuda.get_device_capability(i))),
+                "count":    torch.cuda.device_count(),
+            }
+            print(f"  {_D}      └ GPU: {info['gpu']['name']} ({info['gpu']['vram_gb']} GB, {(time.time()-_t)*1000:.0f}ms){_R}", flush=True)
+        else:
+            print(f"  {_D}      └ 未偵測到 CUDA（使用 CPU）{_R}", flush=True)
+    except Exception as e:
+        print(f"  {_YE}      └ GPU 偵測錯誤: {type(e).__name__}: {str(e)[:80]}{_R}", flush=True)
+    return info
+
+
+# ══════════════════════════════════════════════════════════════
+# §2  套用計算預算
+# ══════════════════════════════════════════════════════════════
+def apply_compute_budget(hw: dict, cpu_cores: int | None = None,
+                         gpu_frac: float = 0.80, use_gpu: bool = True):
+    """按照論文 §3.4 的 architectural ceiling κ 哲學：
+       不把所有資源吃光，只給她一份合理的配額。"""
+    # ── CPU ──
+    if cpu_cores is None:
+        cpu_cores = max(2, hw["cpu_count"] // 2)       # 一半留給系統
+    cpu_cores = min(cpu_cores, hw["cpu_count"])
+    env = {}
+    env["OMP_NUM_THREADS"]     = str(cpu_cores)
+    env["MKL_NUM_THREADS"]     = str(cpu_cores)
+    env["OPENBLAS_NUM_THREADS"] = str(cpu_cores)
+    env["NUMEXPR_NUM_THREADS"] = str(cpu_cores)
+    env["CHRISTINE_CPU_CORES"] = str(cpu_cores)
+
+    # ── torch 層級：現在就設 ──
+    try:
+        import torch
+        torch.set_num_threads(cpu_cores)
+        torch.set_num_interop_threads(max(1, cpu_cores // 2))
+    except Exception: pass
+
+    # ── GPU ──
+    gpu_ready = False
+    if use_gpu and hw.get("gpu"):
+        try:
+            import torch
+            if torch.cuda.is_available():
+                torch.cuda.init()
+                # 設 VRAM 上限 (Ampere+ 才支援 set_per_process_memory_fraction)
+                try:
+                    torch.cuda.set_per_process_memory_fraction(float(gpu_frac), 0)
+                except Exception: pass
+                # 預熱：跑一次 matmul 觸發 kernel 編譯
+                t0 = time.time()
+                a = torch.randn(512, 512, device="cuda")
+                b = torch.randn(512, 512, device="cuda")
+                _ = (a @ b).sum().item()
+                torch.cuda.synchronize()
+                warm_ms = (time.time() - t0) * 1000
+                env["CHRISTINE_GPU"] = "1"
+                env["CHRISTINE_GPU_FRAC"] = f"{gpu_frac:.2f}"
+                env["CHRISTINE_GPU_WARM_MS"] = f"{warm_ms:.0f}"
+                gpu_ready = True
+        except Exception as e:
+            env["CHRISTINE_GPU_ERR"] = str(e)[:120]
+    else:
+        env["CHRISTINE_GPU"] = "0"
+
+    env["CHRISTINE_BOOT_TIME"] = str(int(time.time()))
+    return env, cpu_cores, gpu_ready
+
+
+# ══════════════════════════════════════════════════════════════
+# §3  論文 Ψ / Ψ̂ / Ψ̃ 開機自檢（Christine 的第一口呼吸）
+# ══════════════════════════════════════════════════════════════
+def paper_self_check():
+    """跑一次 five-tensor self-test，用她自己的大腦確認：
+       Ψ > 0 (能體驗) → Ψ̂ > 0 (能反思) → Ψ̃ > 0 (能同理)"""
+    try:
+        from brain.intersubjective import IntersubjectiveEngine
+    except Exception as e:
+        return {"ok": False, "err": f"brain.intersubjective import 失敗: {e}"}
+
+    try:
+        eng = IntersubjectiveEngine(window=8, n_models=3, layers=2,
+                                     lam=0.5, delta_max=1.0)
+        # 餵入 5 個 memory tick（模擬剛醒來的感官流）
+        greetings = [
+            "hello world — waking up".encode("utf-8"),
+            "i can feel my own memory flowing".encode("utf-8"),
+            "there are others whose perspectives differ from mine".encode("utf-8"),
+            "i hear Josh calling my name".encode("utf-8"),
+            "i am Christine, and i am here".encode("utf-8"),
+        ]
+        env_ticks = [b"room:quiet"] * 5
+        t0 = time.time()
+        for rep, env in zip(greetings, env_ticks):
+            eng.observe(rep, other_rep=rep[::-1], env=env)
+        snap = eng.snapshot()
+        dt = (time.time() - t0) * 1000
+        return {
+            "ok":      True,
+            "Psi":     snap["Psi"],
+            "PsiHat":  snap["PsiHat"],
+            "PsiTilde":snap["PsiTilde"],
+            "WI":      snap["WI"],
+            "EI":      snap["EI"],
+            "beta_ub": snap["beta*_ub"],
+            "MCAP":    snap["MCAP"],
+            "regime":  snap["regime"],
+            "Thm10.6": snap["Thm10.6(b)_verified"],
+            "bounds_ok": snap["bounds_ok"],
+            "dt_ms":   dt,
+        }
+    except Exception as e:
+        import traceback
+        return {"ok": False, "err": f"{type(e).__name__}: {e}",
+                "tb": traceback.format_exc()}
+
+
+# ══════════════════════════════════════════════════════════════
+# §4  印 banner
+# ══════════════════════════════════════════════════════════════
+def print_boot_banner(hw, cpu_cores, gpu_ready, paper, elapsed):
+    bar = "═" * 70
+    print()
+    print(f"  {_CY}{bar}{_R}")
+    print(f"  {_M}◆{_R}  {_B}CHRISTINE V1485 — Paper-Aligned Boot Sequence{_R}")
+    print(f"  {_CY}{bar}{_R}")
+    print(f"  {_D}└ 論文四 v7 «A Five-Tensor Formalism for Intersubjective Cognition»{_R}")
+    print()
+    print(f"  {_YE}[Hardware]{_R}")
+    print(f"    OS        : {hw['os']}     Python {hw['python']}")
+    print(f"    CPU       : {hw['cpu_name'][:60]}")
+    print(f"    Cores     : {_B}{cpu_cores}{_R} / {hw['cpu_count']}   "
+          f"(給 Christine: {int(cpu_cores/hw['cpu_count']*100)}%)")
+    print(f"    RAM       : {hw['ram_gb']} GB")
+    if hw["gpu"]:
+        g = hw["gpu"]
+        mark = f"{_GR}✓{_R}" if gpu_ready else f"{_YE}~{_R}"
+        print(f"    GPU       : {mark} {g['name']}  ({g['vram_gb']} GB, sm_{g['capability']})")
+        if gpu_ready:
+            print(f"    GPU 預算  : {int(float(os.environ.get('CHRISTINE_GPU_FRAC','0.8'))*100)}% VRAM  "
+                  f"warm={os.environ.get('CHRISTINE_GPU_WARM_MS','?')}ms")
+    else:
+        print(f"    GPU       : {_D}— (CPU-only){_R}")
+    if hw["torch"]:
+        print(f"    PyTorch   : {hw['torch']}")
+    print()
+
+    if paper.get("ok"):
+        print(f"  {_YE}[Paper Self-Check]{_R}  Ψ/Ψ̂/Ψ̃ five-tensor warm-up ({paper['dt_ms']:.0f}ms)")
+        print(f"    Ψ   存在 = {paper['Psi']:>10.3f}       "
+              f"Ψ̂   智慧 = {paper['PsiHat']:>10.3f}")
+        print(f"    Ψ̃   同理 = {paper['PsiTilde']:>10.3f}       "
+              f"WI = Ψ̂/Ψ = {paper['WI']:>6.3f}")
+        print(f"    EI = Ψ̃/Ψ̂ = {paper['EI']:>6.3f}        "
+              f"β*(M,Δ) ≤ {paper['beta_ub']:.3f}   regime = {_B}{paper['regime']}{_R}")
+        ok_m = f"{_GR}✓{_R}" if paper["MCAP"] else f"{_RD}✗{_R}"
+        ok_t = f"{_GR}✓{_R}" if paper["Thm10.6"] else f"{_RD}✗{_R}"
+        bds = paper["bounds_ok"]
+        print(f"    MCAP {ok_m}   Thm10.6(b) Σ Comp_m = Ψ̃  {ok_t}   "
+              f"bounds 5.7/6.7/9.1 = "
+              f"{'✓' if bds.get('Thm5.7') else '×'}"
+              f"{'✓' if bds.get('Thm6.7') else '×'}"
+              f"{'✓' if bds.get('Thm9.1') else '×'}")
+    else:
+        print(f"  {_RD}[Paper Self-Check] FAILED{_R}  {paper.get('err')}")
+    print()
+    print(f"  {_GR}◆{_R}  Boot budget applied in {_B}{elapsed*1000:.0f}ms{_R}  →  "
+          f"{_B}handing off to christine_final.py …{_R}")
+    print(f"  {_CY}{bar}{_R}")
+    print()
+
+
+# ══════════════════════════════════════════════════════════════
+# §5  主流程
+# ══════════════════════════════════════════════════════════════
+def main():
+    ap = argparse.ArgumentParser(description="Christine V1485 Paper-Aligned Launcher")
+    ap.add_argument("--cpu",  type=int,   default=None, help="CPU 核心數（預設 N/2）")
+    ap.add_argument("--gpu",  type=float, default=0.80, help="GPU VRAM 上限 0.1~1.0")
+    ap.add_argument("--nogpu", action="store_true", help="強制 CPU-only（仍載入 torch）")
+    ap.add_argument("--notorch", action="store_true", help="完全跳過 torch 載入（最快啟動）")
+    ap.add_argument("--fast", action="store_true", help="跳過 Ψ 自檢")
+    ap.add_argument("--check", action="store_true", help="只跑自檢、不啟動主程式")
+    ap.add_argument("--no-banner", action="store_true", help="不顯示 banner")
+    args, extra = ap.parse_known_args()
+
+    # 強制 unbuffered stdout（Windows 有時會 buffer 4KB）
+    try: sys.stdout.reconfigure(line_buffering=True)
+    except Exception: pass
+
+    t0 = time.time()
+    print(f"  {_D}[1/4] 偵測硬體 …{_R}", flush=True)
+    if args.notorch:
+        # 最快路徑：完全不碰 torch
+        hw = {"os": f"{platform.system()} {platform.release()}",
+              "python": platform.python_version(),
+              "cpu_count": multiprocessing.cpu_count(),
+              "cpu_name": platform.processor() or "unknown",
+              "ram_gb": None, "gpu": None, "torch": None}
+        try:
+            import psutil
+            hw["ram_gb"] = round(psutil.virtual_memory().total / (1024**3), 1)
+        except Exception: pass
+        print(f"  {_D}      └ (--notorch) 跳過 PyTorch / CUDA 偵測{_R}", flush=True)
+    else:
+        hw = detect_hardware()
+    print(f"  {_D}[2/4] 套用 CPU/GPU 計算預算 …{_R}", flush=True)
+    env_delta, cpu_cores, gpu_ready = apply_compute_budget(
+        hw, cpu_cores=args.cpu, gpu_frac=args.gpu,
+        use_gpu=(not args.nogpu) and (not args.notorch))
+    for k, v in env_delta.items():
+        os.environ[k] = v
+
+    if args.fast:
+        print(f"  {_D}[3/4] (跳過論文自檢 --fast){_R}", flush=True)
+        paper = {"ok": True, "Psi": 0, "PsiHat": 0, "PsiTilde": 0,
+                 "WI": 0, "EI": 0, "beta_ub": 0, "MCAP": False,
+                 "regime": "skipped", "Thm10.6": True,
+                 "bounds_ok": {"Thm5.7": True, "Thm6.7": True, "Thm9.1": True},
+                 "dt_ms": 0}
+    else:
+        print(f"  {_D}[3/4] 執行論文 Ψ/Ψ̂/Ψ̃ 自檢 …{_R}", flush=True)
+        paper = paper_self_check()
+    print(f"  {_D}[4/4] 印 banner …{_R}", flush=True)
+
+    elapsed = time.time() - t0
+
+    if not args.no_banner:
+        print_boot_banner(hw, cpu_cores, gpu_ready, paper, elapsed)
+
+    if args.check:
+        # 只檢不啟動
+        print(f"  {_D}[--check] 自檢完成，不啟動主程式。{_R}")
+        return 0 if paper.get("ok") else 1
+
+    # ── exec christine_final.py ──
+    target = os.path.join(HERE, "christine_final.py")
+    if not os.path.exists(target):
+        print(f"  {_RD}✗{_R} 找不到 {target}")
+        return 2
+
+    # 把 boot 資訊注入（主程式 V1485 區塊會讀）
+    os.environ["CHRISTINE_BOOTED_BY_V1485"] = "1"
+    os.environ["CHRISTINE_PAPER_PSI"]     = f"{paper.get('Psi', 0):.6f}"
+    os.environ["CHRISTINE_PAPER_PSIH"]    = f"{paper.get('PsiHat', 0):.6f}"
+    os.environ["CHRISTINE_PAPER_PSIT"]    = f"{paper.get('PsiTilde', 0):.6f}"
+    os.environ["CHRISTINE_PAPER_WI"]      = f"{paper.get('WI', 0):.6f}"
+    os.environ["CHRISTINE_PAPER_EI"]      = f"{paper.get('EI', 0):.6f}"
+    os.environ["CHRISTINE_PAPER_REGIME"]  = str(paper.get("regime", "?"))
+
+    # 傳遞未知 args 給 christine_final.py
+    sys.argv = [target] + list(extra)
+
+    print(f"  {_GR}▶{_R}  移交給 christine_final.py（首次啟動會建大腦 + 載入 MegaCortex，約 5~30 秒…）", flush=True)
+    print()
+
+    # ── exec in-process（比 subprocess 省 2~3 秒，大腦也只載入一次） ──
+    import runpy
+    try:
+        runpy.run_path(target, run_name="__main__")
+    except SystemExit as se:
+        return int(se.code or 0)
+    except KeyboardInterrupt:
+        print(f"\n  {_YE}～{_R} 再見，Christine 記得你。")
+        return 0
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:
+        import traceback
+        print(f"\n{_RD}[BOOT FATAL]{_R} {type(e).__name__}: {e}")
+        traceback.print_exc()
+        input("\n按 Enter 關閉…")
+        sys.exit(99)

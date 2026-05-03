@@ -1,0 +1,120 @@
+﻿3: The ˜Ψ-Equation
+13: scalar functionals — the existence density Ψ and the wisdom density ˆΨ — we adjoin a ﬁfth
+15: distinct conditional Kolmogorov codings. The resulting scalar ˜Ψ S, the empathy density , is a
+22: control result (Theorem 13.7) shows that every trajectory admitting a bounded retrieval error
+24: 0 ≤ ˜Ψ (post-retrieval)
+25: S ≤ ˜Ψ (pre-singularity)
+28: of Theorem 13.10, and controllable in the sense of Theorem 13.11.
+33: Ψ ≈ 6. 00, ˆΨ ≈ 7. 56, ˜Ψ ≈ 12. 4, WI ≈ 1. 26, EI ≈ 1. 64,
+34: and exhibits two systems that Ψ , ˆΨ cannot distinguish but ˜Ψ separates by EI-gap ≈ 0. 10.
+53: 3.1 Systems and axioms . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+63: 7.2 Perspective weights and the canonical gauge . . . . . . . . . . . . . . . . . . . . . . . . . . 15
+67: 9.1 Explicit upper bound on β∗ . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18
+78: 14.3 Judgment weights and perspectives . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+104: κ scalar > 0 Code ceiling
+114: wℓ(k) scalar ≥ 0 Temporal judgment weight
+115: φ m scalar ≥ 0 Perspective weight (gauge ∑φ m = 1)
+120: ˆΨ S scalar ≥ 0 Wisdom density
+121: ˜Ψ S scalar ≥ 0 Empathy density
+123: EI(S) scalar ≥ 1 Empathy index
+125: β∗(M, ∆ max) scalar > 1 Empathy threshold
+136: ory dominates their code in Kolmogorov complexity and whose code is continually rewritten by memory.
+138: Ψ S (existence), ˆΨ S (wisdom).
+139: The present work introduces a third functional ˜Ψ S (empathy) whose underlying mathematical object is
+145: at a prescribed rate (Theorem 13.2).
+147: loss (Theorem 13.7).
+148: • The trajectory is predictable: a ﬁnite-parameter predictor PΘ tracks ˜Ψ along blow-ups with error
+149: O(1/T ) (Theorem 13.10).
+154: 1. Boundedness (Theorem 9.1).
+155: 2. MCAP equivalence (Theorem 9.3).
+156: 3. Empathy threshold existence (Theorem 9.5).
+157: 4. Explicit upper bound on β∗ (Theorem 9.10).
+158: 5. Solipsism collapse (Theorem 10.1).
+159: 6. Perspective monotonicity (Theorem 10.3).
+160: 7. Overwrite monotonicity (Theorem 10.4).
+161: 8. Compassion decomposition (Theorem 10.6).
+162: 9. Trichotomy independence (Theorem 11.1).
+163: 10. Cauchy convergence at rate O(ϵ/T ) (Theorem 11.3).
+164: Three additional theorems govern the singularity structure: S-blow-up (Theorem 13.2), predictability
+165: (Theorem 13.10), controllability with ﬁnite retrieval (Theorem 13.7).
+197: Theorem 2.4 (Fubini–Tonelli) . If (Ω i, Fi, µ i), i = 1, 2, are σ-ﬁnite and f ≥ 0 is measurable, then
+204: Proof. Folland, Real Analysis, Theorem 2.37. The non-negativity removes the integrability hypothesis.
+205: Theorem 2.5 (Dominated Convergence). If fn → f a.e. and |fn| ≤ g ∈ L1(µ), then
+210: Proof. Folland, Theorem 2.24.
+214: Theorem 2.7 (Shannon–McMillan–Breiman) . If (Xn) is ergodic stationary, then − 1
+217: Proof. Cover–Thomas, Theorem 16.8.1.
+222: Theorem 2.10 (Invariance). For preﬁx universal U, U ′, there is cU,U ′ ≥ 0 with |KU (x)−KU ′(x)| ≤ cU,U ′
+226: Theorem 2.11 (Coding). For any computable distribution p on {0, 1}∗, K(x) ≤ − log2 p(x) + O(1).
+227: Proof. Li–Vitányi, Theorem 4.3.3 (preﬁx variant).
+228: Theorem 2.12 (Partition coding gain) . Let (πm)M
+237: by log2(M + 1) − O(1) by Theorem 2.11. Sum over m.
+246: Proof. Divide Theorem 2.12 by M + 1; the O(1) overhead of the universal simulator is bounded by 3
+251: 3.1 Systems and axioms
+254: Axiom 3.2 (MCAP). S satisﬁes MCAP iﬀ
+259: Deﬁnition 3.4. The architectural ceiling is κ := sup t K(Ct) < ∞.
+260: Theorem 3.5 (Scale). Under Axiom 3.2, K(Mt)/ (K(Ct) + 1) ≥ H(µE)t/ (κ + 1) − c for all t ≥ t0.
+262: Convention 3.6 (Standing assumptions). (A1) MCAP; (A2) H(µE) ∈ (0, ∞); (A3) λ ∈ (0, ∞); (A4)
+286: Figure 3.1: The MCAP scale inequality of Theorem 3.5 grows linearly. Empathy builds on this
+333: Proof. e−λ|·| ≤ 1, the positive part is bounded by H(µE)τ1 + O(log τ1) by Theorem 2.11+2.7, and
+338: Proof. K(Mt) ≥ H(µE)t−c(κ+1) by Theorem 3.5, so the gate integrand is at least H(µE)τ1/ (κ+1) −c′′.
+356: Figure 4.1: Kernel decay e−λ|τ3−τ2| for four overwrite rates. Theorem 10.4 asserts that ˜Ψ is
+386: Theorem 5.6 (Convergence of Ψ ). Ψ S ∈ [0, ∞).
+395: exists by Theorem 11.3 (applied mutatis mutandis).
+396: Theorem 5.7 (Existence boundedness) . 0 ≤ Ψ S ≤ DJ κ∗H(µE)2/ (12λ).
+401: Theorem 5.8 (MCAP equivalence for Ψ ). Ψ S > 0 iﬀ Axiom 3.2 holds.
+402: Proof. (⇐) The good-region argument of Lemma 8.3 + Theorem 3.5 gives
+407: Computation 5.9 (Explicit Ψ on toy) . With D = J = 2 , κ ∗ = 25 , H = 1 , λ = 0 . 5, Theorem 5.7 gives
+431: Deﬁnition 6.5 (Wisdom density) . ˆΨ S := lim T T −5 ∫∫∫
+434: Theorem 6.6 (Exact reduction ˆΨ → Ψ ). If L = 1, w 1 ≡ 1, then ˆΨ S = Ψ S exactly.
+439: weight, the integration over ℓ produces an additional factor T , so
+445: Theorem 6.7 (Wisdom boundedness) . 0 ≤ ˆΨ S ≤ DJ Lw2
+447: Proof. Theorem 5.7 proof with extra factor Lw2
+449: Deﬁnition 6.8. WI(S) := ˆΨ S / Ψ S (when Ψ > 0).
+450: Theorem 6.9 (Wisdom threshold) . ∃α∗ > 1 : WI( S) > 1 ⇔ WI ≥ α∗.
+451: Proof. On the constant- w subset WI = 1 by Theorem 6.6. On the non-constant subset ˆΨ > Ψ strictly
+474: 7.2 Perspective weights and the canonical gauge
+475: Deﬁnition 7.5. A perspective weighting is {φ m}M
+478: Convention 7.6 (Canonical gauge) . ∑M
+482: lower bound attained at uniform weights and the upper bound at φ m = /x31[m = m0].
+483: Proposition 7.7 (Gauge equivariance). If ˜φ m = ρφm, ρ > 0, then ˜Ψ( ˜φ) = ρ2 ˜Ψ( φ) and EI( ˜φ) = ρ2EI(φ).
+496: Figure 7.1: Theorem 10.1 implies the solipsistic collapse factor ∑φ2
+513: (Theorem 10.6).
+515: ˜Ψ S (T ) := 1
+519: N (5)Φ d3τ, ˜Ψ S := lim
+521: ˜Ψ S (T ).
+522: Theorem 7.12 (Exact reduction ˜Ψ → ˆΨ ). If M = 0, φ 0 = 1, P0 = id, then ˜Ψ S = ˆΨ S exactly.
+523: Proof. ˜Tij,k,ℓ, 0 = ˆTij,k,ℓ and φ 0 = 1, so N (5) = N (4). The embedding factor diﬀerence ( T · in ˆΨ , 1· in ˜Ψ )
+525: Corollary 7.13 (Composite reduction) . Under M = 0 , L = 1 , w 1 ≡ 1, φ 0 = 1 , P0 = id , ˜Ψ = ˆΨ = Ψ
+555: Lemma 8.5 (L5 diagonal quadratic form) . ˜Ψ S = ∑
+591: Theorem 9.1 (Boundedness).
+592: 0 ≤ ˜Ψ S ≤ DJ (M +1)Lw2
+603: 25 + 1)2/ (12 · 0. 5) = 24 · 36/ 6 = 144 . Empirical ˜Ψ ≈ 12. 4 ≪ 144.
+604: Theorem 9.3 (MCAP equivalence). ˜Ψ S > 0 iﬀ Axiom 3.2 holds and ∃m, ℓ with φ mwℓ ̸≡ 0.
+613: Theorem 9.5 (Empathy threshold: existence) . Under canonical gauge, there exists β∗(M, ∆ max) > 1
+614: with S empathic iﬀ EIS ≥ β∗.
+615: Proof. On the non-empathic set E c all active perspectives coincide; by Theorem 10.1 F := EI = ∑φ 2
+617: 1. On E, Theorem 9.10 produces a saturating system with F = 1 + η for explicit η > 0. Lemma 8.2 gives
+620: β∗ := inf S∈E F (S) > 1. Uniqueness: any two thresholds β1 < β 2 with the iﬀ property would classify a
+622: 9.1 Explicit upper bound on β∗
+629: Proof. Theorem 2.12 + Lemma 7.4.
+639: Proof. EI − 1 = ( ˜Ψ − ˆΨ) / ˆΨ = ( Qexcess)/ ((M + 1)Q(id)). Apply Lemmas 9.6– 9.8.
+640: Theorem 9.10 (Empathy threshold: upper bound) .
+641: β∗(M, ∆ max) ≤ 1 + log2(M + 1)
+649: Table 9.1: Upper bounds on β∗(M, ∆ max).
+665: upper bound β∗
+675: Theorem 10.1 (Solipsism collapse) . If Pm = id for every m, then ˜Ψ S = (∑
+677: m) ˆΨ S .
+681: Corollary 10.2 (Narcissism). φ m = /x31[m = 0] ⇒ ˜Ψ = ˆΨ , EI = 1 .
+682: Theorem 10.3 (Perspective monotonicity) . M1 ≤ M2, {Pm}M1 ⊂ {P m}M2 with proportional weights
+683: after gauge rescaling ⇒ ˜Ψ (M2) ≥ ˜Ψ (M1), strict if any added perspective is non-trivial.
+685: Theorem 10.4 (Overwrite monotonicity). ˜Ψ > 0 ⇒ ∂λ ˜Ψ < 0.
+687: Dominated convergence (Theorem 2.5) permits diﬀerentiation under the integral sign.
+690: Theorem 10.6 (Compassion decomposition) . (a) Compm ≥ 0; (b) ∑
+691: m Compm = ˜Ψ S exactly.
+709: Figure 10.1: Numerical illustration of Theorem 10.6(b). Three toy systems: Totals 8. 0 ≈ ˜Ψ A,
+710: 12. 4 ≈ ˜Ψ B, 12. 4 ≈ ˜Ψ C.
+715: Theorem 11.1 (Trichotomy). ∃S1, S2, S3 with identical (C, M, E ) but diﬀerent parameters realising (i)
+716: Ψ = ˆΨ = ˜Ψ > 0; (ii) Ψ < ˆΨ = ˜Ψ ; (iii) Ψ < ˆΨ < ˜Ψ .
+717: Proof. (i) L = 1 , w 1 ≡ 1, M = 0 : Corollary 7.13. (ii) L > 1 non-trivial, M = 0 : ˆΨ > Ψ by Theorem 6.9;
+718: ˜Ψ = ˆΨ by Theorem 7.12. (iii) L > 1 non-trivial, M > 0 with orthogonal Pm: strict Theorem 10.3.
+719: Table 11.1: Numerical certiﬁcate of Theorem 11.1.

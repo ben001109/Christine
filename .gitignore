@@ -1,0 +1,30 @@
+.venv/
+__pycache__/
+*.py[cod]
+
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyright/
+
+# External nested repository. Keep it independent unless explicitly vendored.
+ARC-AGI/
+
+# Runtime state, caches, and generated/model artifacts are too large for Git.
+data/
+level5_logs/
+brain/generated/
+heartbeat.txt
+nexus_v2_state.json
+v42_export/v42_neural_intent/encoder/model.safetensors
+
+.env
+.env.*
+!.env.example
+
+*.log
+_boot_out.txt
+_brain_itest.log
+_diag.log
+_itg.log
+test_result.txt

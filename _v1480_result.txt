@@ -1,0 +1,24 @@
+════════ loading christine_final.py ════════
+
+════════ API CHECK ════════
+  brain_say: OK
+  brain_status: OK
+  brain_dream: OK
+  ask: OK
+
+════════ status-before: '大腦狀態' ════════
+'✿ V1480 Brain —— 尚未初始化（首次用『大腦 ...』時才會建腦）。\n  配置 size=small'
+
+════════ brain-hello: '大腦 你好嗎' ════════
+'你好嗎  [loss=3.628 val=0.00 aro=0.00 F=1.11]'
+
+════════ dream: '做夢 2' ════════
+'✓ 做了 2 次夢（replay 鞏固）'
+
+════════ brain-2nd: '大腦 今天天氣很好' ════════
+'今天天氣很好  [loss=4.655 val=0.00 aro=0.00 F=1.06]'
+
+════════ status-after: '大腦狀態' ════════
+"✿ V1480 Christine 自己的大腦\n  size             = small\n  total_calls      = 2\n  avg perceive     = 24.18 ms\n  last_loss        = 4.655057074089423\n  last_response    = '今天天氣很好'\n  brain.status()   = {'size': 'small', 'ticks': 2, 'vocab': 7, 'ltm_items': 0, 'episodes': 2, 'emotion': '😐 val=+0.00 aro=0.00', 'body': {'energy': 0.998, 'stress': 0.0, 'uptime': 1776957793.2576847}, 'last_log': ['[tick #1] Δ=27.0ms loss=3.628 val=+0.00 aro=0.00 FE=1.11 act=4 winner=language', '[tick #2] Δ=20.7ms loss=4.655 val=+0.00 aro=0.00 FE=1.06 act=5 winner=language']}"
+
+✓ V1480 SELFTEST DONE
