@@ -151,6 +151,7 @@ import tkinter as tk
 from tkinter import filedialog, scrolledtext, ttk
 from fpdf import FPDF
 import pyautogui
+from christine.platform import windows as _christine_windows
 pyautogui.FAILSAFE=False
 pyautogui.PAUSE=0.02
 
@@ -2252,8 +2253,7 @@ def open_control_panel_item(item):
         if k in item.lower(): os.system("start "+v); return "ok"
     return "not found"
 def get_startup_programs():
-    try: r=subprocess.run('powershell -c "Get-CimInstance Win32_StartupCommand | Select-Object Name,Command | Format-Table -AutoSize"',shell=True,capture_output=True,text=True,timeout=10); return r.stdout.strip()[:400] if r.stdout.strip() else "none"
-    except: return "err"
+    return _christine_windows.get_startup_programs()
 def check_disk_health():
     try:
         result=""
@@ -2308,92 +2308,35 @@ def type_text(text):
         return "ok:typed "+str(len(text))+" chars"
     except Exception as e: return "err:"+str(e)
 def setup_autostart():
-    """V1483 AutoBoot：把 Christine 註冊到 Windows 開機啟動。
-    - 動態偵測當前 python.exe 與 christine_final.py 路徑
-    - 注入 UTF-8 環境變數（避免中文亂碼）
-    - 自動帶入 ANTHROPIC_API_KEY（若有）
-    - 冪等：重複呼叫會覆蓋舊的 .bat
-    """
-    try:
-        sd = os.path.join(os.environ.get("APPDATA", ""),
-                          "Microsoft", "Windows", "Start Menu", "Programs", "Startup")
-        if not os.path.isdir(sd):
-            os.makedirs(sd, exist_ok=True)
-        bat_path = os.path.join(sd, "Christine.bat")
-        script_path = os.path.abspath(__file__)
-        py_exe = sys.executable  # 當前 python
-        # 優先用 pythonw（無 console）若存在；否則 python（有 console）
-        pyw = py_exe.replace("python.exe", "pythonw.exe")
-        use_exe = pyw if os.path.isfile(pyw) else py_exe
-        work_dir = os.path.dirname(script_path)
-
-        api_line = f'set ANTHROPIC_API_KEY={API_KEY}\n' if API_KEY else ''
-        content = (
-            '@echo off\r\n'
-            'chcp 65001 >nul\r\n'
-            'set PYTHONUTF8=1\r\n'
-            'set PYTHONIOENCODING=utf-8\r\n'
-            + api_line +
-            f'cd /d "{work_dir}"\r\n'
-            f'start "" "{use_exe}" "{script_path}"\r\n'
-        )
-        with open(bat_path, "w", encoding="utf-8") as f:
-            f.write(content)
-        return f"ok: 已註冊開機啟動 → {bat_path}"
-    except Exception as e:
-        return "err:" + str(e)
+    return _christine_windows.setup_autostart(
+        appdata=os.environ.get("APPDATA", ""),
+        script_path=os.path.abspath(__file__),
+        python_exe=sys.executable,
+        api_key=API_KEY,
+    )
 
 def autostart_status():
-    """檢查 Christine 是否已註冊為開機啟動。"""
-    try:
-        sd = os.path.join(os.environ.get("APPDATA", ""),
-                          "Microsoft", "Windows", "Start Menu", "Programs", "Startup")
-        bat_path = os.path.join(sd, "Christine.bat")
-        if os.path.isfile(bat_path):
-            try:
-                with open(bat_path, "r", encoding="utf-8") as f:
-                    content = f.read()
-            except Exception:
-                content = ""
-            return f"✓ 已啟用 → {bat_path}\n--- 內容 ---\n{content}"
-        return f"✗ 未啟用（可用『自動開機 on』啟用）\n  預期位置：{bat_path}"
-    except Exception as e:
-        return "err:" + str(e)
+    return _christine_windows.autostart_status(appdata=os.environ.get("APPDATA", ""))
 
 def autostart_remove():
-    """移除開機啟動。"""
-    try:
-        sd = os.path.join(os.environ.get("APPDATA", ""),
-                          "Microsoft", "Windows", "Start Menu", "Programs", "Startup")
-        bat_path = os.path.join(sd, "Christine.bat")
-        if os.path.isfile(bat_path):
-            os.remove(bat_path)
-            return f"✓ 已移除開機啟動 ← {bat_path}"
-        return "~ 原本就沒註冊，無需移除"
-    except Exception as e:
-        return "err:" + str(e)
+    return _christine_windows.autostart_remove(appdata=os.environ.get("APPDATA", ""))
 
 def _v1483_auto_register_once():
-    """V1483：首次執行時自動註冊到 Windows 開機啟動（只做一次）。
-    用 data/ 裡的 flag 檔記錄，避免每次啟動都重寫。
-    使用者可用『自動開機 off』取消。
-    """
-    if not sys.platform.startswith("win"):
+    result = _christine_windows.auto_register_once(
+        data_dir=DD,
+        appdata=os.environ.get("APPDATA", ""),
+        script_path=os.path.abspath(__file__),
+        python_exe=sys.executable,
+        api_key=API_KEY,
+        is_windows=sys.platform.startswith("win"),
+    )
+    if result is None:
         return
-    try:
-        flag = os.path.join(DD, "_autostart_registered.flag")
-        if os.path.isfile(flag):
-            return  # 已註冊過，不再重複
-        result = setup_autostart()
-        if result.startswith("ok"):
-            with open(flag, "w", encoding="utf-8") as f:
-                f.write(datetime.datetime.now().isoformat() + "\n" + result)
-            print(f"  {_GR}✓{_R} {_CY}V1483 AutoBoot{_R} — "
-                  f"已自動註冊開機啟動（大腦會隨系統啟動而醒來）")
-        else:
-            print(f"  {_YE}~{_R} AutoBoot 註冊失敗：{result}")
-    except Exception as _e_ab:
-        print(f"  {_YE}~{_R} AutoBoot 略過：{_e_ab}")
+    if result.startswith("ok"):
+        print(f"  {_GR}✓{_R} {_CY}V1483 AutoBoot{_R} — "
+              f"已自動註冊開機啟動（大腦會隨系統啟動而醒來）")
+    else:
+        print(f"  {_YE}~{_R} AutoBoot 註冊失敗：{result}")
 def add_expense(amt,cat,note=""): e=lj(EF,[]); e.append({"a":amt,"c":cat,"n":note,"t":datetime.datetime.now().strftime("%m-%d %H:%M")}); sj(EF,e); return "ok $"+str(amt)
 def list_expenses(period="today"):
     e=lj(EF,[])

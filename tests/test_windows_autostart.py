@@ -90,3 +90,13 @@ def test_get_startup_programs_uses_runner_output():
     output = get_startup_programs(runner=runner)
 
     assert "Christine" in output
+
+
+def test_monolith_autostart_functions_delegate_to_platform_module():
+    text = Path("christine_final.py").read_text(encoding="utf-8")
+
+    assert "from christine.platform import windows as _christine_windows" in text
+    assert "_christine_windows.setup_autostart" in text
+    assert "_christine_windows.autostart_status" in text
+    assert "_christine_windows.autostart_remove" in text
+    assert "_christine_windows.auto_register_once" in text
