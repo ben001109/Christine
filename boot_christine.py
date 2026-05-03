@@ -21,6 +21,8 @@ boot_christine.py — V1485 Christine 快速啟動器（CPU/GPU 預算）
 from __future__ import annotations
 import os, sys, time, argparse, multiprocessing, platform, subprocess
 
+from christine.runtime.boot_config import compute_cpu_budget
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
@@ -99,9 +101,7 @@ def apply_compute_budget(hw: dict, cpu_cores: int | None = None,
     """按照論文 §3.4 的 architectural ceiling κ 哲學：
        不把所有資源吃光，只給她一份合理的配額。"""
     # ── CPU ──
-    if cpu_cores is None:
-        cpu_cores = max(2, hw["cpu_count"] // 2)       # 一半留給系統
-    cpu_cores = min(cpu_cores, hw["cpu_count"])
+    cpu_cores = compute_cpu_budget(hw["cpu_count"], cpu_cores)       # 一半留給系統
     env = {}
     env["OMP_NUM_THREADS"]     = str(cpu_cores)
     env["MKL_NUM_THREADS"]     = str(cpu_cores)

@@ -24,6 +24,11 @@ gpu = [
 llm = [
     "llama-cpp-python>=0.2.90",
 ]
+distributed = [
+    "fastapi>=0.136.1",
+    "httpx>=0.28.1",
+    "uvicorn>=0.46.0",
+]
 
 [dependency-groups]
 dev = [
@@ -47,6 +52,9 @@ extend-exclude = [
     "unity_projects",
     "v42_export",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
 
 [tool.pyright]
 pythonVersion = "3.10"

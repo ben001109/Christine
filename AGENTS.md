@@ -8,6 +8,11 @@ Christine is a high-value personal AI desktop assistant. Treat the project as
 stateful, user-owned, and emotionally important. Prefer safe, reversible,
 incremental changes over broad rewrites.
 
+## Communication
+
+- Match the user's language in replies. Whatever language the user uses, reply
+  in that same language.
+
 ## Package Management
 
 - Use `uv` for all Python environment and dependency work.
@@ -49,6 +54,8 @@ incremental changes over broad rewrites.
 
 - Start every substantial refactor by identifying the behavior that must be
   preserved and adding a focused smoke test or compile check for it.
+- After each completed, verified progress unit, create a git commit before
+  continuing to the next unit.
 - Keep changes small and reviewable. Avoid large all-at-once rewrites of
   `christine_final.py`.
 - Treat existing formula implementations as legacy research artifacts. They must
