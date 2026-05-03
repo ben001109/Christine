@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from christine.platform.windows import (
     auto_register_once,
     autostart_remove,
@@ -28,10 +30,32 @@ def test_build_autostart_batch_preserves_utf8_and_api_key():
     assert "chcp 65001 >nul" in content
     assert "set PYTHONUTF8=1" in content
     assert "set PYTHONIOENCODING=utf-8" in content
-    assert "set ANTHROPIC_API_KEY=secret" in content
+    assert 'set "ANTHROPIC_API_KEY=secret"' in content
     assert 'cd /d "C:\\Christine"' in content
     assert 'start "" "C:\\Python\\pythonw.exe" "C:\\Christine\\christine_final.py"' in content
     assert "\r\n" in content
+
+
+def test_build_autostart_batch_quotes_api_key_for_cmd():
+    content = build_autostart_batch(
+        work_dir=Path("C:/Christine"),
+        script_path=Path("C:/Christine/christine_final.py"),
+        python_exe=Path("C:/Python/pythonw.exe"),
+        api_key="secret&still_key",
+    )
+
+    assert 'set "ANTHROPIC_API_KEY=secret&still_key"' in content
+    assert "set ANTHROPIC_API_KEY=" not in content
+
+
+def test_build_autostart_batch_rejects_newline_api_key():
+    with pytest.raises(ValueError, match="ANTHROPIC_API_KEY"):
+        build_autostart_batch(
+            work_dir=Path("C:/Christine"),
+            script_path=Path("C:/Christine/christine_final.py"),
+            python_exe=Path("C:/Python/pythonw.exe"),
+            api_key="secret\r\ncalc",
+        )
 
 
 def test_setup_status_and_remove_autostart_use_temp_appdata(tmp_path):
@@ -68,7 +92,7 @@ def test_autostart_status_redacts_api_key(tmp_path):
 
     assert "已啟用" in status
     assert "secret" not in status
-    assert "set ANTHROPIC_API_KEY=<redacted>" in status
+    assert 'set "ANTHROPIC_API_KEY=<redacted>"' in status
 
 
 def test_auto_register_once_writes_flag_only_after_success(tmp_path):

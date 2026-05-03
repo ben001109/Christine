@@ -15,13 +15,19 @@ def startup_folder(appdata: str | Path) -> Path:
     return Path(appdata) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
 
 
+def _batch_env_value(value: str) -> str:
+    if "\r" in value or "\n" in value or '"' in value:
+        raise ValueError("ANTHROPIC_API_KEY cannot contain newlines or double quotes")
+    return value
+
+
 def build_autostart_batch(
     work_dir: str | Path,
     script_path: str | Path,
     python_exe: str | Path,
     api_key: str = "",
 ) -> str:
-    api_line = f"set ANTHROPIC_API_KEY={api_key}\r\n" if api_key else ""
+    api_line = f'set "ANTHROPIC_API_KEY={_batch_env_value(api_key)}"\r\n' if api_key else ""
     return (
         "@echo off\r\n"
         "chcp 65001 >nul\r\n"
@@ -39,7 +45,9 @@ def _bat_path(appdata: str | Path) -> Path:
 
 def _redact_autostart_content(content: str) -> str:
     return "\n".join(
-        "set ANTHROPIC_API_KEY=<redacted>"
+        'set "ANTHROPIC_API_KEY=<redacted>"'
+        if line.upper().startswith('SET "ANTHROPIC_API_KEY=')
+        else "set ANTHROPIC_API_KEY=<redacted>"
         if line.upper().startswith("SET ANTHROPIC_API_KEY=")
         else line
         for line in content.splitlines()
