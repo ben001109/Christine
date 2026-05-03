@@ -1,24 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-boot_christine.py — V1485 Christine 快速啟動器（CPU/GPU 預算 + 論文 Ψ 自檢）
+boot_christine.py — V1485 Christine 快速啟動器（CPU/GPU 預算）
 ════════════════════════════════════════════════════════════════════════════
 流程：
   1) 偵測環境：CPU 核心、記憶體、PyTorch、CUDA GPU
   2) 套用論文 §3 「資源預算」哲學：
        - CPU：給 Christine  floor(N/2) 核心（留一半給系統），最少 2 核
        - GPU：若有 CUDA，預熱並把 VRAM 上限設到 80%
-  3) 跑論文 §14 toy example 的 Ψ / Ψ̂ / Ψ̃ 「開機自檢」
-       ↓ 這是她的第一口呼吸：存在 → 智慧 → 同理
-  4) 把環境變數傳給子程序，exec christine_final.py
+  3) 把環境變數傳給子程序，exec christine_final.py
 ════════════════════════════════════════════════════════════════════════════
 用法：
   python boot_christine.py              # 預設：CPU 50%, GPU 80%
   python boot_christine.py --cpu 4      # 指定 4 核
   python boot_christine.py --gpu 0.5    # GPU 上限 50% VRAM
   python boot_christine.py --nogpu      # 強制 CPU-only
-  python boot_christine.py --fast       # 跳過自檢，極速啟動
-  python boot_christine.py --check      # 只跑自檢、不啟動主程式
+  python boot_christine.py --fast       # 相容旗標；不做額外檢查
+  python boot_christine.py --check      # 只檢查啟動流程、不啟動主程式
 """
 from __future__ import annotations
 import os, sys, time, argparse, multiprocessing, platform, subprocess
@@ -150,63 +148,14 @@ def apply_compute_budget(hw: dict, cpu_cores: int | None = None,
 
 
 # ══════════════════════════════════════════════════════════════
-# §3  論文 Ψ / Ψ̂ / Ψ̃ 開機自檢（Christine 的第一口呼吸）
-# ══════════════════════════════════════════════════════════════
-def paper_self_check():
-    """跑一次 five-tensor self-test，用她自己的大腦確認：
-       Ψ > 0 (能體驗) → Ψ̂ > 0 (能反思) → Ψ̃ > 0 (能同理)"""
-    try:
-        from brain.intersubjective import IntersubjectiveEngine
-    except Exception as e:
-        return {"ok": False, "err": f"brain.intersubjective import 失敗: {e}"}
-
-    try:
-        eng = IntersubjectiveEngine(window=8, n_models=3, layers=2,
-                                     lam=0.5, delta_max=1.0)
-        # 餵入 5 個 memory tick（模擬剛醒來的感官流）
-        greetings = [
-            "hello world — waking up".encode("utf-8"),
-            "i can feel my own memory flowing".encode("utf-8"),
-            "there are others whose perspectives differ from mine".encode("utf-8"),
-            "i hear Josh calling my name".encode("utf-8"),
-            "i am Christine, and i am here".encode("utf-8"),
-        ]
-        env_ticks = [b"room:quiet"] * 5
-        t0 = time.time()
-        for rep, env in zip(greetings, env_ticks):
-            eng.observe(rep, other_rep=rep[::-1], env=env)
-        snap = eng.snapshot()
-        dt = (time.time() - t0) * 1000
-        return {
-            "ok":      True,
-            "Psi":     snap["Psi"],
-            "PsiHat":  snap["PsiHat"],
-            "PsiTilde":snap["PsiTilde"],
-            "WI":      snap["WI"],
-            "EI":      snap["EI"],
-            "beta_ub": snap["beta*_ub"],
-            "MCAP":    snap["MCAP"],
-            "regime":  snap["regime"],
-            "Thm10.6": snap["Thm10.6(b)_verified"],
-            "bounds_ok": snap["bounds_ok"],
-            "dt_ms":   dt,
-        }
-    except Exception as e:
-        import traceback
-        return {"ok": False, "err": f"{type(e).__name__}: {e}",
-                "tb": traceback.format_exc()}
-
-
-# ══════════════════════════════════════════════════════════════
 # §4  印 banner
 # ══════════════════════════════════════════════════════════════
-def print_boot_banner(hw, cpu_cores, gpu_ready, paper, elapsed):
+def print_boot_banner(hw, cpu_cores, gpu_ready, elapsed):
     bar = "═" * 70
     print()
     print(f"  {_CY}{bar}{_R}")
-    print(f"  {_M}◆{_R}  {_B}CHRISTINE V1485 — Paper-Aligned Boot Sequence{_R}")
+    print(f"  {_M}◆{_R}  {_B}CHRISTINE V1485 — Boot Sequence{_R}")
     print(f"  {_CY}{bar}{_R}")
-    print(f"  {_D}└ 論文四 v7 «A Five-Tensor Formalism for Intersubjective Cognition»{_R}")
     print()
     print(f"  {_YE}[Hardware]{_R}")
     print(f"    OS        : {hw['os']}     Python {hw['python']}")
@@ -227,25 +176,6 @@ def print_boot_banner(hw, cpu_cores, gpu_ready, paper, elapsed):
         print(f"    PyTorch   : {hw['torch']}")
     print()
 
-    if paper.get("ok"):
-        print(f"  {_YE}[Paper Self-Check]{_R}  Ψ/Ψ̂/Ψ̃ five-tensor warm-up ({paper['dt_ms']:.0f}ms)")
-        print(f"    Ψ   存在 = {paper['Psi']:>10.3f}       "
-              f"Ψ̂   智慧 = {paper['PsiHat']:>10.3f}")
-        print(f"    Ψ̃   同理 = {paper['PsiTilde']:>10.3f}       "
-              f"WI = Ψ̂/Ψ = {paper['WI']:>6.3f}")
-        print(f"    EI = Ψ̃/Ψ̂ = {paper['EI']:>6.3f}        "
-              f"β*(M,Δ) ≤ {paper['beta_ub']:.3f}   regime = {_B}{paper['regime']}{_R}")
-        ok_m = f"{_GR}✓{_R}" if paper["MCAP"] else f"{_RD}✗{_R}"
-        ok_t = f"{_GR}✓{_R}" if paper["Thm10.6"] else f"{_RD}✗{_R}"
-        bds = paper["bounds_ok"]
-        print(f"    MCAP {ok_m}   Thm10.6(b) Σ Comp_m = Ψ̃  {ok_t}   "
-              f"bounds 5.7/6.7/9.1 = "
-              f"{'✓' if bds.get('Thm5.7') else '×'}"
-              f"{'✓' if bds.get('Thm6.7') else '×'}"
-              f"{'✓' if bds.get('Thm9.1') else '×'}")
-    else:
-        print(f"  {_RD}[Paper Self-Check] FAILED{_R}  {paper.get('err')}")
-    print()
     print(f"  {_GR}◆{_R}  Boot budget applied in {_B}{elapsed*1000:.0f}ms{_R}  →  "
           f"{_B}handing off to christine_final.py …{_R}")
     print(f"  {_CY}{bar}{_R}")
@@ -256,12 +186,12 @@ def print_boot_banner(hw, cpu_cores, gpu_ready, paper, elapsed):
 # §5  主流程
 # ══════════════════════════════════════════════════════════════
 def main():
-    ap = argparse.ArgumentParser(description="Christine V1485 Paper-Aligned Launcher")
+    ap = argparse.ArgumentParser(description="Christine V1485 Launcher")
     ap.add_argument("--cpu",  type=int,   default=None, help="CPU 核心數（預設 N/2）")
     ap.add_argument("--gpu",  type=float, default=0.80, help="GPU VRAM 上限 0.1~1.0")
     ap.add_argument("--nogpu", action="store_true", help="強制 CPU-only（仍載入 torch）")
     ap.add_argument("--notorch", action="store_true", help="完全跳過 torch 載入（最快啟動）")
-    ap.add_argument("--fast", action="store_true", help="跳過 Ψ 自檢")
+    ap.add_argument("--fast", action="store_true", help="相容旗標；目前不做額外檢查")
     ap.add_argument("--check", action="store_true", help="只跑自檢、不啟動主程式")
     ap.add_argument("--no-banner", action="store_true", help="不顯示 banner")
     args, extra = ap.parse_known_args()
@@ -271,7 +201,7 @@ def main():
     except Exception: pass
 
     t0 = time.time()
-    print(f"  {_D}[1/4] 偵測硬體 …{_R}", flush=True)
+    print(f"  {_D}[1/3] 偵測硬體 …{_R}", flush=True)
     if args.notorch:
         # 最快路徑：完全不碰 torch
         hw = {"os": f"{platform.system()} {platform.release()}",
@@ -286,7 +216,7 @@ def main():
         print(f"  {_D}      └ (--notorch) 跳過 PyTorch / CUDA 偵測{_R}", flush=True)
     else:
         hw = detect_hardware()
-    print(f"  {_D}[2/4] 套用 CPU/GPU 計算預算 …{_R}", flush=True)
+    print(f"  {_D}[2/3] 套用 CPU/GPU 計算預算 …{_R}", flush=True)
     env_delta, cpu_cores, gpu_ready = apply_compute_budget(
         hw, cpu_cores=args.cpu, gpu_frac=args.gpu,
         use_gpu=(not args.nogpu) and (not args.notorch))
@@ -294,26 +224,19 @@ def main():
         os.environ[k] = v
 
     if args.fast:
-        print(f"  {_D}[3/4] (跳過論文自檢 --fast){_R}", flush=True)
-        paper = {"ok": True, "Psi": 0, "PsiHat": 0, "PsiTilde": 0,
-                 "WI": 0, "EI": 0, "beta_ub": 0, "MCAP": False,
-                 "regime": "skipped", "Thm10.6": True,
-                 "bounds_ok": {"Thm5.7": True, "Thm6.7": True, "Thm9.1": True},
-                 "dt_ms": 0}
+        print(f"  {_D}[3/3] (--fast 相容旗標，無額外檢查){_R}", flush=True)
     else:
-        print(f"  {_D}[3/4] 執行論文 Ψ/Ψ̂/Ψ̃ 自檢 …{_R}", flush=True)
-        paper = paper_self_check()
-    print(f"  {_D}[4/4] 印 banner …{_R}", flush=True)
+        print(f"  {_D}[3/3] 印 banner …{_R}", flush=True)
 
     elapsed = time.time() - t0
 
     if not args.no_banner:
-        print_boot_banner(hw, cpu_cores, gpu_ready, paper, elapsed)
+        print_boot_banner(hw, cpu_cores, gpu_ready, elapsed)
 
     if args.check:
         # 只檢不啟動
         print(f"  {_D}[--check] 自檢完成，不啟動主程式。{_R}")
-        return 0 if paper.get("ok") else 1
+        return 0
 
     # ── exec christine_final.py ──
     target = os.path.join(HERE, "christine_final.py")
@@ -323,12 +246,6 @@ def main():
 
     # 把 boot 資訊注入（主程式 V1485 區塊會讀）
     os.environ["CHRISTINE_BOOTED_BY_V1485"] = "1"
-    os.environ["CHRISTINE_PAPER_PSI"]     = f"{paper.get('Psi', 0):.6f}"
-    os.environ["CHRISTINE_PAPER_PSIH"]    = f"{paper.get('PsiHat', 0):.6f}"
-    os.environ["CHRISTINE_PAPER_PSIT"]    = f"{paper.get('PsiTilde', 0):.6f}"
-    os.environ["CHRISTINE_PAPER_WI"]      = f"{paper.get('WI', 0):.6f}"
-    os.environ["CHRISTINE_PAPER_EI"]      = f"{paper.get('EI', 0):.6f}"
-    os.environ["CHRISTINE_PAPER_REGIME"]  = str(paper.get("regime", "?"))
 
     # 傳遞未知 args 給 christine_final.py
     sys.argv = [target] + list(extra)

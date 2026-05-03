@@ -46,8 +46,6 @@ from .emotion       import Emotion
 from .memory        import Memory
 from .self_model    import SelfModel
 from .comprehension import Comprehender
-from .intersubjective import IntersubjectiveEngine
-from .philosophy    import PhilosophyEngine
 try:
     from .mega_cortex import MegaCortex
     _HAS_MEGA = True
@@ -98,12 +96,6 @@ class Brain:
         self.mem  = Memory()
         self.self = SelfModel()
         self.und  = Comprehender()
-        self.isub = IntersubjectiveEngine(window=32, n_models=3, layers=3)
-        self.phil = PhilosophyEngine()
-        # 對話對象的鏡像表徵（用 EMA 更新；論文 §4 互為主體 Δ_max 約束）
-        self._other_rep = None
-        # 對方模型：addressee → semantic vector EMA
-        self._other_models = {}
         # MegaCortex（13.45M 行 HH columns；按需 lazy 載入）
         self._mega = None
 
@@ -196,54 +188,11 @@ class Brain:
         self.self.act_log(f"perceive:{text[:30]}", outcome={"val": val})
         self.self.update_body(d_energy=-0.001, d_stress=max(0, -val*0.05))
 
-        # 13. 論文四：5-tensor intersubjective metrics
-        try:
-            # top_rep 早期全 0，用 sem 當 fallback 讓公式真的有數值
-            rep_for_isub = top_rep if any(abs(x) > 1e-9 for x in top_rep) else sem
-
-            # 建構「對方」表徵：根據 addressee 維護 EMA 鏡像
-            who = (u.get("addressee") or "_anon")
-            polv = float(u.get("polarity", 0.0))
-            # 對方 mention 出現「我」就反向：他在說自己；出現「你」就鏡像我
-            mirror_w = 0.7 if "你" in text else 0.3
-            prev_mine = self._other_models.get("_self_prev", rep_for_isub)
-            other_seed = [
-                mirror_w * float(prev_mine[i] if i < len(prev_mine) else 0.0)
-                + (1 - mirror_w) * float(sem[i] if i < len(sem) else 0.0)
-                + 0.05 * polv
-                for i in range(len(rep_for_isub))
-            ]
-            # EMA 更新該 addressee 的對方模型
-            old = self._other_models.get(who, other_seed)
-            L = min(len(old), len(other_seed))
-            updated = [0.8 * old[i] + 0.2 * other_seed[i] for i in range(L)]
-            self._other_models[who] = updated
-            self._other_models["_self_prev"] = list(rep_for_isub)
-            self._other_rep = updated
-
-            self.isub.observe(rep_for_isub, other_rep=updated)
-            isub_snap = self.isub.snapshot()
-        except Exception as _e_isub:
-            import traceback as _tb
-            self._last_isub_err = f"{type(_e_isub).__name__}: {_e_isub}\n{_tb.format_exc()}"
-            isub_snap = {"_err": str(_e_isub)}
-
-        # 14. 哲學 / AGI 層
-        try:
-            phil_snap = self.phil.step(top_rep, valence=val, arousal=aro,
-                                        external=text, action=action,
-                                        free_energy=free_energy)
-        except Exception as _e_phil:
-            import traceback as _tb
-            self._last_phil_err = f"{type(_e_phil).__name__}: {_e_phil}\n{_tb.format_exc()}"
-            phil_snap = {"_err": str(_e_phil)}
-
         self.ticks += 1
         dt = time.time() - t0
         msg = (f"[tick #{self.ticks}] Δ={dt*1000:.1f}ms "
                f"loss={loss:.3f} val={val:+.2f} aro={aro:.2f} "
-               f"FE={free_energy:.2f} Ψ̃={isub_snap.get('PsiT',0):.2f} "
-               f"Φ_IIT={phil_snap.get('Phi_IIT',0):.2f} act={action} "
+               f"FE={free_energy:.2f} act={action} "
                f"winner={winner['src'] if winner else '-'}")
         self.log_lines.append(msg)
         if len(self.log_lines) > 500: self.log_lines.pop(0)
@@ -251,8 +200,6 @@ class Brain:
                 "free_energy": free_energy, "action": action,
                 "winner": winner, "top_rep_len": len(top_rep),
                 "understanding": u,
-                "intersubjective": isub_snap,
-                "philosophy": phil_snap,
                 "mega_active": self._mega is not None,
                 "mega_echo_len": (len(mega_echo) if mega_echo else 0)}
 
@@ -338,8 +285,6 @@ class Brain:
             "episodes": len(self.mem.episodes),
             "emotion": self.emo.banner(),
             "body": dict(self.self.body),
-            "intersubjective": self.isub.snapshot() if self.ticks >= 3 else {},
-            "philosophy": self.phil.last,
             "mega": self.mega_status(),
             "last_log": self.log_lines[-5:],
         }

@@ -87,29 +87,23 @@ christine/
     registry.py
   legacy/
     monolith.py
-research/
-  five_tensor/
-    paper.md
-    inventory.md
-    legacy/
-    audit/
 ```
 
 Do not move existing modules into this structure until tests prove the behavior to preserve. Early modules should wrap or call existing code instead of replacing it.
 
-## Formula Extraction Policy
+## Formula Removal Policy
 
 Existing formula implementations in `brain/intersubjective.py`, `brain/philosophy.py`, `christine_final.py`, and related backups are legacy research code tied to `A Five-Tensor Formalism for Intersubjective Cognition`. They have been reported as incorrect and must be fully extracted from the production/runtime architecture.
 
-Extraction requirements:
+Removal requirements:
 
-- Preserve the PDF, source locations, and old implementation history as research artifacts.
+- Delete old formula code from the repository instead of moving it into a quarantine area.
 - Remove direct runtime dependency from boot, brain, GUI, routing, and user-facing status flows.
-- Replace user-facing theorem/consciousness/empathy claims with neutral diagnostics until a separate future formula project is explicitly approved.
+- Remove user-facing theorem/consciousness/empathy formula claims instead of replacing them with quarantine diagnostics.
 - Do not create replacement formula implementations as part of the core refactor.
 - Do not copy old formulas into new runtime modules.
 
-No formula may be used to make user-facing claims about consciousness, wisdom, empathy, or theorem satisfaction during the extraction phase.
+No formula may be used to make user-facing claims about consciousness, wisdom, empathy, or theorem satisfaction during the removal phase.
 
 ---
 
@@ -475,63 +469,42 @@ If git has been initialized, commit with: `git commit -m "refactor: add deployme
 
 ---
 
-### Task 7: Extract And Quarantine Five-Tensor Formula Layer
+### Task 7: Remove Five-Tensor Formula Layer
 
 **Files:**
-- Create: `docs/plans/2026-05-03-christine-formula-extraction-and-quarantine.md`
-- Create: `docs/theory/formula-inventory.md`
-- Create: `docs/theory/paper-audit.md`
-- Create later: `research/five_tensor/README.md`
-- Create later: `research/five_tensor/legacy/`
 - Create later: `tests/test_formula_runtime_isolation.py`
 - Modify later: `brain/brain.py`
 - Modify later: `boot_christine.py`
+- Modify later: `christine_final.py`
+- Delete later: `brain/intersubjective.py`, `brain/philosophy.py`, and related formula scratch files
 
 **Assessment:**
-The current formula code must be extracted and quarantined, not reimplemented in the core refactor. `brain/intersubjective.py`, `brain/philosophy.py`, formula blocks inside `christine_final.py`, backups, and the PDF belong in a separate research track. Runtime should stop depending on these formulas for boot checks, brain state, GUI labels, or user-facing theorem claims.
+The current formula code must be removed, not reimplemented or quarantined in the core refactor. `brain/intersubjective.py`, `brain/philosophy.py`, formula blocks inside `christine_final.py`, and related scratch files must stop existing in this repository. Runtime should stop depending on these formulas for boot checks, brain state, GUI labels, or user-facing theorem claims.
 
-**Step 1: Inventory all formula sources**
+**Step 1: Add runtime removal test**
 
-Document every old formula source in `docs/theory/formula-inventory.md`:
+Create `tests/test_formula_runtime_isolation.py` to assert:
 
-- PDF section or appendix reference.
-- Current source path and line range.
-- Runtime call sites.
-- Whether the code affects boot, brain ticks, GUI/status text, or user-facing claims.
-- Extraction decision: move to research, replace with neutral diagnostic, or delete after backup.
+- `boot_christine.py` and `brain/brain.py` do not import legacy formula modules.
+- Formula engine source files and scratch copies do not exist.
+- `christine_final.py` no longer embeds V1450/V1455 formula engines.
 
-**Step 2: Record paper audit without implementing formulas**
-
-Use `docs/theory/paper-audit.md` only to record contradictions, assumptions, and research findings. Do not create replacement formula modules.
-
-**Step 3: Add runtime isolation test**
-
-```python
-from pathlib import Path
-
-
-def test_core_runtime_does_not_import_legacy_formula_engine():
-    forbidden = "brain.intersubjective"
-    for path in [Path("boot_christine.py"), Path("brain/brain.py")]:
-        assert forbidden not in path.read_text(encoding="utf-8")
-```
-
-**Step 4: Run test to verify it fails before extraction**
+**Step 2: Run test to verify it fails before removal**
 
 Run: `uv run pytest tests/test_formula_runtime_isolation.py -q`
-Expected: fail while runtime still imports `brain.intersubjective`.
+Expected: fail while runtime and files still contain formula artifacts.
 
-**Step 5: Extract old formula code to research track**
+**Step 3: Delete formula artifacts**
 
-Move old formula-specific code into `research/five_tensor/legacy/` only after the inventory is complete. Keep core runtime behavior stable by replacing formula-derived output with neutral placeholders or optional diagnostics.
+Delete formula-specific modules, scratch copies, and quarantine/research documents. Do not move them into `research/`.
 
-**Step 6: Keep core runtime formula-free**
+**Step 4: Keep core runtime formula-free**
 
-`brain/brain.py` and `boot_christine.py` must not import the legacy formula engine after extraction. Any research tool must be opt-in and outside the core launch path.
+`brain/brain.py`, `boot_christine.py`, and `christine_final.py` must not import or instantiate the legacy formula engines. Any future formula project requires a separate explicit request and a fresh implementation.
 
-**Step 7: Commit**
+**Step 5: Commit**
 
-If git has been initialized, commit with: `git commit -m "docs: plan formula extraction quarantine"`
+If git has been initialized, commit with: `git commit -m "refactor: remove legacy formula layer"`
 
 ---
 
@@ -629,8 +602,8 @@ Each wave needs its own detailed child plan before edits.
 1. Extract autostart and startup registration from `christine_final.py:2310-2396` into `christine/platform/windows.py`.
 2. Extract legacy GUI queue behavior from `christine_final.py:1857-1961` and `christine_final.py:10016-10036` into `christine/gui/`.
 3. Extract boot banner and hardware budget functions from `boot_christine.py` into pure runtime modules.
-4. Fully extract and quarantine old Five-Tensor formulas before modularizing the brain runtime.
-5. Re-audit the PDF, symbols, theorem assumptions, and contradictions as research documentation only.
+4. Fully remove old Five-Tensor formulas before modularizing the brain runtime.
+5. Treat any future formula work as a separate fresh implementation, not a continuation of deleted legacy code.
 6. Wrap `brain/` behind `christine/brain_bridge/service.py` before moving files.
 7. Extract `ask()` routing in layers, starting with stable wrappers around `christine_final.py:6093` and `christine_final.py:120940-120958`.
 8. Split tool registration into declarative modules only after a tool contract test exists.
