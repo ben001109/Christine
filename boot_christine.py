@@ -22,7 +22,7 @@ from __future__ import annotations
 import os, sys, time, argparse, multiprocessing, platform, subprocess
 
 from christine.runtime.boot_banner import render_boot_banner
-from christine.runtime.boot_config import build_cpu_thread_env, compute_cpu_budget
+from christine.runtime.boot_config import build_basic_hardware_info, build_cpu_thread_env, compute_cpu_budget
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -182,11 +182,14 @@ def main():
     print(f"  {_D}[1/3] 偵測硬體 …{_R}", flush=True)
     if args.notorch:
         # 最快路徑：完全不碰 torch
-        hw = {"os": f"{platform.system()} {platform.release()}",
-              "python": platform.python_version(),
-              "cpu_count": multiprocessing.cpu_count(),
-              "cpu_name": platform.processor() or "unknown",
-              "ram_gb": None, "gpu": None, "torch": None}
+        hw = build_basic_hardware_info(
+            system=platform.system(),
+            release=platform.release(),
+            python_version=platform.python_version(),
+            cpu_count=multiprocessing.cpu_count(),
+            cpu_name=platform.processor() or "unknown",
+            ram_gb=None,
+        )
         try:
             import psutil
             hw["ram_gb"] = round(psutil.virtual_memory().total / (1024**3), 1)

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from christine.runtime.boot_config import build_basic_hardware_info, build_cpu_thread_env, compute_cpu_budget
 
 
@@ -38,3 +40,9 @@ def test_build_cpu_thread_env_sets_thread_limits():
         "NUMEXPR_NUM_THREADS": "6",
         "CHRISTINE_CPU_CORES": "6",
     }
+
+
+def test_launcher_uses_basic_hardware_builder_for_notorch_path():
+    text = Path("boot_christine.py").read_text(encoding="utf-8")
+
+    assert "build_basic_hardware_info(" in text
