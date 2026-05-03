@@ -21,6 +21,7 @@ boot_christine.py — V1485 Christine 快速啟動器（CPU/GPU 預算）
 from __future__ import annotations
 import os, sys, time, argparse, multiprocessing, platform, subprocess
 
+from christine.runtime.boot_banner import render_boot_banner
 from christine.runtime.boot_config import build_cpu_thread_env, compute_cpu_budget
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -146,35 +147,17 @@ def apply_compute_budget(hw: dict, cpu_cores: int | None = None,
 # §4  印 banner
 # ══════════════════════════════════════════════════════════════
 def print_boot_banner(hw, cpu_cores, gpu_ready, elapsed):
-    bar = "═" * 70
-    print()
-    print(f"  {_CY}{bar}{_R}")
-    print(f"  {_M}◆{_R}  {_B}CHRISTINE V1485 — Boot Sequence{_R}")
-    print(f"  {_CY}{bar}{_R}")
-    print()
-    print(f"  {_YE}[Hardware]{_R}")
-    print(f"    OS        : {hw['os']}     Python {hw['python']}")
-    print(f"    CPU       : {hw['cpu_name'][:60]}")
-    print(f"    Cores     : {_B}{cpu_cores}{_R} / {hw['cpu_count']}   "
-          f"(給 Christine: {int(cpu_cores/hw['cpu_count']*100)}%)")
-    print(f"    RAM       : {hw['ram_gb']} GB")
-    if hw["gpu"]:
-        g = hw["gpu"]
-        mark = f"{_GR}✓{_R}" if gpu_ready else f"{_YE}~{_R}"
-        print(f"    GPU       : {mark} {g['name']}  ({g['vram_gb']} GB, sm_{g['capability']})")
-        if gpu_ready:
-            print(f"    GPU 預算  : {int(float(os.environ.get('CHRISTINE_GPU_FRAC','0.8'))*100)}% VRAM  "
-                  f"warm={os.environ.get('CHRISTINE_GPU_WARM_MS','?')}ms")
-    else:
-        print(f"    GPU       : {_D}— (CPU-only){_R}")
-    if hw["torch"]:
-        print(f"    PyTorch   : {hw['torch']}")
-    print()
-
-    print(f"  {_GR}◆{_R}  Boot budget applied in {_B}{elapsed*1000:.0f}ms{_R}  →  "
-          f"{_B}handing off to christine_final.py …{_R}")
-    print(f"  {_CY}{bar}{_R}")
-    print()
+    lines = render_boot_banner(
+        hw,
+        cpu_cores,
+        gpu_ready,
+        elapsed,
+        gpu_frac=os.environ.get("CHRISTINE_GPU_FRAC", "0.8"),
+        gpu_warm_ms=os.environ.get("CHRISTINE_GPU_WARM_MS", "?"),
+        colors=True,
+    )
+    for line in lines:
+        print(line)
 
 
 # ══════════════════════════════════════════════════════════════

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from christine.runtime.boot_banner import render_boot_banner
 
 
@@ -49,3 +51,10 @@ def test_render_boot_banner_includes_gpu_budget_when_ready():
     assert "GPU       : ✓ RTX  (16 GB, sm_8.9)" in text
     assert "GPU 預算  : 75% VRAM  warm=123ms" in text
     assert "PyTorch   : 2.5.0" in text
+
+
+def test_launcher_delegates_banner_rendering_to_runtime_module():
+    text = Path("boot_christine.py").read_text(encoding="utf-8")
+
+    assert "from christine.runtime.boot_banner import render_boot_banner" in text
+    assert "render_boot_banner(" in text
