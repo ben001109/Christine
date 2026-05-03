@@ -1,4 +1,7 @@
 from pathlib import Path
+import builtins
+
+import boot_christine
 
 from christine.runtime.boot_config import build_basic_hardware_info, build_cpu_thread_env, compute_cpu_budget
 
@@ -52,3 +55,29 @@ def test_launcher_disables_torch_side_effects_for_notorch_path():
     text = Path("boot_christine.py").read_text(encoding="utf-8")
 
     assert "allow_torch=not args.notorch" in text
+
+
+def test_apply_compute_budget_allow_torch_false_skips_all_torch_imports(monkeypatch):
+    imported_torch = False
+    real_import = builtins.__import__
+
+    def track_torch_import(name, *args, **kwargs):
+        nonlocal imported_torch
+        if name == "torch" or name.startswith("torch."):
+            imported_torch = True
+            raise RuntimeError("torch import attempted")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", track_torch_import)
+
+    env, cpu_cores, gpu_ready = boot_christine.apply_compute_budget(
+        {"cpu_count": 8, "gpu": {"name": "Fake GPU"}},
+        cpu_cores=4,
+        use_gpu=True,
+        allow_torch=False,
+    )
+
+    assert imported_torch is False
+    assert env["CHRISTINE_GPU"] == "0"
+    assert cpu_cores == 4
+    assert gpu_ready is False

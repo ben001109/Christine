@@ -116,7 +116,7 @@ def apply_compute_budget(hw: dict, cpu_cores: int | None = None,
 
     # ── GPU ──
     gpu_ready = False
-    if use_gpu and hw.get("gpu"):
+    if allow_torch and use_gpu and hw.get("gpu"):
         try:
             import torch
             if torch.cuda.is_available():
