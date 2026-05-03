@@ -109,7 +109,8 @@ def test_legacy_queue_adapters_preserve_list_style_append_pop_bool():
 
 
 def test_monolith_gui_queues_delegate_to_christine_gui_modules():
-    text = Path("christine_final.py").read_text(encoding="utf-8")
+    repo_root = Path(__file__).resolve().parents[1]
+    text = (repo_root / "christine_final.py").read_text(encoding="utf-8")
 
     assert "from christine.gui.app import create_legacy_queue_adapters" in text
     assert "from christine.gui.commands import process_next_gui_command" in text
