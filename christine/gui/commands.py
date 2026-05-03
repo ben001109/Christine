@@ -1,0 +1,33 @@
+from __future__ import annotations
+
+from collections.abc import Callable
+
+
+def _missing_dependency(name: str):
+    raise RuntimeError(f"GUI command dependency is missing: {name}")
+
+
+def handle_gui_command(
+    command: str,
+    *,
+    ask: Callable[[str], str],
+    understand_image: Callable[[str], str] | None = None,
+    generate_image_style: Callable[[str, str], str] | None = None,
+) -> str:
+    if command.startswith("__IMAGE__"):
+        if understand_image is None:
+            _missing_dependency("understand_image")
+        path = command[9:]
+        desc = understand_image(path)
+        return ask("老闆傳了一張圖片給你看，內容是：" + desc + "，幫老闆分析或描述這張圖片。")
+    if command.startswith("__GENIMAGE__"):
+        if generate_image_style is None:
+            _missing_dependency("generate_image_style")
+        parts = command[12:].split("||")
+        prompt = parts[0]
+        style = parts[1] if len(parts) > 1 else "realistic"
+        result = generate_image_style(prompt, style)
+        return ask("圖片生成結果：" + result)
+    if command == "__SCREENCAP__":
+        return ask("幫老闆分析目前螢幕上的畫面")
+    return ask(command)
