@@ -119172,6 +119172,8 @@ except Exception as _e:
 # ╚══════════════════════════════════════════════════════════════════════════╝
 try:
     import os as _v180_os, sys as _v180_sys, time as _v180_time, traceback as _v180_tb
+    from pathlib import Path as _v180_Path
+    from christine.brain_bridge.service import BrainService, BrainServiceConfig
     # 讓 brain/ 可 import（brain 套件就放在 christine_final.py 同資料夾）
     _v180_here = _v180_os.path.dirname(_v180_os.path.abspath(__file__))
     if _v180_here not in _v180_sys.path:
@@ -119188,70 +119190,56 @@ try:
         "err": None,
     }
 
-    def _v180_ensure_brain():
-        """eager 啟動大腦；用 build_default_brain 做暖機 + 自動啟 MegaCortex。"""
+    def _v180_build_service():
+        return BrainService(BrainServiceConfig(
+            size=_V1480_CFG["size"],
+            seed=42,
+            warmup=True,
+            auto_mega=True,
+            generated_dir=_v180_Path(_v180_here) / "brain" / "generated",
+        ))
+
+    _V1480_SERVICE = _v180_build_service()
+
+    def _v180_sync_service_state():
         global _V1480_BRAIN
-        if _V1480_BRAIN is not None:
-            return _V1480_BRAIN
-        try:
-            # ★ V1482：改用 build_default_brain 獲得暖機種子（vocab/SRN/cortex 預熱）
-            from brain.brain import build_default_brain  # type: ignore
-            t0 = _v180_time.time()
-            _V1480_BRAIN = build_default_brain(
-                size=_V1480_CFG["size"], seed=42, warmup=True)
-            dt = _v180_time.time() - t0
-            _V1480_CFG["ready"] = True
-            _V1480_CFG["build_ms"] = dt * 1000.0
+        st = _V1480_SERVICE.state
+        _V1480_BRAIN = _V1480_SERVICE.brain
+        _V1480_CFG["ready"] = st.ready
+        _V1480_CFG["err"] = st.err
+        if st.build_ms is not None:
+            _V1480_CFG["build_ms"] = st.build_ms
+        _V1480_CFG["last_loss"] = st.last_loss
+        _V1480_CFG["last_response"] = st.last_response
+        _V1480_CFG["mega_auto"] = st.mega_auto
+        _V1480_CFG["mega_areas_disk"] = st.mega_areas_disk
+
+    def _v180_ensure_brain():
+        """eager 啟動大腦；透過 BrainService 做暖機 + 自動啟 MegaCortex。"""
+        already_ready = _V1480_SERVICE.brain is not None
+        brain = _V1480_SERVICE.ensure_brain()
+        _v180_sync_service_state()
+        if brain is not None and not already_ready:
             try: log.info("[V1480] build_default_brain('%s') built in %.2fs",
-                          _V1480_CFG["size"], dt)
+                          _V1480_CFG["size"], (_V1480_CFG.get("build_ms") or 0.0) / 1000.0)
             except Exception: pass
-
-            # ★ V1482：自動偵測 brain/generated/，有就自動啟 MegaCortex
-            try:
-                _gen_dir = _v180_os.path.join(_v180_here, "brain", "generated")
-                if _v180_os.path.isdir(_gen_dir):
-                    _areas = [f for f in _v180_os.listdir(_gen_dir)
-                              if f.startswith("area_") and f.endswith(".py")]
-                    if len(_areas) > 0:
-                        ok = _V1480_BRAIN.enable_mega(active_pool=64, sample_per_tick=8)
-                        _V1480_CFG["mega_auto"] = ok
-                        _V1480_CFG["mega_areas_disk"] = len(_areas)
-                        try: log.info("[V1480] auto-MegaCortex=%s areas=%d",
-                                      ok, len(_areas))
-                        except Exception: pass
-            except Exception as _e_mega:
-                _V1480_CFG["mega_auto"] = False
-                try: log.warning("[V1480] auto-mega skip: %s", _e_mega)
-                except Exception: pass
-
-            return _V1480_BRAIN
-        except Exception as e:
-            _V1480_CFG["err"] = f"{type(e).__name__}: {e}"
-            try: log.exception("[V1480] build Brain err")
-            except Exception: pass
-            return None
+        return brain
 
     def brain_say(text, max_len=48):
         """對外快捷：丟一句話給大腦，回一串 (perceive_summary, response)。"""
-        b = _v180_ensure_brain()
-        if b is None:
-            return None, f"[brain unavailable: {_V1480_CFG['err']}]"
-        t0 = _v180_time.time()
-        perc = b.perceive_text(str(text))
-        resp = b.respond(seed=str(text), max_len=max_len)
-        dt_ms = (_v180_time.time() - t0) * 1000.0
-        _V1480_CFG["total_calls"] += 1
-        _V1480_CFG["total_perceive_ms"] += dt_ms
-        _V1480_CFG["last_loss"] = perc.get("loss")
-        _V1480_CFG["last_response"] = resp
+        calls_before = _V1480_SERVICE.state.total_calls
+        ms_before = _V1480_SERVICE.state.total_perceive_ms
+        perc, resp = _V1480_SERVICE.say(str(text), max_len=max_len)
+        _V1480_CFG["total_calls"] += _V1480_SERVICE.state.total_calls - calls_before
+        _V1480_CFG["total_perceive_ms"] += _V1480_SERVICE.state.total_perceive_ms - ms_before
+        _v180_sync_service_state()
         return perc, resp
     globals()["brain_say"] = brain_say
 
     def brain_dream(cycles=3):
-        b = _v180_ensure_brain()
-        if b is None:
-            return f"[brain unavailable: {_V1480_CFG['err']}]"
-        return b.dream(cycles=int(cycles))
+        result = _V1480_SERVICE.dream(cycles=int(cycles))
+        _v180_sync_service_state()
+        return result
     globals()["brain_dream"] = brain_dream
 
     # ══════════════════════════════════════════════════════════════════════
@@ -119338,11 +119326,11 @@ try:
 
     def brain_understand(text):
         """只跑理解器（5W1H / 情感 / 意圖 / 實體 / 主題），不觸發 cognitive cycle。"""
-        b = _v180_ensure_brain()
-        if b is None:
-            return f"[brain unavailable: {_V1480_CFG['err']}]"
         try:
-            u = b.understand(str(text))
+            u = _V1480_SERVICE.understand(str(text))
+            _v180_sync_service_state()
+            if isinstance(u, str):
+                return u
             parts = [
                 f"intent={u.get('intent','?')}",
                 f"conf={u.get('confidence',0):.2f}",
@@ -119633,6 +119621,7 @@ try:
             parts = t.split()
             if len(parts) >= 3 and parts[-1] in ("tiny", "small", "medium"):
                 _V1480_CFG["size"] = parts[-1]
+                globals()["_V1480_SERVICE"] = _v180_build_service()
                 globals()["_V1480_BRAIN"] = None
                 _V1480_CFG["ready"] = False
                 _v180_ensure_brain()
