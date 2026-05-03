@@ -119171,6 +119171,7 @@ try:
     import os as _v180_os, sys as _v180_sys, time as _v180_time, traceback as _v180_tb
     from pathlib import Path as _v180_Path
     from christine.brain_bridge.service import BrainService, BrainServiceConfig
+    from christine.conversation.router import route_voice_then_fallback
     # 讓 brain/ 可 import（brain 套件就放在 christine_final.py 同資料夾）
     _v180_here = _v180_os.path.dirname(_v180_os.path.abspath(__file__))
     if _v180_here not in _v180_sys.path:
@@ -119719,21 +119720,22 @@ try:
     try:
         _v180_prev_ask = globals().get("ask")
         def ask(inp, *args, **kwargs):
-            r = _v180_try_voice(inp)
-            if r is not None:
-                try: log.debug("[v180-voice] hit")
-                except Exception: pass
+            def _voice_handler(candidate):
+                r = _v180_try_voice(candidate)
+                if r is not None:
+                    try: log.debug("[v180-voice] hit")
+                    except Exception: pass
                 return r
-            # ── V1484 混合模式：把大腦的理解摘要當 context 注入下層 LLM ──
-            augmented = inp
-            try:
-                if _V1480_CFG.get("hybrid", True):
-                    hint = brain_hint(as_prompt=True)
-                    if hint:
-                        # 放在最前面用方括號包起來，LLM 會當作情境提示
-                        augmented = f"{hint}\n{inp}"
-            except Exception: pass
-            return _v180_prev_ask(augmented, *args, **kwargs)
+
+            return route_voice_then_fallback(
+                inp,
+                _voice_handler,
+                _v180_prev_ask,
+                lambda: brain_hint(as_prompt=True),
+                hybrid_enabled=_V1480_CFG.get("hybrid", True),
+                args=args,
+                kwargs=kwargs,
+            )
         ask.__v180_wrapped__ = True
         globals()["ask"] = ask
         try: log.info("V1484 hybrid ask-wrapper installed (brain preprocess + LLM generate)")
