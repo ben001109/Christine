@@ -51,6 +51,11 @@ incremental changes over broad rewrites.
   preserved and adding a focused smoke test or compile check for it.
 - Keep changes small and reviewable. Avoid large all-at-once rewrites of
   `christine_final.py`.
+- Treat existing formula implementations as legacy research artifacts. They must
+  be fully extracted from core runtime before any broader refactor relies on
+  them.
+- Do not implement replacement formulas unless explicitly requested after the
+  extraction and paper audit are complete.
 - Extract stable pieces from the monolith into modules only when there is a
   clear seam and a verification command.
 - Preserve existing entry points: `boot_christine.py`, `christine_final.py`, and

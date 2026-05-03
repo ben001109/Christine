@@ -80,11 +80,36 @@ christine/
     server.py
     worker.py
     protocol.py
+  modelization/
+    corpus.py
+    evaluator.py
+    distillation.py
+    registry.py
   legacy/
     monolith.py
+research/
+  five_tensor/
+    paper.md
+    inventory.md
+    legacy/
+    audit/
 ```
 
 Do not move existing modules into this structure until tests prove the behavior to preserve. Early modules should wrap or call existing code instead of replacing it.
+
+## Formula Extraction Policy
+
+Existing formula implementations in `brain/intersubjective.py`, `brain/philosophy.py`, `christine_final.py`, and related backups are legacy research code tied to `A Five-Tensor Formalism for Intersubjective Cognition`. They have been reported as incorrect and must be fully extracted from the production/runtime architecture.
+
+Extraction requirements:
+
+- Preserve the PDF, source locations, and old implementation history as research artifacts.
+- Remove direct runtime dependency from boot, brain, GUI, routing, and user-facing status flows.
+- Replace user-facing theorem/consciousness/empathy claims with neutral diagnostics until a separate future formula project is explicitly approved.
+- Do not create replacement formula implementations as part of the core refactor.
+- Do not copy old formulas into new runtime modules.
+
+No formula may be used to make user-facing claims about consciousness, wisdom, empathy, or theorem satisfaction during the extraction phase.
 
 ---
 
@@ -450,6 +475,153 @@ If git has been initialized, commit with: `git commit -m "refactor: add deployme
 
 ---
 
+### Task 7: Extract And Quarantine Five-Tensor Formula Layer
+
+**Files:**
+- Create: `docs/plans/2026-05-03-christine-formula-extraction-and-quarantine.md`
+- Create: `docs/theory/formula-inventory.md`
+- Create: `docs/theory/paper-audit.md`
+- Create later: `research/five_tensor/README.md`
+- Create later: `research/five_tensor/legacy/`
+- Create later: `tests/test_formula_runtime_isolation.py`
+- Modify later: `brain/brain.py`
+- Modify later: `boot_christine.py`
+
+**Assessment:**
+The current formula code must be extracted and quarantined, not reimplemented in the core refactor. `brain/intersubjective.py`, `brain/philosophy.py`, formula blocks inside `christine_final.py`, backups, and the PDF belong in a separate research track. Runtime should stop depending on these formulas for boot checks, brain state, GUI labels, or user-facing theorem claims.
+
+**Step 1: Inventory all formula sources**
+
+Document every old formula source in `docs/theory/formula-inventory.md`:
+
+- PDF section or appendix reference.
+- Current source path and line range.
+- Runtime call sites.
+- Whether the code affects boot, brain ticks, GUI/status text, or user-facing claims.
+- Extraction decision: move to research, replace with neutral diagnostic, or delete after backup.
+
+**Step 2: Record paper audit without implementing formulas**
+
+Use `docs/theory/paper-audit.md` only to record contradictions, assumptions, and research findings. Do not create replacement formula modules.
+
+**Step 3: Add runtime isolation test**
+
+```python
+from pathlib import Path
+
+
+def test_core_runtime_does_not_import_legacy_formula_engine():
+    forbidden = "brain.intersubjective"
+    for path in [Path("boot_christine.py"), Path("brain/brain.py")]:
+        assert forbidden not in path.read_text(encoding="utf-8")
+```
+
+**Step 4: Run test to verify it fails before extraction**
+
+Run: `uv run pytest tests/test_formula_runtime_isolation.py -q`
+Expected: fail while runtime still imports `brain.intersubjective`.
+
+**Step 5: Extract old formula code to research track**
+
+Move old formula-specific code into `research/five_tensor/legacy/` only after the inventory is complete. Keep core runtime behavior stable by replacing formula-derived output with neutral placeholders or optional diagnostics.
+
+**Step 6: Keep core runtime formula-free**
+
+`brain/brain.py` and `boot_christine.py` must not import the legacy formula engine after extraction. Any research tool must be opt-in and outside the core launch path.
+
+**Step 7: Commit**
+
+If git has been initialized, commit with: `git commit -m "docs: plan formula extraction quarantine"`
+
+---
+
+### Task 8: Evaluate Project-To-Model Strategy
+
+**Files:**
+- Create: `docs/plans/2026-05-03-christine-modelization-design.md`
+- Create: `christine/modelization/__init__.py`
+- Create: `christine/modelization/corpus.py`
+- Create: `tests/test_modelization_corpus.py`
+
+**Assessment:**
+Converting the whole project directly into a single model is not the safest target. The codebase contains deterministic tools, Windows automation, GUI behavior, runtime memory, private state, generated cortex files, and external benchmark data. A model cannot reliably preserve all exact side effects or safety boundaries by itself.
+
+The better target is a hybrid Christine-native model layer:
+
+- Keep deterministic runtime modules for tools, files, GUI, launchers, deployment, and safety gates.
+- Train or fine-tune model components for personality, routing, summarization, memory recall, tool selection, and self-reflection.
+- Build a retrieval/model corpus from source code, docs, selected memories, and behavior transcripts.
+- Use evals to prove the model layer improves Christine without breaking existing behavior.
+
+**Recommended modelization tracks:**
+
+1. **Repository Knowledge Model:** embeddings/RAG over source, docs, plans, and module contracts so Christine understands her own codebase.
+2. **Behavior Distillation Model:** supervised fine-tune or LoRA from safe conversation/tool traces to preserve voice, Chinese personality, and tool-use habits.
+3. **Routing/Policy Model:** small local classifier that chooses between brain, local LLM, cloud LLM, tools, GUI, and distributed worker paths.
+4. **Memory Summarization Model:** compress long-term memories into safe, queryable summaries without rewriting raw state.
+
+**Step 1: Write corpus boundary test**
+
+```python
+from christine.modelization.corpus import should_include_in_model_corpus
+
+
+def test_model_corpus_excludes_runtime_and_generated_data():
+    assert should_include_in_model_corpus("christine_final.py")
+    assert should_include_in_model_corpus("docs/plans/x.md")
+    assert not should_include_in_model_corpus("data/private_memory.json")
+    assert not should_include_in_model_corpus("brain/generated/area_000001.py")
+    assert not should_include_in_model_corpus(".env")
+```
+
+**Step 2: Run test to verify it fails**
+
+Run: `uv run pytest tests/test_modelization_corpus.py -q`
+Expected: fail with missing module.
+
+**Step 3: Implement minimal corpus filter**
+
+```python
+from pathlib import PurePosixPath
+
+
+EXCLUDED_PARTS = {".git", ".venv", "data", "level5_logs", "__pycache__"}
+EXCLUDED_PREFIXES = {"brain/generated", "ARC-AGI"}
+EXCLUDED_SUFFIXES = {".env", ".pyc", ".pkl", ".npy", ".safetensors", ".pt"}
+
+
+def should_include_in_model_corpus(path: str) -> bool:
+    normalized = path.replace("\\", "/")
+    posix = PurePosixPath(normalized)
+    if any(part in EXCLUDED_PARTS for part in posix.parts):
+        return False
+    if any(normalized == prefix or normalized.startswith(prefix + "/") for prefix in EXCLUDED_PREFIXES):
+        return False
+    return not any(normalized.endswith(suffix) for suffix in EXCLUDED_SUFFIXES)
+```
+
+**Step 4: Create modelization design document**
+
+The design must cover:
+
+- Data sources: source code, docs, plans, selected chat/tool transcripts, selected memory summaries.
+- Data exclusions: secrets, raw private state, browser profiles, generated cortex files, model weights, caches, benchmark repos.
+- Model choices: embeddings first, small routing classifier second, LoRA/SFT only after evals exist.
+- Eval set: personality preservation, tool routing accuracy, hallucination rate, memory recall precision, cross-platform behavior safety.
+- Deployment: local-first model registry, optional distributed inference worker, no required cloud dependency.
+
+**Step 5: Verify**
+
+Run: `uv run pytest tests/test_modelization_corpus.py -q`
+Run: `uv run python -m compileall -q -x "brain/generated" boot_christine.py brain christine`
+Expected: pass.
+
+**Step 6: Commit**
+
+If git has been initialized, commit with: `git commit -m "docs: plan Christine modelization strategy"`
+
+---
+
 ## Later Extraction Waves
 
 Each wave needs its own detailed child plan before edits.
@@ -457,11 +629,17 @@ Each wave needs its own detailed child plan before edits.
 1. Extract autostart and startup registration from `christine_final.py:2310-2396` into `christine/platform/windows.py`.
 2. Extract legacy GUI queue behavior from `christine_final.py:1857-1961` and `christine_final.py:10016-10036` into `christine/gui/`.
 3. Extract boot banner and hardware budget functions from `boot_christine.py` into pure runtime modules.
-4. Wrap `brain/` behind `christine/brain_bridge/service.py` before moving files.
-5. Extract `ask()` routing in layers, starting with stable wrappers around `christine_final.py:6093` and `christine_final.py:120940-120958`.
-6. Split tool registration into declarative modules only after a tool contract test exists.
-7. Add distributed server process only after local contracts are green.
-8. Modernize GUI UI/UX after the message queue contract is independent from Tkinter.
+4. Fully extract and quarantine old Five-Tensor formulas before modularizing the brain runtime.
+5. Re-audit the PDF, symbols, theorem assumptions, and contradictions as research documentation only.
+6. Wrap `brain/` behind `christine/brain_bridge/service.py` before moving files.
+7. Extract `ask()` routing in layers, starting with stable wrappers around `christine_final.py:6093` and `christine_final.py:120940-120958`.
+8. Split tool registration into declarative modules only after a tool contract test exists.
+9. Add distributed server process only after local contracts are green.
+10. Modernize GUI UI/UX after the message queue contract is independent from Tkinter.
+11. Build the modelization corpus filter and design before training or embedding anything.
+12. Add repository embeddings/RAG before any fine-tuning.
+13. Add routing/policy model only after deterministic router tests exist.
+14. Attempt LoRA/SFT behavior distillation only after privacy review and eval baselines are complete.
 
 ## Verification Gate For Every Wave
 
