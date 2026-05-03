@@ -119,6 +119,25 @@ def test_auto_register_once_writes_flag_only_after_success(tmp_path):
     assert second is None
 
 
+def test_auto_register_once_returns_error_when_flag_cannot_be_written(tmp_path):
+    data_file = tmp_path / "data"
+    data_file.write_text("not a directory", encoding="utf-8")
+
+    try:
+        result = auto_register_once(
+            data_dir=data_file,
+            appdata=tmp_path / "appdata",
+            script_path=tmp_path / "christine_final.py",
+            python_exe=tmp_path / "python.exe",
+            api_key="",
+            is_windows=True,
+        )
+    except Exception as exc:  # pragma: no cover - failure path assertion
+        pytest.fail(f"auto_register_once raised {type(exc).__name__}: {exc}")
+
+    assert result and result.startswith("err:")
+
+
 def test_get_startup_programs_uses_runner_output():
     class Result:
         stdout = "Name Command\nChristine pythonw christine_final.py\n"

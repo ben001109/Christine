@@ -95,16 +95,19 @@ def autostart_remove(appdata) -> str:
 
 
 def auto_register_once(data_dir, appdata, script_path, python_exe, api_key="", is_windows=True):
-    if not is_windows:
-        return None
-    flag = Path(data_dir) / "_autostart_registered.flag"
-    if flag.is_file():
-        return None
-    result = setup_autostart(appdata, script_path, python_exe, api_key)
-    if result.startswith("ok"):
-        flag.parent.mkdir(parents=True, exist_ok=True)
-        flag.write_text(datetime.datetime.now().isoformat() + "\n" + result, encoding="utf-8")
-    return result
+    try:
+        if not is_windows:
+            return None
+        flag = Path(data_dir) / "_autostart_registered.flag"
+        if flag.is_file():
+            return None
+        result = setup_autostart(appdata, script_path, python_exe, api_key)
+        if result.startswith("ok"):
+            flag.parent.mkdir(parents=True, exist_ok=True)
+            flag.write_text(datetime.datetime.now().isoformat() + "\n" + result, encoding="utf-8")
+        return result
+    except Exception as exc:
+        return "err:" + str(exc)
 
 
 def get_startup_programs(runner=subprocess.run) -> str:
