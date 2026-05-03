@@ -1,4 +1,4 @@
-from christine.gui.app import GuiMessage, GuiQueues
+from christine.gui.app import GuiMessage, GuiQueues, create_legacy_queue_adapters
 from christine.gui.commands import handle_gui_command, process_next_gui_command
 
 
@@ -89,3 +89,18 @@ def test_process_next_gui_command_moves_reply_to_output_queue():
     assert processed is True
     assert queues.drain_outputs() == ["reply:hello"]
     assert process_next_gui_command(queues, ask=lambda text: text) is False
+
+
+def test_legacy_queue_adapters_preserve_list_style_append_pop_bool():
+    queues, input_queue, output_queue = create_legacy_queue_adapters()
+
+    assert not input_queue
+    input_queue.append("hello")
+    output_queue.append("reply")
+
+    assert input_queue
+    assert input_queue.pop(0) == "hello"
+    assert input_queue.pop(0) is None
+    assert output_queue.pop(0) == "reply"
+    assert queues.next_command() is None
+    assert queues.drain_outputs() == []
