@@ -11,8 +11,14 @@ def _win_path(path: str | Path) -> str:
     return str(path).replace("/", "\\")
 
 
+def _appdata_path(appdata: str | Path) -> Path:
+    if not appdata:
+        raise ValueError("APPDATA is not set")
+    return Path(appdata)
+
+
 def startup_folder(appdata: str | Path) -> Path:
-    return Path(appdata) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
+    return _appdata_path(appdata) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
 
 
 def _batch_env_value(value: str) -> str:

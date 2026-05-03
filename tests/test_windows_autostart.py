@@ -80,6 +80,22 @@ def test_setup_status_and_remove_autostart_use_temp_appdata(tmp_path):
     assert not bat_path.exists()
 
 
+def test_autostart_operations_reject_empty_appdata(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    result = setup_autostart(
+        appdata="",
+        script_path=tmp_path / "christine_final.py",
+        python_exe=tmp_path / "python.exe",
+        api_key="",
+    )
+
+    assert result == "err:APPDATA is not set"
+    assert autostart_status(appdata="") == "err:APPDATA is not set"
+    assert autostart_remove(appdata="") == "err:APPDATA is not set"
+    assert not (tmp_path / "Microsoft").exists()
+
+
 def test_autostart_status_redacts_api_key(tmp_path):
     setup_autostart(
         appdata=tmp_path,
