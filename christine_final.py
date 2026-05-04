@@ -5616,32 +5616,12 @@ TM={"request_stop_speaking":lambda a:request_stop_speaking(a.get("reason","tool"
 
 
 # runtime capability tools
-from christine.tools.registry import ToolRegistration, apply_tool_registrations, tool_schema
+from christine.tools.registry import apply_tool_registrations
+from christine.tools.runtime_capabilities import build_runtime_capability_registrations
 
-_RUNTIME_CAPABILITY_KEYWORDS = (
-    "功能", "能力", "capability", "capabilities", "你會什麼", "會什麼",
-    "自檢", "檢測", "健康檢查", "診斷", "runtime", "self test",
-)
-
-_RUNTIME_CAPABILITY_TOOLS = (
-    ToolRegistration(
-        schema=tool_schema(
-            "capabilities_summary",
-            "summarize current capabilities",
-            properties={"topic": {"type": "string"}},
-            required=[],
-        ),
-        handler=lambda a: capabilities_summary(a.get("topic", "")),
-        keywords=_RUNTIME_CAPABILITY_KEYWORDS,
-    ),
-    ToolRegistration(
-        schema=tool_schema(
-            "runtime_self_test",
-            "run local runtime diagnostics",
-            required=[],
-        ),
-        handler=lambda a: runtime_self_test(),
-    ),
+_RUNTIME_CAPABILITY_TOOLS = build_runtime_capability_registrations(
+    capabilities_summary=capabilities_summary,
+    runtime_self_test=runtime_self_test,
 )
 
 ALL = apply_tool_registrations(CORE, EXTRA, TM, KW, _RUNTIME_CAPABILITY_TOOLS)
