@@ -41,11 +41,18 @@ def route_method_not_allowed() -> tuple[int, dict]:
     return 405, HealthStatus(ok=False, service="christine", detail="method not allowed").to_dict()
 
 
-def _send_json(handler: BaseHTTPRequestHandler, status_code: int, payload: dict) -> None:
+def _send_json(
+    handler: BaseHTTPRequestHandler,
+    status_code: int,
+    payload: dict,
+    headers: dict[str, str] | None = None,
+) -> None:
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     handler.send_response(status_code)
     handler.send_header("Content-Type", "application/json; charset=utf-8")
     handler.send_header("Content-Length", str(len(body)))
+    for name, value in (headers or {}).items():
+        handler.send_header(name, value)
     handler.end_headers()
     handler.wfile.write(body)
 
@@ -58,7 +65,12 @@ def _handler_class(status_provider: StatusProvider) -> type[BaseHTTPRequestHandl
 
         def do_POST(self) -> None:
             status_code, payload = route_method_not_allowed()
-            _send_json(self, status_code, payload)
+            _send_json(self, status_code, payload, headers={"Allow": "GET"})
+
+        do_PUT = do_POST
+        do_DELETE = do_POST
+        do_PATCH = do_POST
+        do_OPTIONS = do_POST
 
         def log_message(self, format: str, *args) -> None:
             return

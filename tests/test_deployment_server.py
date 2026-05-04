@@ -82,9 +82,33 @@ def test_create_health_server_rejects_post_with_json_405():
         except HTTPError as response:
             payload = json.loads(response.read().decode("utf-8"))
             assert response.code == 405
+            assert response.headers["Allow"] == "GET"
             assert payload == {"ok": False, "service": "christine", "detail": "method not allowed"}
         else:
             raise AssertionError("POST /health unexpectedly succeeded")
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
+def test_create_health_server_rejects_other_methods_with_json_405():
+    server = create_health_server(HealthServerConfig(port=0))
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        host, port = server.server_address
+        for method in ("PUT", "DELETE", "PATCH", "OPTIONS"):
+            request = Request(f"http://{host}:{port}/health", data=b"{}", method=method)
+            try:
+                urlopen(request, timeout=5)
+            except HTTPError as response:
+                payload = json.loads(response.read().decode("utf-8"))
+                assert response.code == 405
+                assert response.headers["Allow"] == "GET"
+                assert payload == {"ok": False, "service": "christine", "detail": "method not allowed"}
+            else:
+                raise AssertionError(f"{method} /health unexpectedly succeeded")
     finally:
         server.shutdown()
         server.server_close()
