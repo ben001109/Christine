@@ -54,7 +54,20 @@ EXCLUDED_SUFFIXES = {
     ".webp",
     ".zip",
 }
-SECRET_NAME_MARKERS = {"credential", "credentials", "secret", "token", "cookie", "cookies", "apikey", "api_key"}
+SECRET_NAME_MARKERS = {
+    "apikey",
+    "api_key",
+    "cookie",
+    "cookies",
+    "credential",
+    "credentials",
+    "passwd",
+    "password",
+    "private_key",
+    "secret",
+    "ssh_key",
+    "token",
+}
 ALLOWED_SUFFIXES = {".bat", ".md", ".ps1", ".py", ".toml", ".txt", ".yaml", ".yml"}
 
 
@@ -64,7 +77,8 @@ def _normalize(path: str) -> str:
 
 def decide_model_corpus_path(path: str) -> CorpusDecision:
     raw = path.replace("\\", "/")
-    if PurePosixPath(raw).is_absolute() or PureWindowsPath(path).is_absolute():
+    windows_path = PureWindowsPath(path)
+    if PurePosixPath(raw).is_absolute() or windows_path.is_absolute() or windows_path.drive:
         return CorpusDecision(False, "excluded-absolute-path")
 
     normalized = _normalize(path)
