@@ -82,3 +82,10 @@ def test_route_with_policy_rejects_unknown_prediction_targets():
             handlers={},
             fallback=lambda inp: "fallback",
         )
+
+
+def test_conversation_exports_policy_router():
+    from christine.conversation import PolicyRouteResult, route_with_policy
+
+    assert PolicyRouteResult.__name__ == "PolicyRouteResult"
+    assert callable(route_with_policy)
