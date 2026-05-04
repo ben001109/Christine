@@ -74,6 +74,24 @@ def test_model_corpus_returns_reasoned_decisions():
     )
 
 
+@pytest.mark.parametrize(
+    ("path", "reason"),
+    [
+        ("/tmp/outside_repo/notes.py", "excluded-absolute-path"),
+        ("../outside_repo/notes.py", "excluded-path-traversal"),
+        ("docs/../data/private.py", "excluded-path-traversal"),
+        ("secrets/config.py", "excluded-secret-name"),
+        ("credentials/settings.py", "excluded-secret-name"),
+        ("tokens/readme.md", "excluded-secret-name"),
+        ("Data/private.py", "excluded-path-part:data"),
+        ("Backups/christine_final.py", "excluded-path-part:backups"),
+        ("Brain/generated/area_000001.py", "excluded-prefix:brain/generated"),
+    ],
+)
+def test_model_corpus_rejects_unsafe_path_shapes(path, reason):
+    assert decide_model_corpus_path(path) == CorpusDecision(include=False, reason=reason)
+
+
 def test_iter_model_corpus_paths_prunes_excluded_directories(tmp_path):
     files = {
         "AGENTS.md": "guide",
@@ -85,6 +103,8 @@ def test_iter_model_corpus_paths_prunes_excluded_directories(tmp_path):
         "mirrors/a/christine_final.py": "mirror",
         ".worktrees/feature/christine_final.py": "worktree",
         "v42_export/model.safetensors": "weights",
+        "secrets/config.py": "secret",
+        "Data/private.py": "private uppercase",
     }
     for relative, text in files.items():
         path = tmp_path / relative
@@ -97,3 +117,18 @@ def test_iter_model_corpus_paths_prunes_excluded_directories(tmp_path):
         "docs/plans/modelization.md",
         "tests/test_modelization_corpus.py",
     ]
+
+
+def test_iter_model_corpus_paths_skips_symlink_files(tmp_path):
+    private_target = tmp_path / "data" / "private_memory.md"
+    private_target.parent.mkdir(parents=True)
+    private_target.write_text("private", encoding="utf-8")
+
+    safe_link = tmp_path / "docs" / "notes.md"
+    safe_link.parent.mkdir(parents=True)
+    try:
+        safe_link.symlink_to(private_target)
+    except OSError:
+        pytest.skip("symlinks are not supported in this environment")
+
+    assert list(iter_model_corpus_paths(tmp_path)) == []

@@ -63,19 +63,29 @@ def _normalize(path: str) -> str:
 
 
 def decide_model_corpus_path(path: str) -> CorpusDecision:
+    raw = path.replace("\\", "/")
+    if PurePosixPath(raw).is_absolute():
+        return CorpusDecision(False, "excluded-absolute-path")
+
     normalized = _normalize(path)
     posix = PurePosixPath(normalized)
     lower_name = posix.name.lower()
+    lower_parts = tuple(part.lower() for part in posix.parts)
 
-    for part in posix.parts:
+    if ".." in posix.parts:
+        return CorpusDecision(False, "excluded-path-traversal")
+
+    for part in lower_parts:
         if part in EXCLUDED_PARTS:
             return CorpusDecision(False, f"excluded-path-part:{part}")
     for prefix in EXCLUDED_PREFIXES:
-        if normalized == prefix or normalized.startswith(prefix + "/"):
+        lower_normalized = normalized.lower()
+        lower_prefix = prefix.lower()
+        if lower_normalized == lower_prefix or lower_normalized.startswith(lower_prefix + "/"):
             return CorpusDecision(False, f"excluded-prefix:{prefix}")
     if lower_name in EXCLUDED_FILE_NAMES:
         return CorpusDecision(False, f"excluded-file:{lower_name}")
-    if any(marker in lower_name for marker in SECRET_NAME_MARKERS):
+    if any(marker in part for part in lower_parts for marker in SECRET_NAME_MARKERS):
         return CorpusDecision(False, "excluded-secret-name")
     if any(lower_name.endswith(suffix) for suffix in EXCLUDED_SUFFIXES):
         return CorpusDecision(False, "excluded-binary-or-artifact")
@@ -110,6 +120,8 @@ def iter_model_corpus_paths(root: str | Path) -> Iterator[str]:
 
         for file_name in sorted(files):
             path = current_path / file_name
+            if path.is_symlink():
+                continue
             relative = path.relative_to(root_path).as_posix()
             if should_include_in_model_corpus(relative):
                 yield relative
