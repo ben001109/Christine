@@ -57,6 +57,16 @@ def test_score_route_predictions_rejects_unknown_targets():
         score_route_predictions(examples, predictions)
 
 
+def test_route_eval_mismatches_are_immutable():
+    result = score_route_predictions(
+        (RouteEvalExample("hi", "direct"),),
+        (RoutePrediction("tools", "wrong target"),),
+    )
+
+    with pytest.raises(TypeError):
+        result.mismatches[0]["predicted"] = "direct"
+
+
 def test_modelization_exports_routing_eval_boundary():
     from christine.modelization import RouteEvalExample, RoutePrediction, score_route_predictions
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
+from types import MappingProxyType
 
 
 ROUTE_TARGETS = (
@@ -31,7 +33,7 @@ class RoutePrediction:
 class RouteEvalResult:
     total: int
     correct: int
-    mismatches: tuple[dict[str, object], ...]
+    mismatches: tuple[Mapping[str, object], ...]
 
     @property
     def accuracy(self) -> float:
@@ -53,7 +55,7 @@ def score_route_predictions(
         raise ValueError("examples and predictions must have the same length")
 
     correct = 0
-    mismatches: list[dict[str, object]] = []
+    mismatches: list[Mapping[str, object]] = []
     for index, (example, prediction) in enumerate(zip(examples, predictions, strict=True)):
         _validate_target(example.expected_target)
         _validate_target(prediction.target)
@@ -61,12 +63,14 @@ def score_route_predictions(
             correct += 1
             continue
         mismatches.append(
-            {
-                "index": index,
-                "input_text": example.input_text,
-                "expected": example.expected_target,
-                "predicted": prediction.target,
-                "reason": prediction.reason,
-            }
+            MappingProxyType(
+                {
+                    "index": index,
+                    "input_text": example.input_text,
+                    "expected": example.expected_target,
+                    "predicted": prediction.target,
+                    "reason": prediction.reason,
+                }
+            )
         )
     return RouteEvalResult(total=len(examples), correct=correct, mismatches=tuple(mismatches))
