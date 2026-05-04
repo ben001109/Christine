@@ -39,3 +39,11 @@ def test_route_policy_can_opt_into_side_effect_targets():
 def test_route_policy_rejects_unknown_targets():
     with pytest.raises(ValueError, match="unknown route target"):
         apply_route_policy(RoutePrediction("unknown", "bad target"))
+
+
+def test_modelization_exports_routing_policy_gate():
+    from christine.modelization import RoutePolicy, RoutePolicyDecision, apply_route_policy
+
+    assert RoutePolicy.__name__ == "RoutePolicy"
+    assert RoutePolicyDecision.__name__ == "RoutePolicyDecision"
+    assert callable(apply_route_policy)
