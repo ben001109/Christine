@@ -1,5 +1,6 @@
 import pytest
 
+import christine.modelization.corpus as corpus_module
 from christine.modelization.corpus import (
     CorpusDecision,
     decide_model_corpus_path,
@@ -78,6 +79,8 @@ def test_model_corpus_returns_reasoned_decisions():
     ("path", "reason"),
     [
         ("/tmp/outside_repo/notes.py", "excluded-absolute-path"),
+        ("C:\\Users\\ben\\outside_repo\\notes.py", "excluded-absolute-path"),
+        ("Z:/outside_repo/notes.py", "excluded-absolute-path"),
         ("../outside_repo/notes.py", "excluded-path-traversal"),
         ("docs/../data/private.py", "excluded-path-traversal"),
         ("secrets/config.py", "excluded-secret-name"),
@@ -132,3 +135,19 @@ def test_iter_model_corpus_paths_skips_symlink_files(tmp_path):
         pytest.skip("symlinks are not supported in this environment")
 
     assert list(iter_model_corpus_paths(tmp_path)) == []
+
+
+def test_iter_model_corpus_paths_prunes_secret_directories_before_descent(tmp_path, monkeypatch):
+    visited_secret_dirs = []
+
+    def fake_walk(root_path):
+        dirs = ["secrets"]
+        yield root_path, dirs, []
+        if "secrets" in dirs:
+            visited_secret_dirs.append("secrets")
+            yield root_path / "secrets", [], ["config.py"]
+
+    monkeypatch.setattr(corpus_module.os, "walk", fake_walk)
+
+    assert list(iter_model_corpus_paths(tmp_path)) == []
+    assert visited_secret_dirs == []

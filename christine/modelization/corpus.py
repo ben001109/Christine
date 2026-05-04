@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from collections.abc import Iterator
 from dataclasses import dataclass
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 
 @dataclass(frozen=True)
@@ -64,7 +64,7 @@ def _normalize(path: str) -> str:
 
 def decide_model_corpus_path(path: str) -> CorpusDecision:
     raw = path.replace("\\", "/")
-    if PurePosixPath(raw).is_absolute():
+    if PurePosixPath(raw).is_absolute() or PureWindowsPath(path).is_absolute():
         return CorpusDecision(False, "excluded-absolute-path")
 
     normalized = _normalize(path)
@@ -101,7 +101,9 @@ def should_include_in_model_corpus(path: str) -> bool:
 def _is_excluded_container(path: str) -> bool:
     decision = decide_model_corpus_path(path + "/placeholder.py")
     return not decision.include and (
-        decision.reason.startswith("excluded-path-part:") or decision.reason.startswith("excluded-prefix:")
+        decision.reason.startswith("excluded-path-part:")
+        or decision.reason.startswith("excluded-prefix:")
+        or decision.reason == "excluded-secret-name"
     )
 
 
