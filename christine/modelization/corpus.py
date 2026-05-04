@@ -83,6 +83,7 @@ def decide_model_corpus_path(path: str) -> CorpusDecision:
 
     normalized = _normalize(path)
     posix = PurePosixPath(normalized)
+    canonical = posix.as_posix()
     lower_name = posix.name.lower()
     lower_parts = tuple(part.lower() for part in posix.parts)
 
@@ -93,7 +94,7 @@ def decide_model_corpus_path(path: str) -> CorpusDecision:
         if part in EXCLUDED_PARTS:
             return CorpusDecision(False, f"excluded-path-part:{part}")
     for prefix in EXCLUDED_PREFIXES:
-        lower_normalized = normalized.lower()
+        lower_normalized = canonical.lower()
         lower_prefix = prefix.lower()
         if lower_normalized == lower_prefix or lower_normalized.startswith(lower_prefix + "/"):
             return CorpusDecision(False, f"excluded-prefix:{prefix}")

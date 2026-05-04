@@ -95,6 +95,9 @@ def test_model_corpus_returns_reasoned_decisions():
         ("Data/private.py", "excluded-path-part:data"),
         ("Backups/christine_final.py", "excluded-path-part:backups"),
         ("Brain/generated/area_000001.py", "excluded-prefix:brain/generated"),
+        ("./brain/generated/area_000001.py", "excluded-prefix:brain/generated"),
+        ("brain//generated/area_000001.py", "excluded-prefix:brain/generated"),
+        ("./ARC-AGI/data.py", "excluded-prefix:ARC-AGI"),
     ],
 )
 def test_model_corpus_rejects_unsafe_path_shapes(path, reason):
