@@ -5611,20 +5611,35 @@ TM={"request_stop_speaking":lambda a:request_stop_speaking(a.get("reason","tool"
 
 
 # runtime capability tools
-try:
-    EXTRA.extend([
-        {"name":"capabilities_summary","description":"summarize current capabilities","input_schema":{"type":"object","properties":{"topic":{"type":"string"}},"required":[]}},
-        {"name":"runtime_self_test","description":"run local runtime diagnostics","input_schema":{"type":"object","properties":{},"required":[]}},
-    ])
-except Exception:
-    pass
-ALL=CORE+EXTRA
-for _kw in ["功能","能力","capability","capabilities","你會什麼","會什麼","自檢","檢測","健康檢查","診斷","runtime","self test"]:
-    if _kw not in KW: KW.append(_kw)
-TM.update({
-    "capabilities_summary": lambda a: capabilities_summary(a.get("topic","")),
-    "runtime_self_test": lambda a: runtime_self_test(),
-})
+from christine.tools.registry import ToolRegistration, apply_tool_registrations, tool_schema
+
+_RUNTIME_CAPABILITY_KEYWORDS = (
+    "功能", "能力", "capability", "capabilities", "你會什麼", "會什麼",
+    "自檢", "檢測", "健康檢查", "診斷", "runtime", "self test",
+)
+
+_RUNTIME_CAPABILITY_TOOLS = (
+    ToolRegistration(
+        schema=tool_schema(
+            "capabilities_summary",
+            "summarize current capabilities",
+            properties={"topic": {"type": "string"}},
+            required=[],
+        ),
+        handler=lambda a: capabilities_summary(a.get("topic", "")),
+        keywords=_RUNTIME_CAPABILITY_KEYWORDS,
+    ),
+    ToolRegistration(
+        schema=tool_schema(
+            "runtime_self_test",
+            "run local runtime diagnostics",
+            required=[],
+        ),
+        handler=lambda a: runtime_self_test(),
+    ),
+)
+
+ALL = apply_tool_registrations(CORE, EXTRA, TM, KW, _RUNTIME_CAPABILITY_TOOLS)
 
 def pick(inp):
     """V43 智能工具選擇 — 永遠給 Claude 完整工具集
