@@ -35,3 +35,10 @@ def test_search_repository_corpus_returns_empty_for_blank_query(tmp_path):
     _write(tmp_path, "docs/runtime.md", "runtime health")
 
     assert search_repository_corpus(tmp_path, "   ") == ()
+
+
+def test_modelization_exports_repository_retrieval_boundary():
+    from christine.modelization import RepositorySearchResult, search_repository_corpus
+
+    assert RepositorySearchResult.__name__ == "RepositorySearchResult"
+    assert callable(search_repository_corpus)

@@ -7,6 +7,7 @@ from .corpus import (
     should_include_in_model_corpus,
 )
 from .repository_index import CorpusDocument, CorpusManifest, build_corpus_document, build_corpus_manifest
+from .retrieval import RepositorySearchResult, search_repository_corpus
 
 __all__ = [
     "CorpusDecision",
@@ -14,7 +15,9 @@ __all__ = [
     "iter_model_corpus_paths",
     "CorpusDocument",
     "CorpusManifest",
+    "RepositorySearchResult",
     "build_corpus_document",
     "build_corpus_manifest",
     "should_include_in_model_corpus",
+    "search_repository_corpus",
 ]
