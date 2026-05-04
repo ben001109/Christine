@@ -12,6 +12,8 @@ incremental changes over broad rewrites.
 
 - Match the user's language in replies. Whatever language the user uses, reply
   in that same language.
+- When reporting work, include the full progress status plus concrete completion
+  accounting: current slice/batch progress and overall plan progress.
 
 ## Package Management
 
