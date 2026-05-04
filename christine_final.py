@@ -5618,6 +5618,7 @@ TM={"request_stop_speaking":lambda a:request_stop_speaking(a.get("reason","tool"
 # runtime capability tools
 from christine.tools.registry import apply_tool_registrations
 from christine.tools.runtime_capabilities import build_runtime_capability_registrations
+from christine.tools.selection import pick_all_tools
 
 _RUNTIME_CAPABILITY_TOOLS = build_runtime_capability_registrations(
     capabilities_summary=capabilities_summary,
@@ -5633,7 +5634,7 @@ def pick(inp):
     新邏輯：永遠給 ALL。Claude 自己的 function calling 比任何關鍵字匹配都聰明
     這就是 ChatGPT/Gemini/Claude 商業產品的做法 — 信任 AI 的原生推理能力
     """
-    return ALL
+    return pick_all_tools(inp, ALL)
 
 def listen_wake():
     """等待喚醒：支援語音喚醒、按鍵 / T、V55 快捷鍵 M P G
