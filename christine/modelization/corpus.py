@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import os
+from collections.abc import Iterator
 from dataclasses import dataclass
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 
 
 @dataclass(frozen=True)
@@ -84,3 +86,30 @@ def decide_model_corpus_path(path: str) -> CorpusDecision:
 
 def should_include_in_model_corpus(path: str) -> bool:
     return decide_model_corpus_path(path).include
+
+
+def _is_excluded_container(path: str) -> bool:
+    decision = decide_model_corpus_path(path + "/placeholder.py")
+    return not decision.include and (
+        decision.reason.startswith("excluded-path-part:") or decision.reason.startswith("excluded-prefix:")
+    )
+
+
+def iter_model_corpus_paths(root: str | Path) -> Iterator[str]:
+    root_path = Path(root)
+    for current, dirs, files in os.walk(root_path):
+        current_path = Path(current)
+        relative_current = current_path.relative_to(root_path).as_posix()
+
+        kept_dirs = []
+        for directory in sorted(dirs):
+            relative_dir = directory if relative_current == "." else f"{relative_current}/{directory}"
+            if not _is_excluded_container(relative_dir):
+                kept_dirs.append(directory)
+        dirs[:] = kept_dirs
+
+        for file_name in sorted(files):
+            path = current_path / file_name
+            relative = path.relative_to(root_path).as_posix()
+            if should_include_in_model_corpus(relative):
+                yield relative
