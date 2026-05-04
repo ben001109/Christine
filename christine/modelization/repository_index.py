@@ -66,6 +66,16 @@ def build_corpus_document(root: str | Path, relative_path: str) -> CorpusDocumen
     )
 
 
+def _validate_manifest_root(root: str | Path) -> Path:
+    root_path = Path(root)
+    if root_path.is_symlink():
+        raise ValueError("manifest root must not be a symlink root")
+    if not root_path.is_dir():
+        raise ValueError("manifest root must be a directory root")
+    return root_path
+
+
 def build_corpus_manifest(root: str | Path) -> CorpusManifest:
-    documents = tuple(build_corpus_document(root, relative) for relative in iter_model_corpus_paths(root))
+    root_path = _validate_manifest_root(root)
+    documents = tuple(build_corpus_document(root_path, relative) for relative in iter_model_corpus_paths(root_path))
     return CorpusManifest(schema_version=1, documents=documents)

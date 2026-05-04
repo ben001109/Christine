@@ -66,3 +66,24 @@ def test_corpus_manifest_serializes_without_file_contents(tmp_path):
     assert payload["document_count"] == 1
     assert payload["documents"][0]["path"] == "docs/plan.md"
     assert "secret-free text" not in repr(payload)
+
+
+def test_build_corpus_manifest_rejects_non_directory_root(tmp_path):
+    not_a_dir = tmp_path / "file.txt"
+    not_a_dir.write_text("x", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="directory root"):
+        build_corpus_manifest(not_a_dir)
+
+
+def test_build_corpus_manifest_rejects_symlink_root(tmp_path):
+    target = tmp_path / "repo"
+    target.mkdir()
+    link = tmp_path / "repo-link"
+    try:
+        link.symlink_to(target, target_is_directory=True)
+    except OSError:
+        pytest.skip("symlinks are not supported in this environment")
+
+    with pytest.raises(ValueError, match="symlink root"):
+        build_corpus_manifest(link)
