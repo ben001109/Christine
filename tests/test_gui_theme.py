@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from christine.gui.presentation import format_chat_prefix
 from christine.gui.theme import GuiTheme, fallback_chat_theme, modern_dark_theme
 
@@ -25,3 +27,18 @@ def test_format_chat_prefix_preserves_legacy_labels():
     assert format_chat_prefix("user") == "\n🧑 You: "
     assert format_chat_prefix("assistant") == "\n♡ Christine: "
     assert format_chat_prefix("system") == ""
+
+
+def _fallback_gui_block() -> str:
+    text = Path("christine_final.py").read_text(encoding="utf-8")
+    start = text.index("def launch_chat_window():")
+    end = text.index("def close_chat_window():", start)
+    return text[start:end]
+
+
+def test_fallback_gui_uses_theme_and_prefix_helpers():
+    block = _fallback_gui_block()
+
+    assert "fallback_chat_theme()" in block
+    assert "format_chat_prefix(" in block
+    assert "_fallback_theme.colors" in block

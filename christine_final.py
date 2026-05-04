@@ -153,6 +153,8 @@ from fpdf import FPDF
 import pyautogui
 from christine.gui.app import create_legacy_queue_adapters
 from christine.gui.commands import process_next_gui_command
+from christine.gui.presentation import format_chat_prefix
+from christine.gui.theme import fallback_chat_theme
 from christine.platform import windows as _christine_windows
 pyautogui.FAILSAFE=False
 pyautogui.PAUSE=0.02
@@ -1878,6 +1880,9 @@ def launch_chat_window():
             import ctypes as _ct
             _ct.windll.shcore.SetProcessDpiAwareness(1)
         except: pass
+        _fallback_theme = fallback_chat_theme()
+        _colors = _fallback_theme.colors
+        _fonts = _fallback_theme.fonts
         win=tk.Tk(); win.title("♡ Christine AI ♡")
         win.update_idletasks()
         sw=win.winfo_screenwidth(); sh=win.winfo_screenheight()
@@ -1885,31 +1890,31 @@ def launch_chat_window():
         win.geometry(f"420x600+{wx}+{wy}")
         win.attributes("-topmost",True)
         win.lift(); win.focus_force()
-        win.configure(bg="#fff0f5"); win.resizable(True,True)
+        win.configure(bg=_colors["window_bg"]); win.resizable(True,True)
         # Title bar — 可愛粉色
-        tb=tk.Frame(win,bg="#ffb6c1",height=40); tb.pack(fill="x")
-        tk.Label(tb,text="  ✿ Christine AI",bg="#ffb6c1",fg="#d63384",font=("Segoe UI",12,"bold")).pack(side="left",pady=6)
-        tk.Button(tb,text="✕",bg="#ff69b4",fg="white",font=("Segoe UI",10,"bold"),bd=0,padx=8,
-                  activebackground="#ff1493",command=win.destroy).pack(side="right",pady=5,padx=6)
+        tb=tk.Frame(win,bg=_colors["title_bg"],height=40); tb.pack(fill="x")
+        tk.Label(tb,text="  ✿ Christine AI",bg=_colors["title_bg"],fg=_colors["title_fg"],font=_fonts["title"]).pack(side="left",pady=6)
+        tk.Button(tb,text="✕",bg=_colors["close_bg"],fg="white",font=_fonts["button_bold"],bd=0,padx=8,
+                  activebackground=_colors["close_active_bg"],command=win.destroy).pack(side="right",pady=5,padx=6)
         # Chat display — 柔和背景
-        cd=scrolledtext.ScrolledText(win,wrap=tk.WORD,bg="#fff5f8",fg="#4a4a4a",
-                                      font=("Segoe UI",10),bd=0,relief="flat",state="disabled",
-                                      selectbackground="#ffc0cb")
+        cd=scrolledtext.ScrolledText(win,wrap=tk.WORD,bg=_colors["chat_bg"],fg=_colors["chat_fg"],
+                                      font=_fonts["body"],bd=0,relief="flat",state="disabled",
+                                      selectbackground=_colors["select_bg"])
         cd.pack(fill="both",expand=True,padx=10,pady=6)
-        cd.tag_config("u",foreground="#6a5acd",font=("Segoe UI",10,"bold"))
-        cd.tag_config("c",foreground="#d63384",font=("Segoe UI",10))
-        cd.tag_config("s",foreground="#c0c0c0",font=("Segoe UI",9))
+        cd.tag_config("u",foreground=_colors["user_fg"],font=("Segoe UI",10,"bold"))
+        cd.tag_config("c",foreground=_colors["assistant_fg"],font=_fonts["body"])
+        cd.tag_config("s",foreground=_colors["system_fg"],font=_fonts["system"])
         def ac(who,text):
             cd.config(state="normal")
-            if who=="u": cd.insert("end","\n🧑 You: ","u"); cd.insert("end",text+"\n")
-            elif who=="c": cd.insert("end","\n♡ Christine: ","c"); cd.insert("end",text+"\n")
+            if who=="u": cd.insert("end",format_chat_prefix("user"),"u"); cd.insert("end",text+"\n")
+            elif who=="c": cd.insert("end",format_chat_prefix("assistant"),"c"); cd.insert("end",text+"\n")
             else: cd.insert("end",text+"\n","s")
             cd.config(state="disabled"); cd.see("end")
         ac("s","  ✿ Christine Online ✿  — 有什麼可以幫你的嗎？")
         # Button bar — 圓潤按鈕
-        bf=tk.Frame(win,bg="#ffe4e1"); bf.pack(fill="x",padx=10,pady=3)
-        _btn_style = {"font":("Segoe UI",9),"bd":0,"padx":10,"pady":4,"relief":"flat",
-                      "activebackground":"#ffc0cb"}
+        bf=tk.Frame(win,bg=_colors["input_shell_bg"]); bf.pack(fill="x",padx=10,pady=3)
+        _btn_style = {"font":_fonts["button"],"bd":0,"padx":10,"pady":4,"relief":"flat",
+                      "activebackground":_colors["select_bg"]}
         def pick_img():
             r2=tk.Tk(); r2.withdraw()
             fp=filedialog.askopenfilename(title="選擇圖片 ✿",filetypes=[("Images","*.png *.jpg *.jpeg *.gif *.webp"),("All","*.*")])
@@ -1940,10 +1945,10 @@ def launch_chat_window():
         tk.Button(bf,text="🎨 Draw",bg="#fce4ec",fg="#e67e22",command=gen_dlg,**_btn_style).pack(side="left",padx=3)
         tk.Button(bf,text="🖥️ Screen",bg="#fce4ec",fg="#6a5acd",command=lambda:_gui_input_queue.append("__SCREENCAP__"),**_btn_style).pack(side="left",padx=3)
         # Input — 柔和輸入框
-        inf=tk.Frame(win,bg="#ffe4e1"); inf.pack(fill="x",padx=10,pady=6)
-        ti=scrolledtext.ScrolledText(inf,height=3,wrap=tk.WORD,bg="#fff5f8",fg="#4a4a4a",
-                                      font=("Segoe UI",11),insertbackground="#d63384",
-                                      bd=0,relief="flat",selectbackground="#ffc0cb")
+        inf=tk.Frame(win,bg=_colors["input_shell_bg"]); inf.pack(fill="x",padx=10,pady=6)
+        ti=scrolledtext.ScrolledText(inf,height=3,wrap=tk.WORD,bg=_colors["chat_bg"],fg=_colors["chat_fg"],
+                                      font=_fonts["input"],insertbackground=_colors["assistant_fg"],
+                                      bd=0,relief="flat",selectbackground=_colors["select_bg"])
         ti.pack(fill="x",pady=3)
         def sm(event=None):
             msg=ti.get("1.0","end").strip()
