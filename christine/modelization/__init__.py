@@ -8,6 +8,7 @@ from .corpus import (
 )
 from .repository_index import CorpusDocument, CorpusManifest, build_corpus_document, build_corpus_manifest
 from .retrieval import RepositorySearchResult, search_repository_corpus
+from .routing_eval import ROUTE_TARGETS, RouteEvalExample, RouteEvalResult, RoutePrediction, score_route_predictions
 
 __all__ = [
     "CorpusDecision",
@@ -15,9 +16,14 @@ __all__ = [
     "iter_model_corpus_paths",
     "CorpusDocument",
     "CorpusManifest",
+    "ROUTE_TARGETS",
     "RepositorySearchResult",
+    "RouteEvalExample",
+    "RouteEvalResult",
+    "RoutePrediction",
     "build_corpus_document",
     "build_corpus_manifest",
     "should_include_in_model_corpus",
     "search_repository_corpus",
+    "score_route_predictions",
 ]

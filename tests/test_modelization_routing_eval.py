@@ -55,3 +55,11 @@ def test_score_route_predictions_rejects_unknown_targets():
 
     with pytest.raises(ValueError, match="unknown route target"):
         score_route_predictions(examples, predictions)
+
+
+def test_modelization_exports_routing_eval_boundary():
+    from christine.modelization import RouteEvalExample, RoutePrediction, score_route_predictions
+
+    assert RouteEvalExample.__name__ == "RouteEvalExample"
+    assert RoutePrediction.__name__ == "RoutePrediction"
+    assert callable(score_route_predictions)
