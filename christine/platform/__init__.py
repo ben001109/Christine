@@ -6,6 +6,8 @@ from .base import (
     PlatformFeature,
     capability_matrix,
     detect_platform,
+    feature_support,
+    is_feature_supported,
     unsupported_message,
 )
 
@@ -15,5 +17,7 @@ __all__ = [
     "PlatformFeature",
     "capability_matrix",
     "detect_platform",
+    "feature_support",
+    "is_feature_supported",
     "unsupported_message",
 ]
