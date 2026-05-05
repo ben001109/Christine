@@ -16,3 +16,11 @@ def test_routing_eval_fixtures_have_unique_inputs():
     inputs = [example.input_text for example in ROUTING_EVAL_FIXTURES]
 
     assert len(inputs) == len(set(inputs))
+
+
+def test_modelization_exports_routing_eval_fixtures_and_readiness():
+    from christine.modelization import ROUTING_EVAL_FIXTURES, RouteReadiness, assess_route_readiness
+
+    assert ROUTING_EVAL_FIXTURES
+    assert RouteReadiness.__name__ == "RouteReadiness"
+    assert callable(assess_route_readiness)
