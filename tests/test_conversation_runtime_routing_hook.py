@@ -57,3 +57,11 @@ def test_enabled_runtime_routing_hook_can_use_explicit_policy_override():
 
     assert observation.target == "gui"
     assert observation.accepted is True
+
+
+def test_conversation_exports_runtime_routing_hook():
+    from christine.conversation import RuntimeRouteObservation, RuntimeRoutingHook, observe_runtime_route
+
+    assert RuntimeRouteObservation.__name__ == "RuntimeRouteObservation"
+    assert RuntimeRoutingHook.__name__ == "RuntimeRoutingHook"
+    assert callable(observe_runtime_route)
