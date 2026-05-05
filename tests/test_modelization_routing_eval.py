@@ -4,6 +4,7 @@ from christine.modelization.routing_eval import (
     ROUTE_TARGETS,
     RouteEvalExample,
     RoutePrediction,
+    assess_route_readiness,
     score_route_predictions,
 )
 
@@ -73,3 +74,41 @@ def test_modelization_exports_routing_eval_boundary():
     assert RouteEvalExample.__name__ == "RouteEvalExample"
     assert RoutePrediction.__name__ == "RoutePrediction"
     assert callable(score_route_predictions)
+
+
+def test_assess_route_readiness_passes_when_accuracy_meets_threshold():
+    examples = (
+        RouteEvalExample("a", "direct"),
+        RouteEvalExample("b", "repository"),
+    )
+    predictions = (
+        RoutePrediction("direct"),
+        RoutePrediction("repository"),
+    )
+
+    readiness = assess_route_readiness(examples, predictions, min_accuracy=1.0)
+
+    assert readiness.ready is True
+    assert readiness.min_accuracy == 1.0
+    assert readiness.result.correct == 2
+
+
+def test_assess_route_readiness_fails_when_accuracy_is_below_threshold():
+    examples = (
+        RouteEvalExample("a", "direct"),
+        RouteEvalExample("b", "repository"),
+    )
+    predictions = (
+        RoutePrediction("direct"),
+        RoutePrediction("direct", "missed repo"),
+    )
+
+    readiness = assess_route_readiness(examples, predictions, min_accuracy=0.75)
+
+    assert readiness.ready is False
+    assert readiness.result.accuracy == 0.5
+
+
+def test_assess_route_readiness_rejects_invalid_thresholds():
+    with pytest.raises(ValueError, match="min_accuracy must be between 0 and 1"):
+        assess_route_readiness((), (), min_accuracy=1.1)

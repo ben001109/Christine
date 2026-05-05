@@ -42,6 +42,13 @@ class RouteEvalResult:
         return self.correct / self.total
 
 
+@dataclass(frozen=True)
+class RouteReadiness:
+    ready: bool
+    min_accuracy: float
+    result: RouteEvalResult
+
+
 def _validate_target(target: str) -> None:
     if target not in ROUTE_TARGETS:
         raise ValueError(f"unknown route target: {target}")
@@ -74,3 +81,19 @@ def score_route_predictions(
             )
         )
     return RouteEvalResult(total=len(examples), correct=correct, mismatches=tuple(mismatches))
+
+
+def assess_route_readiness(
+    examples: tuple[RouteEvalExample, ...],
+    predictions: tuple[RoutePrediction, ...],
+    *,
+    min_accuracy: float = 0.8,
+) -> RouteReadiness:
+    if not 0 <= min_accuracy <= 1:
+        raise ValueError("min_accuracy must be between 0 and 1")
+    result = score_route_predictions(examples, predictions)
+    return RouteReadiness(
+        ready=result.accuracy >= min_accuracy,
+        min_accuracy=min_accuracy,
+        result=result,
+    )
