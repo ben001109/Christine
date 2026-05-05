@@ -3,7 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from christine.modelization import RoutePolicy, RoutePrediction, apply_route_policy
+from christine.modelization.routing_eval import ROUTE_TARGETS, RoutePrediction
+from christine.modelization.routing_policy import RoutePolicy, apply_route_policy
 
 
 @dataclass(frozen=True)
@@ -22,6 +23,11 @@ class RuntimeRouteObservation:
     enabled: bool
 
 
+def _validate_target(target: str) -> None:
+    if target not in ROUTE_TARGETS:
+        raise ValueError(f"unknown route target: {target}")
+
+
 def observe_runtime_route(
     input_text: str,
     prediction: RoutePrediction,
@@ -30,6 +36,7 @@ def observe_runtime_route(
     recorder: Callable[[RuntimeRouteObservation], None] | None = None,
 ) -> RuntimeRouteObservation:
     if not hook.enabled:
+        _validate_target(hook.policy.fallback_target)
         return RuntimeRouteObservation(
             input_text=input_text,
             predicted_target=prediction.target,

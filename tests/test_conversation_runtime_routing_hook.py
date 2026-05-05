@@ -1,3 +1,5 @@
+import pytest
+
 from christine.conversation.runtime_routing_hook import RuntimeRoutingHook, observe_runtime_route
 from christine.modelization import RoutePolicy, RoutePrediction
 
@@ -57,6 +59,15 @@ def test_enabled_runtime_routing_hook_can_use_explicit_policy_override():
 
     assert observation.target == "gui"
     assert observation.accepted is True
+
+
+def test_disabled_runtime_routing_hook_rejects_invalid_fallback_target():
+    with pytest.raises(ValueError, match="unknown route target"):
+        observe_runtime_route(
+            "hello",
+            RoutePrediction("repository", "repo intent"),
+            hook=RuntimeRoutingHook(enabled=False, policy=RoutePolicy(fallback_target="invalid")),
+        )
 
 
 def test_conversation_exports_runtime_routing_hook():
