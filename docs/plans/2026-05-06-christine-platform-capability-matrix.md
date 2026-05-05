@@ -109,11 +109,11 @@ Do not commit RED tests alone unless stopping.
 Add to `christine/platform/base.py`:
 
 ```python
-from enum import StrEnum
+from enum import Enum
 from types import MappingProxyType
 
 
-class PlatformFeature(StrEnum):
+class PlatformFeature(str, Enum):
     AUTOSTART = "autostart"
     GLOBAL_HOTKEYS = "global_hotkeys"
     SYSTEM_AUDIO = "system_audio"

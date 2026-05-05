@@ -66,5 +66,7 @@ def test_platform_capability_matrix_avoids_python_311_only_strenum():
     from pathlib import Path
 
     source = Path("christine/platform/base.py").read_text(encoding="utf-8")
+    plan = Path("docs/plans/2026-05-06-christine-platform-capability-matrix.md").read_text(encoding="utf-8")
 
     assert "StrEnum" not in source
+    assert "StrEnum" not in plan
