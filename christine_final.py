@@ -101,9 +101,22 @@ def christine_self_improve():
     """Christine認知到自己可以自我改進和進化，並且不斷學習新的技能"""
     return "我會一直進步的～老闆～每次都變得更聰明呢！"
 
-import pyaudiowpatch as pyaudio
 import sys,os,time,json,subprocess,webbrowser,datetime,shutil,glob
 import platform,threading,secrets,string,ctypes,asyncio,socket,urllib.request,base64
+import types as _types_early
+
+def _missing_pyaudio(*args, **kwargs):
+    raise RuntimeError("pyaudiowpatch is unavailable on this platform")
+
+try:
+    import pyaudiowpatch as pyaudio
+except ModuleNotFoundError:
+    if platform.system().lower() == "windows":
+        raise
+    pyaudio = _types_early.ModuleType("pyaudio")
+    pyaudio.PyAudio = _missing_pyaudio
+    pyaudio.paInt16 = 8
+    sys.modules.setdefault("pyaudiowpatch", pyaudio)
 
 # ═══ V14.4 NUCLEAR UTF-8 FIX ═══════════════════════════════════════════════
 # 在任何 print/import 之前，強制整個 Python 進程使用 UTF-8
@@ -123,7 +136,13 @@ except Exception:
 # ═══ END V14.4 ═══════════════════════════════════════════════════════════════
 
 sys.modules['pyaudio']=pyaudio
-import anthropic,speech_recognition as sr,edge_tts,psutil,msvcrt
+import anthropic,speech_recognition as sr,edge_tts,psutil
+try:
+    import msvcrt
+except ModuleNotFoundError:
+    if platform.system().lower() == "windows":
+        raise
+    msvcrt = None
 import py_compile
 # V15.7 AudioFix: ffmpeg 路徑（用 imageio_ffmpeg 提供的），用於 mp3→pcm 解碼
 _FFMPEG_PATH = None
