@@ -30,6 +30,15 @@ class FeatureSupport:
     detail: str
 
 
+@dataclass(frozen=True)
+class PlatformFeatureRequirement:
+    platform_name: str
+    feature: PlatformFeature
+    supported: bool
+    detail: str
+    message: str
+
+
 def detect_platform() -> PlatformCapabilities:
     if sys.platform.startswith("win"):
         return PlatformCapabilities("windows", True, True, True, True)
@@ -109,3 +118,15 @@ def unsupported_message(platform_name: str, feature: PlatformFeature | str) -> s
     if support.supported:
         return f"{platform_name}:{normalized_feature.value} 已支援"
     return f"{platform_name}:{normalized_feature.value} 尚未支援 — {support.detail}"
+
+
+def require_platform_feature(platform_name: str, feature: PlatformFeature | str) -> PlatformFeatureRequirement:
+    normalized_feature = _coerce_feature(feature)
+    support = feature_support(platform_name, normalized_feature)
+    return PlatformFeatureRequirement(
+        platform_name=platform_name,
+        feature=normalized_feature,
+        supported=support.supported,
+        detail=support.detail,
+        message=unsupported_message(platform_name, normalized_feature),
+    )

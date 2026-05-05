@@ -1,7 +1,14 @@
 import pytest
 
 from christine.platform.base import detect_platform
-from christine.platform.base import PlatformFeature, capability_matrix, feature_support, is_feature_supported, unsupported_message
+from christine.platform.base import (
+    PlatformFeature,
+    capability_matrix,
+    feature_support,
+    is_feature_supported,
+    require_platform_feature,
+    unsupported_message,
+)
 
 
 def test_detect_platform_returns_capability_object():
@@ -105,3 +112,32 @@ def test_feature_support_falls_back_for_unknown_platform_names():
 def test_feature_support_rejects_unknown_feature_names():
     with pytest.raises(ValueError, match="unknown platform feature"):
         feature_support("linux", "screen_reader")
+
+
+def test_require_platform_feature_returns_structured_unavailable_result():
+    result = require_platform_feature("linux", PlatformFeature.SYSTEM_AUDIO)
+
+    assert result.platform_name == "linux"
+    assert result.feature == PlatformFeature.SYSTEM_AUDIO
+    assert result.supported is False
+    assert "system_audio" in result.message
+    assert "尚未支援" in result.message
+    assert "loopback audio" in result.detail
+
+
+def test_require_platform_feature_returns_structured_supported_result():
+    result = require_platform_feature("windows", "autostart")
+
+    assert result.platform_name == "windows"
+    assert result.feature == PlatformFeature.AUTOSTART
+    assert result.supported is True
+    assert result.message == "windows:autostart 已支援"
+
+
+def test_require_platform_feature_keeps_unknown_platform_safe():
+    result = require_platform_feature("plan9", "gui")
+
+    assert result.platform_name == "plan9"
+    assert result.feature == PlatformFeature.GUI
+    assert result.supported is False
+    assert result.detail == "unknown platform"
