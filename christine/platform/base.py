@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import StrEnum
+from enum import Enum
 import sys
 from types import MappingProxyType
 
 
-class PlatformFeature(StrEnum):
+class PlatformFeature(str, Enum):
     AUTOSTART = "autostart"
     GLOBAL_HOTKEYS = "global_hotkeys"
     SYSTEM_AUDIO = "system_audio"

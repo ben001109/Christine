@@ -60,3 +60,11 @@ def test_platform_exports_capability_matrix_api():
     assert PlatformFeature.SYSTEM_AUDIO.value == "system_audio"
     assert callable(capability_matrix)
     assert callable(unsupported_message)
+
+
+def test_platform_capability_matrix_avoids_python_311_only_strenum():
+    from pathlib import Path
+
+    source = Path("christine/platform/base.py").read_text(encoding="utf-8")
+
+    assert "StrEnum" not in source
