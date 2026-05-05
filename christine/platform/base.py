@@ -86,9 +86,26 @@ def capability_matrix():
     return _CAPABILITY_MATRIX
 
 
-def unsupported_message(platform_name: str, feature: PlatformFeature) -> str:
+def _coerce_feature(feature: PlatformFeature | str) -> PlatformFeature:
+    try:
+        return feature if isinstance(feature, PlatformFeature) else PlatformFeature(feature)
+    except ValueError as exc:
+        raise ValueError(f"unknown platform feature: {feature}") from exc
+
+
+def feature_support(platform_name: str, feature: PlatformFeature | str) -> FeatureSupport:
+    normalized_feature = _coerce_feature(feature)
     platform_features = _CAPABILITY_MATRIX.get(platform_name, _CAPABILITY_MATRIX["unknown"])
-    support = platform_features[feature]
+    return platform_features[normalized_feature]
+
+
+def is_feature_supported(platform_name: str, feature: PlatformFeature | str) -> bool:
+    return feature_support(platform_name, feature).supported
+
+
+def unsupported_message(platform_name: str, feature: PlatformFeature | str) -> str:
+    normalized_feature = _coerce_feature(feature)
+    support = feature_support(platform_name, normalized_feature)
     if support.supported:
-        return f"{platform_name}:{feature.value} 已支援"
-    return f"{platform_name}:{feature.value} 尚未支援 — {support.detail}"
+        return f"{platform_name}:{normalized_feature.value} 已支援"
+    return f"{platform_name}:{normalized_feature.value} 尚未支援 — {support.detail}"

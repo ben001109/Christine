@@ -1,5 +1,7 @@
+import pytest
+
 from christine.platform.base import detect_platform
-from christine.platform.base import PlatformFeature, capability_matrix, unsupported_message
+from christine.platform.base import PlatformFeature, capability_matrix, feature_support, is_feature_supported, unsupported_message
 
 
 def test_detect_platform_returns_capability_object():
@@ -70,3 +72,27 @@ def test_platform_capability_matrix_avoids_python_311_only_strenum():
 
     assert "StrEnum" not in source
     assert "StrEnum" not in plan
+
+
+def test_feature_support_returns_known_platform_feature_detail():
+    support = feature_support("linux", PlatformFeature.SYSTEM_AUDIO)
+
+    assert support.supported is False
+    assert "loopback audio" in support.detail
+
+
+def test_feature_support_accepts_feature_strings_for_call_sites():
+    assert is_feature_supported("windows", "autostart") is True
+    assert is_feature_supported("linux", "system_audio") is False
+
+
+def test_feature_support_falls_back_for_unknown_platform_names():
+    support = feature_support("plan9", PlatformFeature.GUI)
+
+    assert support.supported is False
+    assert support.detail == "unknown platform"
+
+
+def test_feature_support_rejects_unknown_feature_names():
+    with pytest.raises(ValueError, match="unknown platform feature"):
+        feature_support("linux", "screen_reader")
