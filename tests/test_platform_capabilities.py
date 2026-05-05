@@ -65,18 +65,22 @@ def test_unsupported_message_is_user_facing_and_specific():
 def test_platform_exports_capability_matrix_api():
     from christine.platform import (
         FeatureSupport,
+        PlatformFeatureRequirement,
         PlatformFeature,
         capability_matrix,
         feature_support,
         is_feature_supported,
+        require_platform_feature,
         unsupported_message,
     )
 
     assert FeatureSupport.__name__ == "FeatureSupport"
+    assert PlatformFeatureRequirement.__name__ == "PlatformFeatureRequirement"
     assert PlatformFeature.SYSTEM_AUDIO.value == "system_audio"
     assert callable(capability_matrix)
     assert callable(feature_support)
     assert callable(is_feature_supported)
+    assert callable(require_platform_feature)
     assert callable(unsupported_message)
 
 
