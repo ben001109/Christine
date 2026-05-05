@@ -14,6 +14,8 @@ ARC-AGI/
 # Runtime state, caches, and generated/model artifacts are too large for Git.
 data/
 level5_logs/
+christine_v42/
+F:\\AI夥伴\\記憶資料夾\\記憶/
 brain/generated/
 heartbeat.txt
 nexus_v2_state.json
