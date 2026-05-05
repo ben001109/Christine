@@ -1,5 +1,19 @@
 """Platform capability boundaries for Christine."""
 
-from .base import PlatformCapabilities, detect_platform
+from .base import (
+    FeatureSupport,
+    PlatformCapabilities,
+    PlatformFeature,
+    capability_matrix,
+    detect_platform,
+    unsupported_message,
+)
 
-__all__ = ["PlatformCapabilities", "detect_platform"]
+__all__ = [
+    "FeatureSupport",
+    "PlatformCapabilities",
+    "PlatformFeature",
+    "capability_matrix",
+    "detect_platform",
+    "unsupported_message",
+]
