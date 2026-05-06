@@ -19,6 +19,10 @@ _VERSION_RE = re.compile(
 )
 
 
+def _is_plain_int(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
 @dataclass(frozen=True)
 class ChristineVersion:
     major: int
@@ -30,13 +34,19 @@ class ChristineVersion:
     def __post_init__(self) -> None:
         if not isinstance(self.stage, VersionStage):
             raise ValueError("version stage must be alpha, beta, rc, or release")
+        if not all(_is_plain_int(value) for value in (self.major, self.minor, self.patch)):
+            raise ValueError("version numbers must be integers")
         if min(self.major, self.minor, self.patch) < 0:
             raise ValueError("version numbers must be non-negative")
         if self.stage == VersionStage.RELEASE:
             if self.prerelease is not None:
                 raise ValueError("release versions must not have prerelease numbers")
             return
-        if self.prerelease is None or self.prerelease <= 0:
+        if self.prerelease is None:
+            raise ValueError("prerelease versions require a positive number")
+        if not _is_plain_int(self.prerelease):
+            raise ValueError("prerelease number must be an integer")
+        if self.prerelease <= 0:
             raise ValueError("prerelease versions require a positive number")
 
     @property

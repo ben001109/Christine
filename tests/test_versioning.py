@@ -48,6 +48,28 @@ def test_christine_version_rejects_invalid_constructor_stage():
         ChristineVersion(1, 2, 3, "preview", 1)  # type: ignore[arg-type]
 
 
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"major": 1.2, "minor": 2, "patch": 3},
+        {"major": True, "minor": 2, "patch": 3},
+        {"major": 1, "minor": 2.5, "patch": 3},
+        {"major": 1, "minor": 2, "patch": False},
+    ],
+)
+def test_christine_version_rejects_invalid_component_types(kwargs):
+    with pytest.raises(ValueError, match="version numbers must be integers"):
+        ChristineVersion(**kwargs)  # type: ignore[arg-type]
+
+
+def test_christine_version_rejects_invalid_prerelease_type():
+    with pytest.raises(ValueError, match="prerelease number must be an integer"):
+        ChristineVersion(1, 2, 3, VersionStage.ALPHA, 1.5)  # type: ignore[arg-type]
+
+    with pytest.raises(ValueError, match="prerelease number must be an integer"):
+        ChristineVersion(1, 2, 3, VersionStage.BETA, True)  # type: ignore[arg-type]
+
+
 def test_prerelease_versions_require_positive_number():
     with pytest.raises(ValueError, match="prerelease versions require a positive number"):
         ChristineVersion(0, 2, 0, VersionStage.ALPHA)
