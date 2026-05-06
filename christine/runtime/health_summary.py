@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from christine.platform.base import PlatformFeatureRequirement
+
 from .optional_dependencies import OptionalDependencyStatus
 
 
@@ -27,8 +29,10 @@ class RuntimeHealthSummary:
 
 def build_runtime_health_summary(
     optional_statuses: tuple[OptionalDependencyStatus, ...],
+    *,
+    platform_requirements: tuple[PlatformFeatureRequirement, ...] = (),
 ) -> RuntimeHealthSummary:
-    items = tuple(
+    optional_items = tuple(
         RuntimeHealthItem(
             name=status.name,
             category="optional_dependency",
@@ -39,6 +43,18 @@ def build_runtime_health_summary(
         )
         for status in optional_statuses
     )
+    platform_items = tuple(
+        RuntimeHealthItem(
+            name=f"{requirement.platform_name}:{requirement.feature.value}",
+            category="platform_feature",
+            ok=requirement.supported,
+            fatal=False,
+            message=requirement.message,
+            purpose=requirement.detail,
+        )
+        for requirement in platform_requirements
+    )
+    items = optional_items + platform_items
     degraded_count = sum(1 for item in items if not item.ok)
     ready = all(item.ok or not item.fatal for item in items)
     return RuntimeHealthSummary(ready=ready, degraded_count=degraded_count, items=items)
