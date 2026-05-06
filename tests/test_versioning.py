@@ -23,6 +23,21 @@ def test_parse_version_rejects_invalid_stage_names():
         parse_version("0.2.0-preview.1")
 
 
+@pytest.mark.parametrize(
+    "text",
+    [
+        "01.2.3",
+        "1.02.3",
+        "1.2.03",
+        "1.2.3-alpha.01",
+        "1.2.3-beta.0",
+    ],
+)
+def test_parse_version_rejects_semver_leading_zeroes(text):
+    with pytest.raises(ValueError):
+        parse_version(text)
+
+
 def test_release_versions_cannot_have_prerelease_number():
     with pytest.raises(ValueError, match="release versions must not have prerelease numbers"):
         ChristineVersion(0, 2, 0, VersionStage.RELEASE, 1)

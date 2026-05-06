@@ -12,7 +12,11 @@ class VersionStage(str, Enum):
     RELEASE = "release"
 
 
-_VERSION_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:-(alpha|beta|rc)\.(\d+))?$")
+_NUMERIC_ID = r"(?:0|[1-9]\d*)"
+_PRERELEASE_NUMBER = r"(?:[1-9]\d*)"
+_VERSION_RE = re.compile(
+    rf"^({_NUMERIC_ID})\.({_NUMERIC_ID})\.({_NUMERIC_ID})(?:-(alpha|beta|rc)\.({_PRERELEASE_NUMBER}))?$"
+)
 
 
 @dataclass(frozen=True)
