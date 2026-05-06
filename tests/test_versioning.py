@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 
 from christine.versioning import ChristineVersion, VersionStage, next_prerelease, parse_version, promote_stage
 
@@ -56,3 +57,24 @@ def test_promote_stage_follows_alpha_beta_rc_release_order():
 def test_release_versions_do_not_promote_again():
     with pytest.raises(ValueError, match="release versions cannot be promoted"):
         promote_stage(ChristineVersion(0, 2, 0, VersionStage.RELEASE))
+
+
+def test_versioning_policy_documents_alpha_beta_rc_release_rules():
+    policy = Path("docs/VERSIONING.md").read_text(encoding="utf-8")
+
+    assert "MAJOR.MINOR.PATCH[-alpha.N|-beta.N|-rc.N]" in policy
+    assert "alpha -> beta -> rc -> release" in policy
+    assert "Alpha" in policy
+    assert "Beta" in policy
+    assert "RC" in policy
+    assert "Release" in policy
+
+
+def test_agent_guide_requires_version_management_rules():
+    guide = Path("AGENTS.md").read_text(encoding="utf-8")
+
+    assert "## Version Management" in guide
+    assert "docs/VERSIONING.md" in guide
+    assert "alpha" in guide
+    assert "beta" in guide
+    assert "release" in guide

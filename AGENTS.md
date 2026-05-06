@@ -76,6 +76,20 @@ incremental changes over broad rewrites.
 - Prefer compatibility wrappers over breaking imports while the monolith is
   being decomposed.
 
+## Version Management
+
+- Follow `docs/VERSIONING.md` for every public version, release branch, tag, or
+  release-stage decision.
+- Use the stage order `alpha -> beta -> rc -> release`; do not skip stages
+  without explicit user approval.
+- `alpha` may include unstable internal integration, `beta` should be
+  feature-complete, `rc` should accept only blocker fixes, and `release` is the
+  stable public build.
+- Any version bump or release-stage change must state the target version and
+  stage in the plan, commit, PR, or final report.
+- Keep validation logic in `christine.versioning`; do not use legacy monolith
+  version constants as release governance.
+
 ## Coding Standards
 
 - Target Python 3.10+.
