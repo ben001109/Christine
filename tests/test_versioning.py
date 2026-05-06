@@ -180,3 +180,30 @@ def test_active_monolith_legacy_version_records_still_exist_in_source():
     assert records
     for record in records:
         assert record.value in source
+
+
+def test_versioning_policy_documents_legacy_version_labels():
+    policy = Path("docs/VERSIONING.md").read_text(encoding="utf-8")
+
+    assert "## Legacy Version Labels" in policy
+    assert "LEGACY_VERSION_RECORDS" in policy
+    assert "migration plan" in policy
+
+
+def test_agent_guide_requires_legacy_version_registration():
+    guide = Path("AGENTS.md").read_text(encoding="utf-8")
+
+    assert "legacy version" in guide.lower()
+    assert "LEGACY_VERSION_RECORDS" in guide
+
+
+def test_legacy_version_inventory_documents_key_legacy_values():
+    inventory = Path("docs/versions/LEGACY_VERSIONS.md").read_text(encoding="utf-8")
+
+    for value in [
+        "600.0-final-agi-opus",
+        "42.8-titan",
+        "70.0-sovereign-agi",
+        "2499.0-beyond-singularity",
+    ]:
+        assert value in inventory

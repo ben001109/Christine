@@ -56,3 +56,20 @@ alpha -> beta -> rc -> release
 - `parse_version()` reads public version strings.
 - `next_prerelease()` increments `alpha.N`, `beta.N`, or `rc.N`.
 - `promote_stage()` moves `alpha -> beta -> rc -> release`.
+
+## Legacy Version Labels
+
+Older Christine builds contain many monolith, subsystem, cache, and runtime
+labels that look like versions but are not release-governance versions. These
+labels are tracked in `LEGACY_VERSION_RECORDS` and summarized in
+`docs/versions/LEGACY_VERSIONS.md`.
+
+- Legacy labels are historical/runtime identifiers, not public release versions.
+- New public versions must use `ChristineVersion` and the stage rules above.
+- Do not rewrite active legacy labels unless a migration plan covers user-facing
+  display text, cache behavior, persisted state, and boot/runtime semantics.
+- Every newly discovered legacy version label must be added to
+  `LEGACY_VERSION_RECORDS` and `docs/versions/LEGACY_VERSIONS.md` before it is
+  renamed, removed, or reinterpreted.
+- Treat commented historical labels as audit records; they may be documented as
+  inactive, but should not be used for release decisions.

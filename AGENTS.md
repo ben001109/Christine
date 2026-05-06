@@ -89,6 +89,10 @@ incremental changes over broad rewrites.
   stage in the plan, commit, PR, or final report.
 - Keep validation logic in `christine.versioning`; do not use legacy monolith
   version constants as release governance.
+- Register every legacy version label in `LEGACY_VERSION_RECORDS` and
+  `docs/versions/LEGACY_VERSIONS.md` before renaming, removing, or converting it.
+- Do not rewrite active legacy version constants without a migration plan for
+  user-facing display, cache behavior, persisted state, and runtime semantics.
 
 ## Coding Standards
 
