@@ -1,7 +1,17 @@
 import pytest
 from pathlib import Path
 
-from christine.versioning import ChristineVersion, VersionStage, next_prerelease, parse_version, promote_stage
+from christine.versioning import (
+    ChristineVersion,
+    LegacyVersionKind,
+    LegacyVersionRecord,
+    VersionStage,
+    legacy_version_by_name,
+    legacy_version_records,
+    next_prerelease,
+    parse_version,
+    promote_stage,
+)
 
 
 def test_christine_version_formats_alpha_beta_rc_and_release():
@@ -120,3 +130,53 @@ def test_agent_guide_requires_version_management_rules():
     assert "alpha" in guide
     assert "beta" in guide
     assert "release" in guide
+
+
+def test_legacy_version_registry_tracks_primary_monolith_version_label():
+    record = legacy_version_by_name("CHRISTINE_VERSION")
+
+    assert isinstance(record, LegacyVersionRecord)
+    assert record.value == "600.0-final-agi-opus"
+    assert record.kind == LegacyVersionKind.MONOLITH_PUBLIC_LABEL
+    assert record.source == "christine_final.py"
+    assert record.active is True
+    assert record.governs_public_release is False
+
+
+def test_legacy_version_registry_keeps_package_metadata_separate():
+    record = legacy_version_by_name("pyproject.version")
+
+    assert record.value == "0.1.0"
+    assert record.kind == LegacyVersionKind.PACKAGE_METADATA
+    assert record.governs_public_release is False
+
+
+def test_legacy_version_registry_includes_known_subsystem_labels():
+    records = {record.name: record for record in legacy_version_records(active_only=True)}
+
+    for name in ["V42_VERSION", "V42_HERMES_VERSION", "V58_VERSION", "V60_VERSION", "_V70_VERSION"]:
+        assert name in records
+        assert records[name].kind == LegacyVersionKind.SUBSYSTEM_LABEL
+        assert records[name].governs_public_release is False
+
+
+def test_legacy_version_registry_includes_cache_and_runtime_labels():
+    records = {record.name: record for record in legacy_version_records(active_only=True)}
+
+    assert records["_OMEGA_CACHE_VERSION"].kind == LegacyVersionKind.CACHE_SCHEMA
+    assert records["_V42_NEURAL_VERSION"].kind == LegacyVersionKind.RUNTIME_LABEL
+    assert records["V2000_SKILL_COMPILER_VERSION"].value == "2000.0-singularity"
+    assert records["V2499_SKILL_COMPILER_VERSION"].value == "2499.0-beyond-singularity"
+
+
+def test_active_monolith_legacy_version_records_still_exist_in_source():
+    source = Path("christine_final.py").read_text(encoding="utf-8-sig")
+    records = [
+        record
+        for record in legacy_version_records(active_only=True)
+        if record.source == "christine_final.py"
+    ]
+
+    assert records
+    for record in records:
+        assert record.value in source
