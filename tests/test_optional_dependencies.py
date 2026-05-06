@@ -47,3 +47,10 @@ def test_optional_dependency_report_contains_startup_diagnostics():
     assert by_name["pynput"].available is False
     assert by_name["sentence_transformers"].available is False
     assert by_name["ollama"].message == "connection refused"
+
+
+def test_runtime_exports_optional_dependency_status_api():
+    from christine.runtime import OptionalDependencyStatus, optional_dependency_report
+
+    assert OptionalDependencyStatus.__name__ == "OptionalDependencyStatus"
+    assert callable(optional_dependency_report)
