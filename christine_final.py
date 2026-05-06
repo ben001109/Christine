@@ -9544,7 +9544,7 @@ def _build_code_index(force=False):
     """背景建立程式碼索引，快取到磁碟"""
     global _CODE_INDEX
     try:
-        with open(SELF_PATH, "r", encoding="utf-8") as f:
+        with open(SELF_PATH, "r", encoding="utf-8-sig") as f:
             src = f.read()
         file_hash = _hashlib_module.md5(src[:5000].encode()).hexdigest()
 
