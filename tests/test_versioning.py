@@ -43,6 +43,11 @@ def test_release_versions_cannot_have_prerelease_number():
         ChristineVersion(0, 2, 0, VersionStage.RELEASE, 1)
 
 
+def test_christine_version_rejects_invalid_constructor_stage():
+    with pytest.raises(ValueError, match="version stage"):
+        ChristineVersion(1, 2, 3, "preview", 1)  # type: ignore[arg-type]
+
+
 def test_prerelease_versions_require_positive_number():
     with pytest.raises(ValueError, match="prerelease versions require a positive number"):
         ChristineVersion(0, 2, 0, VersionStage.ALPHA)

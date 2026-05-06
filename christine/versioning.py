@@ -28,6 +28,8 @@ class ChristineVersion:
     prerelease: int | None = None
 
     def __post_init__(self) -> None:
+        if not isinstance(self.stage, VersionStage):
+            raise ValueError("version stage must be alpha, beta, rc, or release")
         if min(self.major, self.minor, self.patch) < 0:
             raise ValueError("version numbers must be non-negative")
         if self.stage == VersionStage.RELEASE:
