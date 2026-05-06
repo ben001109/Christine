@@ -60,10 +60,11 @@ def test_launcher_delegates_banner_rendering_to_runtime_module():
     assert "render_boot_banner(" in text
 
 
-def test_launcher_prints_optional_dependency_diagnostics():
+def test_launcher_prints_runtime_health_summary():
     text = Path("boot_christine.py").read_text(encoding="utf-8")
 
     assert "optional_dependency_report" in text
     assert "check_ollama_service" in text
-    assert "render_optional_dependency_diagnostics" in text
-    assert "print_optional_dependency_diagnostics" in text
+    assert "build_runtime_health_summary" in text
+    assert "render_runtime_health_summary" in text
+    assert "print_runtime_health_summary" in text
