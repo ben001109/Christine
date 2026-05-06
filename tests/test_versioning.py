@@ -207,3 +207,10 @@ def test_legacy_version_inventory_documents_key_legacy_values():
         "2499.0-beyond-singularity",
     ]:
         assert value in inventory
+
+
+def test_legacy_version_inventory_covers_all_registered_values():
+    inventory = Path("docs/versions/LEGACY_VERSIONS.md").read_text(encoding="utf-8")
+
+    for record in legacy_version_records():
+        assert record.value in inventory

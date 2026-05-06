@@ -69,7 +69,7 @@ Rules:
 - Do not read files or inspect git at import time.
 - Do not rewrite `christine_final.py` constants.
 - Do not treat legacy records as `ChristineVersion` unless they are already SemVer-compatible package metadata.
-- Mark monolith/subsystem/cache values as release-governance legacy artifacts.
+- Mark monolith/subsystem/cache values as legacy artifacts that do not govern public releases.
 
 **Step 4: Run GREEN**
 
