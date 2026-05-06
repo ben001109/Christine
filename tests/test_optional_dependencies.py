@@ -101,7 +101,14 @@ def test_optional_dependency_report_contains_startup_diagnostics():
 
 
 def test_runtime_exports_optional_dependency_status_api():
-    from christine.runtime import OptionalDependencyStatus, optional_dependency_report
+    from christine.runtime import (
+        OptionalDependencyStatus,
+        check_ollama_service,
+        optional_dependency_report,
+        render_optional_dependency_diagnostics,
+    )
 
     assert OptionalDependencyStatus.__name__ == "OptionalDependencyStatus"
+    assert callable(check_ollama_service)
     assert callable(optional_dependency_report)
+    assert callable(render_optional_dependency_diagnostics)
