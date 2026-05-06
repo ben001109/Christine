@@ -1,8 +1,10 @@
 from christine.runtime.optional_dependencies import (
     OptionalDependencyStatus,
+    check_ollama_service,
     check_optional_module,
     check_optional_service,
     optional_dependency_report,
+    render_optional_dependency_diagnostics,
 )
 
 
@@ -33,6 +35,55 @@ def test_check_optional_service_uses_injected_checker():
     assert status.name == "ollama"
     assert status.available is False
     assert status.message == "connection refused"
+
+
+def test_check_ollama_service_reports_available_with_injected_opener():
+    calls = []
+
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    def opener(url, timeout):
+        calls.append((url, timeout))
+        return Response()
+
+    status = check_ollama_service(opener=opener, timeout=0.2)
+
+    assert status == OptionalDependencyStatus("ollama", True, "local LLM", "reachable")
+    assert calls == [("http://127.0.0.1:11434/api/tags", 0.2)]
+
+
+def test_check_ollama_service_reports_connection_failure():
+    def opener(url, timeout):
+        raise OSError("connection refused")
+
+    status = check_ollama_service(opener=opener, timeout=0.2)
+
+    assert status.name == "ollama"
+    assert status.available is False
+    assert status.message == "connection refused"
+
+
+def test_render_optional_dependency_diagnostics_marks_degraded_dependencies():
+    lines = render_optional_dependency_diagnostics(
+        (
+            OptionalDependencyStatus("torch", False, "GPU acceleration", "missing"),
+            OptionalDependencyStatus("ollama", True, "local LLM", "reachable"),
+        ),
+        colors=False,
+    )
+
+    text = "\n".join(lines)
+    assert "[Optional Dependencies]" in text
+    assert "torch" in text
+    assert "missing" in text
+    assert "GPU acceleration" in text
+    assert "ollama" in text
+    assert "reachable" in text
 
 
 def test_optional_dependency_report_contains_startup_diagnostics():
