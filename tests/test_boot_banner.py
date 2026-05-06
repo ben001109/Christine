@@ -58,3 +58,12 @@ def test_launcher_delegates_banner_rendering_to_runtime_module():
 
     assert "from christine.runtime.boot_banner import render_boot_banner" in text
     assert "render_boot_banner(" in text
+
+
+def test_launcher_prints_optional_dependency_diagnostics():
+    text = Path("boot_christine.py").read_text(encoding="utf-8")
+
+    assert "optional_dependency_report" in text
+    assert "check_ollama_service" in text
+    assert "render_optional_dependency_diagnostics" in text
+    assert "print_optional_dependency_diagnostics" in text

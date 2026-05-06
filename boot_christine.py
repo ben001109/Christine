@@ -23,6 +23,11 @@ import os, sys, time, argparse, multiprocessing, platform, subprocess
 
 from christine.runtime.boot_banner import render_boot_banner
 from christine.runtime.boot_config import build_basic_hardware_info, build_cpu_thread_env, compute_cpu_budget
+from christine.runtime.optional_dependencies import (
+    check_ollama_service,
+    optional_dependency_report,
+    render_optional_dependency_diagnostics,
+)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -162,6 +167,17 @@ def print_boot_banner(hw, cpu_cores, gpu_ready, elapsed):
         print(line)
 
 
+def _check_ollama_for_report():
+    status = check_ollama_service()
+    return status.available, status.message
+
+
+def print_optional_dependency_diagnostics():
+    statuses = optional_dependency_report(service_checkers={"ollama": _check_ollama_for_report})
+    for line in render_optional_dependency_diagnostics(statuses, colors=True):
+        print(line)
+
+
 # ══════════════════════════════════════════════════════════════
 # §5  主流程
 # ══════════════════════════════════════════════════════════════
@@ -213,6 +229,8 @@ def main():
         print(f"  {_D}[3/3] 印 banner …{_R}", flush=True)
 
     elapsed = time.time() - t0
+
+    print_optional_dependency_diagnostics()
 
     if not args.no_banner:
         print_boot_banner(hw, cpu_cores, gpu_ready, elapsed)
