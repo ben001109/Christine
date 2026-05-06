@@ -53,3 +53,17 @@ def test_render_runtime_health_summary_is_boot_readable_without_colors():
     assert "ollama" in text
     assert "ok" in text
     assert "reachable" in text
+
+
+def test_runtime_exports_health_summary_api():
+    from christine.runtime import (
+        RuntimeHealthItem,
+        RuntimeHealthSummary,
+        build_runtime_health_summary,
+        render_runtime_health_summary,
+    )
+
+    assert RuntimeHealthItem.__name__ == "RuntimeHealthItem"
+    assert RuntimeHealthSummary.__name__ == "RuntimeHealthSummary"
+    assert callable(build_runtime_health_summary)
+    assert callable(render_runtime_health_summary)
