@@ -98,6 +98,13 @@ def promote_stage(version: ChristineVersion) -> ChristineVersion:
     raise ValueError("release versions cannot be promoted")
 
 
+CURRENT_VERSION = ChristineVersion(0, 2, 0, VersionStage.ALPHA, 1)
+
+
+def current_version() -> ChristineVersion:
+    return CURRENT_VERSION
+
+
 @dataclass(frozen=True)
 class LegacyVersionRecord:
     name: str

@@ -3,9 +3,11 @@ from pathlib import Path
 
 from christine.versioning import (
     ChristineVersion,
+    CURRENT_VERSION,
     LegacyVersionKind,
     LegacyVersionRecord,
     VersionStage,
+    current_version,
     legacy_version_by_name,
     legacy_version_records,
     next_prerelease,
@@ -109,6 +111,19 @@ def test_promote_stage_follows_alpha_beta_rc_release_order():
 def test_release_versions_do_not_promote_again():
     with pytest.raises(ValueError, match="release versions cannot be promoted"):
         promote_stage(ChristineVersion(0, 2, 0, VersionStage.RELEASE))
+
+
+def test_current_version_declares_active_alpha_development_line():
+    assert CURRENT_VERSION.public == "0.2.0-alpha.1"
+    assert CURRENT_VERSION.stage == VersionStage.ALPHA
+    assert current_version() == CURRENT_VERSION
+    assert parse_version(current_version().public) == CURRENT_VERSION
+
+
+def test_current_version_is_not_a_legacy_label():
+    legacy_values = {record.value for record in legacy_version_records()}
+
+    assert current_version().public not in legacy_values
 
 
 def test_versioning_policy_documents_alpha_beta_rc_release_rules():
