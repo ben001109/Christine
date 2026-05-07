@@ -1,3 +1,7 @@
+import math
+
+import pytest
+
 from christine.modelization import DistillationEvalResult, assess_distillation_readiness
 
 
@@ -36,3 +40,13 @@ def test_distillation_eval_blocks_failed_regression_suite():
 
     assert readiness.ready is False
     assert readiness.reason == "regression-failed"
+
+
+@pytest.mark.parametrize("score", [math.nan, math.inf, -0.1, 1.1])
+def test_distillation_eval_blocks_invalid_scores(score):
+    result = DistillationEvalResult(score, 1.0, 1.0, regression_passed=True)
+
+    readiness = assess_distillation_readiness(result)
+
+    assert readiness.ready is False
+    assert readiness.reason == "invalid-eval-score"
