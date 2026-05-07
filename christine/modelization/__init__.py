@@ -14,6 +14,7 @@ from .distillation_policy import (
 )
 from .distillation_dataset import DistillationExample, serialize_distillation_example_jsonl
 from .distillation_eval import DistillationEvalResult, DistillationReadiness, assess_distillation_readiness
+from .model_provider import ModelProvider, ModelProviderRequest, ModelProviderResponse, NoopModelProvider
 from .model_registry import ModelArtifactRecord, validate_model_artifact_path
 from .repository_index import CorpusDocument, CorpusManifest, build_corpus_document, build_corpus_manifest
 from .retrieval import RepositorySearchResult, search_repository_corpus
@@ -38,6 +39,10 @@ __all__ = [
     "DistillationSourceDecision",
     "DistillationSourceKind",
     "ModelArtifactRecord",
+    "ModelProvider",
+    "ModelProviderRequest",
+    "ModelProviderResponse",
+    "NoopModelProvider",
     "decide_model_corpus_path",
     "iter_model_corpus_paths",
     "CorpusDocument",
