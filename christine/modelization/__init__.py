@@ -12,6 +12,7 @@ from .distillation_policy import (
     DistillationSourceKind,
     validate_distillation_source,
 )
+from .distillation_dataset import DistillationExample, serialize_distillation_example_jsonl
 from .repository_index import CorpusDocument, CorpusManifest, build_corpus_document, build_corpus_manifest
 from .retrieval import RepositorySearchResult, search_repository_corpus
 from .routing_eval import (
@@ -29,6 +30,7 @@ from .routing_policy import SIDE_EFFECT_TARGETS, RoutePolicy, RoutePolicyDecisio
 __all__ = [
     "CorpusDecision",
     "DistillationDataSource",
+    "DistillationExample",
     "DistillationSourceDecision",
     "DistillationSourceKind",
     "decide_model_corpus_path",
@@ -50,6 +52,7 @@ __all__ = [
     "build_corpus_document",
     "build_corpus_manifest",
     "should_include_in_model_corpus",
+    "serialize_distillation_example_jsonl",
     "validate_distillation_source",
     "search_repository_corpus",
     "score_route_predictions",
