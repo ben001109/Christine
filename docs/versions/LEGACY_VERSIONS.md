@@ -12,6 +12,7 @@ display, cache, persisted-state, or subsystem behavior is preserved.
 | Name | Value | Kind | Source | Notes |
 | --- | --- | --- | --- | --- |
 | `pyproject.version` | `0.2.0a1` | package metadata | `pyproject.toml` | Package metadata aligned with `CURRENT_VERSION.package_metadata`; not release-stage governance. |
+| `brain.__version__` | `0.1.0` | subsystem label | `brain/__init__.py` | Extracted brain package subsystem label retained for compatibility. |
 | `CHRISTINE_VERSION` | `600.0-final-agi-opus` | monolith public label | `christine_final.py` | Legacy monolith display/runtime label. |
 | `V42_VERSION` | `7.2-persistent-brain` | subsystem label | `christine_final.py` | V42 persistent brain label. |
 | `V42_NEURAL_VERSION` | `42.2-true-intelligence` | subsystem label | `christine_final.py` | V42 neural brain label. |

@@ -193,6 +193,18 @@ def test_project_package_metadata_matches_current_version():
     assert f'name = "christine"\nversion = "{package_version}"' in lockfile
 
 
+def test_legacy_version_registry_tracks_brain_package_version_label():
+    record = legacy_version_by_name("brain.__version__")
+    source = Path(record.source).read_text(encoding="utf-8")
+
+    assert record.value == "0.1.0"
+    assert record.source == "brain/__init__.py"
+    assert record.kind == LegacyVersionKind.SUBSYSTEM_LABEL
+    assert record.active is True
+    assert record.governs_public_release is False
+    assert f'__version__ = "{record.value}"' in source
+
+
 def test_legacy_version_registry_includes_known_subsystem_labels():
     records = {record.name: record for record in legacy_version_records(active_only=True)}
 
@@ -277,3 +289,10 @@ def test_legacy_version_inventory_covers_all_registered_values():
 
     for record in legacy_version_records():
         assert record.value in inventory
+
+
+def test_legacy_version_inventory_documents_brain_package_version_label():
+    inventory = Path("docs/versions/LEGACY_VERSIONS.md").read_text(encoding="utf-8")
+
+    assert "`brain.__version__`" in inventory
+    assert "`brain/__init__.py`" in inventory

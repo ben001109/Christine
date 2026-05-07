@@ -145,6 +145,13 @@ LEGACY_VERSION_RECORDS: tuple[LegacyVersionRecord, ...] = (
         active=False,
     ),
     LegacyVersionRecord(
+        "brain.__version__",
+        "0.1.0",
+        "brain/__init__.py",
+        LegacyVersionKind.SUBSYSTEM_LABEL,
+        "Extracted brain package subsystem label retained for compatibility.",
+    ),
+    LegacyVersionRecord(
         "CHRISTINE_VERSION",
         "600.0-final-agi-opus",
         "christine_final.py",
