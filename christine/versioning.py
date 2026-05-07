@@ -65,6 +65,18 @@ class ChristineVersion:
             return base
         return f"{base}-{self.stage.value}.{self.prerelease}"
 
+    @property
+    def package_metadata(self) -> str:
+        base = f"{self.major}.{self.minor}.{self.patch}"
+        if self.stage == VersionStage.RELEASE:
+            return base
+        pep440_stage = {
+            VersionStage.ALPHA: "a",
+            VersionStage.BETA: "b",
+            VersionStage.RC: "rc",
+        }[self.stage]
+        return f"{base}{pep440_stage}{self.prerelease}"
+
 
 def parse_version(text: str) -> ChristineVersion:
     match = _VERSION_RE.match(str(text or ""))

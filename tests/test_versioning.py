@@ -23,6 +23,13 @@ def test_christine_version_formats_alpha_beta_rc_and_release():
     assert ChristineVersion(0, 2, 0, VersionStage.RELEASE).public == "0.2.0"
 
 
+def test_christine_version_maps_to_pep440_package_metadata():
+    assert ChristineVersion(0, 2, 0, VersionStage.ALPHA, 1).package_metadata == "0.2.0a1"
+    assert ChristineVersion(0, 2, 0, VersionStage.BETA, 2).package_metadata == "0.2.0b2"
+    assert ChristineVersion(0, 2, 0, VersionStage.RC, 3).package_metadata == "0.2.0rc3"
+    assert ChristineVersion(0, 2, 0, VersionStage.RELEASE).package_metadata == "0.2.0"
+
+
 def test_parse_version_accepts_release_stages():
     assert parse_version("0.2.0-alpha.1") == ChristineVersion(0, 2, 0, VersionStage.ALPHA, 1)
     assert parse_version("0.2.0-beta.1") == ChristineVersion(0, 2, 0, VersionStage.BETA, 1)
@@ -115,8 +122,10 @@ def test_release_versions_do_not_promote_again():
 
 def test_current_version_declares_active_alpha_development_line():
     assert CURRENT_VERSION.public == "0.2.0-alpha.1"
+    assert CURRENT_VERSION.package_metadata == "0.2.0a1"
     assert CURRENT_VERSION.stage == VersionStage.ALPHA
     assert current_version() == CURRENT_VERSION
+    assert current_version().package_metadata == "0.2.0a1"
     assert parse_version(current_version().public) == CURRENT_VERSION
 
 
