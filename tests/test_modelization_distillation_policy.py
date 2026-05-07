@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from christine.modelization import (
@@ -49,3 +51,13 @@ def test_distillation_policy_rejects_unknown_teacher_terms():
 def test_distillation_policy_rejects_unknown_source_kind():
     with pytest.raises(ValueError, match="unknown distillation source kind"):
         DistillationSourceKind("unknown")
+
+
+def test_model_factory_docs_define_training_preconditions():
+    text = Path("docs/model_factory/README.md").read_text(encoding="utf-8")
+
+    assert "LoRA" in text
+    assert "QLoRA" in text
+    assert "legal" in text
+    assert "eval gate" in text
+    assert "do not commit model artifacts" in text
