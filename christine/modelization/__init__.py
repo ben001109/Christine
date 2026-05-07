@@ -6,6 +6,12 @@ from .corpus import (
     iter_model_corpus_paths,
     should_include_in_model_corpus,
 )
+from .distillation_policy import (
+    DistillationDataSource,
+    DistillationSourceDecision,
+    DistillationSourceKind,
+    validate_distillation_source,
+)
 from .repository_index import CorpusDocument, CorpusManifest, build_corpus_document, build_corpus_manifest
 from .retrieval import RepositorySearchResult, search_repository_corpus
 from .routing_eval import (
@@ -22,6 +28,9 @@ from .routing_policy import SIDE_EFFECT_TARGETS, RoutePolicy, RoutePolicyDecisio
 
 __all__ = [
     "CorpusDecision",
+    "DistillationDataSource",
+    "DistillationSourceDecision",
+    "DistillationSourceKind",
     "decide_model_corpus_path",
     "iter_model_corpus_paths",
     "CorpusDocument",
@@ -41,6 +50,7 @@ __all__ = [
     "build_corpus_document",
     "build_corpus_manifest",
     "should_include_in_model_corpus",
+    "validate_distillation_source",
     "search_repository_corpus",
     "score_route_predictions",
 ]
