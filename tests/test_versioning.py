@@ -167,12 +167,30 @@ def test_legacy_version_registry_tracks_primary_monolith_version_label():
     assert record.governs_public_release is False
 
 
-def test_legacy_version_registry_keeps_package_metadata_separate():
+def test_legacy_version_registry_aligns_package_metadata_without_governing_release():
     record = legacy_version_by_name("pyproject.version")
+
+    assert record.value == current_version().package_metadata
+    assert record.kind == LegacyVersionKind.PACKAGE_METADATA
+    assert record.governs_public_release is False
+
+
+def test_previous_package_metadata_version_remains_audit_record():
+    record = legacy_version_by_name("pyproject.version.previous")
 
     assert record.value == "0.1.0"
     assert record.kind == LegacyVersionKind.PACKAGE_METADATA
+    assert record.active is False
     assert record.governs_public_release is False
+
+
+def test_project_package_metadata_matches_current_version():
+    pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
+    lockfile = Path("uv.lock").read_text(encoding="utf-8")
+    package_version = current_version().package_metadata
+
+    assert f'[project]\nname = "christine"\nversion = "{package_version}"' in pyproject
+    assert f'name = "christine"\nversion = "{package_version}"' in lockfile
 
 
 def test_legacy_version_registry_includes_known_subsystem_labels():

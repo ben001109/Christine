@@ -11,7 +11,7 @@ display, cache, persisted-state, or subsystem behavior is preserved.
 
 | Name | Value | Kind | Source | Notes |
 | --- | --- | --- | --- | --- |
-| `pyproject.version` | `0.1.0` | package metadata | `pyproject.toml` | Package metadata, not release-stage governance. |
+| `pyproject.version` | `0.2.0a1` | package metadata | `pyproject.toml` | Package metadata aligned with `CURRENT_VERSION.package_metadata`; not release-stage governance. |
 | `CHRISTINE_VERSION` | `600.0-final-agi-opus` | monolith public label | `christine_final.py` | Legacy monolith display/runtime label. |
 | `V42_VERSION` | `7.2-persistent-brain` | subsystem label | `christine_final.py` | V42 persistent brain label. |
 | `V42_NEURAL_VERSION` | `42.2-true-intelligence` | subsystem label | `christine_final.py` | V42 neural brain label. |
@@ -35,6 +35,7 @@ display, cache, persisted-state, or subsystem behavior is preserved.
 
 | Name | Value | Kind | Source | Notes |
 | --- | --- | --- | --- | --- |
+| `pyproject.version.previous` | `0.1.0` | package metadata | `pyproject.toml` | Previous package metadata value retained as a migration audit record. |
 | `CHRISTINE_VERSION_PROMETHEUS_COMMENT` | `4.2-prometheus` | commented history | `christine_final.py` | Historical commented label. |
 | `CHRISTINE_VERSION_ATLAS_COMMENT` | `4.2-atlas` | commented history | `christine_final.py` | Historical commented label. |
 | `CHRISTINE_VERSION_CONTEXTUAL_COMMENT` | `12.9-contextual` | commented history | `christine_final.py` | Historical commented label. |

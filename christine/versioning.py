@@ -131,10 +131,18 @@ class LegacyVersionRecord:
 LEGACY_VERSION_RECORDS: tuple[LegacyVersionRecord, ...] = (
     LegacyVersionRecord(
         "pyproject.version",
+        "0.2.0a1",
+        "pyproject.toml",
+        LegacyVersionKind.PACKAGE_METADATA,
+        "Package metadata aligned with CURRENT_VERSION.package_metadata; not the release-stage governance source.",
+    ),
+    LegacyVersionRecord(
+        "pyproject.version.previous",
         "0.1.0",
         "pyproject.toml",
         LegacyVersionKind.PACKAGE_METADATA,
-        "Package metadata version; not the release-stage governance source.",
+        "Previous package metadata value retained as a migration audit record.",
+        active=False,
     ),
     LegacyVersionRecord(
         "CHRISTINE_VERSION",
