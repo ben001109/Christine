@@ -68,8 +68,8 @@ The current canonical development-line version is `0.2.0-alpha.1`.
 
 - `CURRENT_VERSION` and `current_version()` in `christine.versioning` are the
   release-governance source for the active refactor line.
-- `pyproject.toml` remains package metadata until a separate package/version
-  migration aligns packaging with release governance.
+- `pyproject.toml` uses the PEP 440-compatible `0.2.0a1` package metadata
+  value for this active development line.
 - Legacy labels remain documented in `LEGACY_VERSION_RECORDS` and
   `docs/versions/LEGACY_VERSIONS.md`.
 - Do not infer the current public version from `christine_final.py` legacy labels.
@@ -84,8 +84,10 @@ suffixes such as `0.2.0-alpha.1`. Python package metadata must use PEP
 - `0.2.0-beta.1` maps to `0.2.0b1`.
 - `0.2.0-rc.1` maps to `0.2.0rc1`.
 - Stable release versions map unchanged, for example `0.2.0` remains `0.2.0`.
-- `pyproject.toml` remains unchanged until a separate migration aligns package
-  metadata with release governance.
+- `pyproject.toml` is aligned to `CURRENT_VERSION.package_metadata` and uses
+  `0.2.0a1` for the active `0.2.0-alpha.1` development line.
+- Package metadata supports Python tooling, but it is not the release-governance source.
+  `CURRENT_VERSION` remains canonical for release decisions.
 
 ## Legacy Version Labels
 

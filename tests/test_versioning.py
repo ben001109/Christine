@@ -249,7 +249,8 @@ def test_versioning_policy_documents_pep440_package_metadata_mapping():
     assert "package_metadata" in policy
     assert "0.2.0-alpha.1" in policy
     assert "0.2.0a1" in policy
-    assert "separate migration" in policy
+    assert "CURRENT_VERSION.package_metadata" in policy
+    assert "not the release-governance source" in policy
 
 
 def test_agent_guide_requires_legacy_version_registration():
