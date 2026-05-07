@@ -21,6 +21,9 @@ brain/generated/
 heartbeat.txt
 nexus_v2_state.json
 v42_export/v42_neural_intent/encoder/model.safetensors
+artifacts/models/
+artifacts/evals/
+artifacts/datasets/
 
 .env
 .env.*

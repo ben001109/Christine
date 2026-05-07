@@ -14,6 +14,7 @@ from .distillation_policy import (
 )
 from .distillation_dataset import DistillationExample, serialize_distillation_example_jsonl
 from .distillation_eval import DistillationEvalResult, DistillationReadiness, assess_distillation_readiness
+from .model_registry import ModelArtifactRecord, validate_model_artifact_path
 from .repository_index import CorpusDocument, CorpusManifest, build_corpus_document, build_corpus_manifest
 from .retrieval import RepositorySearchResult, search_repository_corpus
 from .routing_eval import (
@@ -36,6 +37,7 @@ __all__ = [
     "DistillationReadiness",
     "DistillationSourceDecision",
     "DistillationSourceKind",
+    "ModelArtifactRecord",
     "decide_model_corpus_path",
     "iter_model_corpus_paths",
     "CorpusDocument",
@@ -58,6 +60,7 @@ __all__ = [
     "should_include_in_model_corpus",
     "serialize_distillation_example_jsonl",
     "validate_distillation_source",
+    "validate_model_artifact_path",
     "search_repository_corpus",
     "score_route_predictions",
 ]
