@@ -34,6 +34,20 @@ def test_distillation_policy_rejects_unreviewed_private_memory():
     assert decision.reason == "unreviewed-private-source"
 
 
+def test_distillation_policy_rejects_reviewed_raw_private_memory():
+    source = DistillationDataSource(
+        name="reviewed-raw-memory",
+        kind=DistillationSourceKind.PRIVATE_MEMORY,
+        license="user-private",
+        reviewed=True,
+    )
+
+    decision = validate_distillation_source(source)
+
+    assert decision.allowed is False
+    assert decision.reason == "private-source-requires-derived-summary"
+
+
 def test_distillation_policy_rejects_unknown_teacher_terms():
     source = DistillationDataSource(
         name="teacher-output",
@@ -46,6 +60,20 @@ def test_distillation_policy_rejects_unknown_teacher_terms():
 
     assert decision.allowed is False
     assert decision.reason == "teacher-license-not-approved"
+
+
+def test_distillation_policy_rejects_unknown_license_for_reviewed_project_corpus():
+    source = DistillationDataSource(
+        name="unknown-project-corpus",
+        kind=DistillationSourceKind.PROJECT_CORPUS,
+        license="unknown",
+        reviewed=True,
+    )
+
+    decision = validate_distillation_source(source)
+
+    assert decision.allowed is False
+    assert decision.reason == "license-not-approved"
 
 
 def test_distillation_policy_rejects_unknown_source_kind():

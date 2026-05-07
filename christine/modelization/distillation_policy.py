@@ -33,10 +33,14 @@ APPROVED_TEACHER_LICENSES = {"apache-2.0", "mit", "cc-by-4.0", "project-owned"}
 
 
 def validate_distillation_source(source: DistillationDataSource) -> DistillationSourceDecision:
-    if source.kind == DistillationSourceKind.PRIVATE_MEMORY and not source.reviewed:
-        return DistillationSourceDecision(False, "unreviewed-private-source")
+    if source.kind == DistillationSourceKind.PRIVATE_MEMORY:
+        if not source.reviewed:
+            return DistillationSourceDecision(False, "unreviewed-private-source")
+        return DistillationSourceDecision(False, "private-source-requires-derived-summary")
     if source.kind == DistillationSourceKind.TEACHER_OUTPUT and source.license not in APPROVED_TEACHER_LICENSES:
         return DistillationSourceDecision(False, "teacher-license-not-approved")
     if not source.reviewed:
         return DistillationSourceDecision(False, "source-not-reviewed")
+    if source.license not in APPROVED_TEACHER_LICENSES:
+        return DistillationSourceDecision(False, "license-not-approved")
     return DistillationSourceDecision(True, "allowed")
