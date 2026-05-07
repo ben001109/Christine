@@ -205,6 +205,16 @@ def test_versioning_policy_documents_legacy_version_labels():
     assert "migration plan" in policy
 
 
+def test_versioning_policy_documents_current_development_version():
+    policy = Path("docs/VERSIONING.md").read_text(encoding="utf-8")
+
+    assert "## Current Development Version" in policy
+    assert "0.2.0-alpha.1" in policy
+    assert "CURRENT_VERSION" in policy
+    assert "pyproject.toml" in policy
+    assert "package metadata" in policy
+
+
 def test_agent_guide_requires_legacy_version_registration():
     guide = Path("AGENTS.md").read_text(encoding="utf-8")
 

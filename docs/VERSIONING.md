@@ -53,9 +53,24 @@ alpha -> beta -> rc -> release
 - `christine.versioning.ChristineVersion` stores a validated version.
 - `christine.versioning.VersionStage` defines `alpha`, `beta`, `rc`, and
   `release`.
+- `christine.versioning.CURRENT_VERSION` defines the active development-line
+  version.
+- `current_version()` returns the active development-line version.
 - `parse_version()` reads public version strings.
 - `next_prerelease()` increments `alpha.N`, `beta.N`, or `rc.N`.
 - `promote_stage()` moves `alpha -> beta -> rc -> release`.
+
+## Current Development Version
+
+The current canonical development-line version is `0.2.0-alpha.1`.
+
+- `CURRENT_VERSION` and `current_version()` in `christine.versioning` are the
+  release-governance source for the active refactor line.
+- `pyproject.toml` remains package metadata until a separate package/version
+  migration aligns packaging with release governance.
+- Legacy labels remain documented in `LEGACY_VERSION_RECORDS` and
+  `docs/versions/LEGACY_VERSIONS.md`.
+- Do not infer the current public version from `christine_final.py` legacy labels.
 
 ## Legacy Version Labels
 
