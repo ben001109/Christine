@@ -68,3 +68,12 @@ def test_launcher_prints_runtime_health_summary():
     assert "build_runtime_health_summary" in text
     assert "render_runtime_health_summary" in text
     assert "print_runtime_health_summary" in text
+
+
+def test_launcher_wires_current_version_into_runtime_health_summary():
+    text = Path("boot_christine.py").read_text(encoding="utf-8")
+
+    assert "from christine.versioning import current_version" in text
+    assert "RuntimeVersionInfo" in text
+    assert "current_version()" in text
+    assert "version_info=" in text

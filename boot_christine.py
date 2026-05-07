@@ -23,11 +23,12 @@ import os, sys, time, argparse, multiprocessing, platform, subprocess
 
 from christine.runtime.boot_banner import render_boot_banner
 from christine.runtime.boot_config import build_basic_hardware_info, build_cpu_thread_env, compute_cpu_budget
-from christine.runtime.health_summary import build_runtime_health_summary, render_runtime_health_summary
+from christine.runtime.health_summary import RuntimeVersionInfo, build_runtime_health_summary, render_runtime_health_summary
 from christine.runtime.optional_dependencies import (
     check_ollama_service,
     optional_dependency_report,
 )
+from christine.versioning import current_version
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -174,7 +175,11 @@ def _check_ollama_for_report():
 
 def print_runtime_health_summary():
     statuses = optional_dependency_report(service_checkers={"ollama": _check_ollama_for_report})
-    summary = build_runtime_health_summary(statuses)
+    version = current_version()
+    summary = build_runtime_health_summary(
+        statuses,
+        version_info=RuntimeVersionInfo(version.public, version.package_metadata),
+    )
     for line in render_runtime_health_summary(summary, colors=True):
         print(line)
 
