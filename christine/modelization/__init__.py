@@ -15,7 +15,7 @@ from .distillation_policy import (
 from .distillation_dataset import DistillationExample, serialize_distillation_example_jsonl
 from .distillation_eval import DistillationEvalResult, DistillationReadiness, assess_distillation_readiness
 from .model_provider import ModelProvider, ModelProviderRequest, ModelProviderResponse, NoopModelProvider
-from .model_registry import ModelArtifactRecord, validate_model_artifact_path
+from .model_registry import ModelArtifactRecord, validate_model_artifact_path, validate_model_eval_report_path
 from .repository_index import CorpusDocument, CorpusManifest, build_corpus_document, build_corpus_manifest
 from .retrieval import RepositorySearchResult, search_repository_corpus
 from .routing_eval import (
@@ -66,6 +66,7 @@ __all__ = [
     "serialize_distillation_example_jsonl",
     "validate_distillation_source",
     "validate_model_artifact_path",
+    "validate_model_eval_report_path",
     "search_repository_corpus",
     "score_route_predictions",
 ]

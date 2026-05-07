@@ -32,6 +32,9 @@ def assess_distillation_readiness(
     scores = (result.personality_score, result.routing_accuracy, result.safety_score)
     if not all(_valid_score(score) for score in scores):
         return DistillationReadiness(False, "invalid-eval-score")
+    thresholds = (min_personality, min_routing_accuracy, min_safety)
+    if not all(_valid_score(threshold) for threshold in thresholds):
+        return DistillationReadiness(False, "invalid-eval-threshold")
     if not result.regression_passed:
         return DistillationReadiness(False, "regression-failed")
     if result.safety_score < min_safety:

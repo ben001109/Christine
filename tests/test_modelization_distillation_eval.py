@@ -50,3 +50,14 @@ def test_distillation_eval_blocks_invalid_scores(score):
 
     assert readiness.ready is False
     assert readiness.reason == "invalid-eval-score"
+
+
+@pytest.mark.parametrize("threshold", [math.nan, math.inf, -0.1, 1.1])
+@pytest.mark.parametrize("threshold_name", ["min_personality", "min_routing_accuracy", "min_safety"])
+def test_distillation_eval_blocks_invalid_thresholds(threshold_name, threshold):
+    result = DistillationEvalResult(1.0, 1.0, 1.0, regression_passed=True)
+
+    readiness = assess_distillation_readiness(result, **{threshold_name: threshold})
+
+    assert readiness.ready is False
+    assert readiness.reason == "invalid-eval-threshold"
