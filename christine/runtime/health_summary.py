@@ -21,16 +21,24 @@ class RuntimeHealthItem:
 
 
 @dataclass(frozen=True)
+class RuntimeVersionInfo:
+    public: str
+    package_metadata: str
+
+
+@dataclass(frozen=True)
 class RuntimeHealthSummary:
     ready: bool
     degraded_count: int
     items: tuple[RuntimeHealthItem, ...]
+    version_info: RuntimeVersionInfo | None = None
 
 
 def build_runtime_health_summary(
     optional_statuses: tuple[OptionalDependencyStatus, ...],
     *,
     platform_requirements: tuple[PlatformFeatureRequirement, ...] = (),
+    version_info: RuntimeVersionInfo | None = None,
 ) -> RuntimeHealthSummary:
     optional_items = tuple(
         RuntimeHealthItem(
@@ -57,7 +65,7 @@ def build_runtime_health_summary(
     items = optional_items + platform_items
     degraded_count = sum(1 for item in items if not item.ok)
     ready = all(item.ok or not item.fatal for item in items)
-    return RuntimeHealthSummary(ready=ready, degraded_count=degraded_count, items=items)
+    return RuntimeHealthSummary(ready=ready, degraded_count=degraded_count, items=items, version_info=version_info)
 
 
 def _colors(enabled: bool) -> dict[str, str]:
@@ -81,6 +89,11 @@ def render_runtime_health_summary(
     c = _colors(colors)
     state = "ready" if summary.ready else "blocked"
     lines = [f"  {c['YE']}[Runtime Health]{c['R']} {state} ({_degraded_detail(summary.degraded_count)})"]
+    if summary.version_info is not None:
+        lines.append(
+            f"    version               : {summary.version_info.public} "
+            f"(package {summary.version_info.package_metadata})"
+        )
     for item in summary.items:
         mark = f"{c['GR']}✓{c['R']}" if item.ok else f"{c['YE']}~{c['R']}"
         status = "ok" if item.ok else "degraded"

@@ -4,6 +4,7 @@ from .boot_config import compute_cpu_budget
 from .health_summary import (
     RuntimeHealthItem,
     RuntimeHealthSummary,
+    RuntimeVersionInfo,
     build_runtime_health_summary,
     render_runtime_health_summary,
 )
@@ -21,6 +22,7 @@ __all__ = [
     "OptionalDependencyStatus",
     "RuntimeHealthItem",
     "RuntimeHealthSummary",
+    "RuntimeVersionInfo",
     "RuntimePaths",
     "build_runtime_health_summary",
     "check_ollama_service",

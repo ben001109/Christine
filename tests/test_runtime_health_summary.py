@@ -1,4 +1,5 @@
 from christine.platform import PlatformFeature, require_platform_feature
+import christine.runtime.health_summary as health_summary
 from christine.runtime.health_summary import build_runtime_health_summary, render_runtime_health_summary
 from christine.runtime.optional_dependencies import OptionalDependencyStatus
 
@@ -100,15 +101,38 @@ def test_render_runtime_health_summary_includes_platform_feature_items():
     assert "loopback audio" in text
 
 
+def test_runtime_health_summary_renders_version_info_inside_health_section():
+    assert hasattr(health_summary, "RuntimeVersionInfo")
+    runtime_version_info = health_summary.RuntimeVersionInfo
+    summary = build_runtime_health_summary(
+        (
+            OptionalDependencyStatus("torch", False, "GPU acceleration", "missing"),
+        ),
+        version_info=runtime_version_info("0.2.0-alpha.1", "0.2.0a1"),
+    )
+
+    lines = render_runtime_health_summary(summary, colors=False)
+    text = "\n".join(lines)
+
+    assert summary.ready is True
+    assert summary.degraded_count == 1
+    assert "[Runtime Health]" in text
+    assert "version" in text
+    assert "0.2.0-alpha.1" in text
+    assert "0.2.0a1" in text
+
+
 def test_runtime_exports_health_summary_api():
     from christine.runtime import (
         RuntimeHealthItem,
         RuntimeHealthSummary,
+        RuntimeVersionInfo,
         build_runtime_health_summary,
         render_runtime_health_summary,
     )
 
     assert RuntimeHealthItem.__name__ == "RuntimeHealthItem"
     assert RuntimeHealthSummary.__name__ == "RuntimeHealthSummary"
+    assert RuntimeVersionInfo.__name__ == "RuntimeVersionInfo"
     assert callable(build_runtime_health_summary)
     assert callable(render_runtime_health_summary)
