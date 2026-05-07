@@ -56,6 +56,8 @@ alpha -> beta -> rc -> release
 - `christine.versioning.CURRENT_VERSION` defines the active development-line
   version.
 - `current_version()` returns the active development-line version.
+- `ChristineVersion.package_metadata` returns the PEP 440-compatible Python
+  package metadata form for the same validated version.
 - `parse_version()` reads public version strings.
 - `next_prerelease()` increments `alpha.N`, `beta.N`, or `rc.N`.
 - `promote_stage()` moves `alpha -> beta -> rc -> release`.
@@ -71,6 +73,19 @@ The current canonical development-line version is `0.2.0-alpha.1`.
 - Legacy labels remain documented in `LEGACY_VERSION_RECORDS` and
   `docs/versions/LEGACY_VERSIONS.md`.
 - Do not infer the current public version from `christine_final.py` legacy labels.
+
+## PEP 440 Package Metadata
+
+Christine public versions keep the project policy format, including prerelease
+suffixes such as `0.2.0-alpha.1`. Python package metadata must use PEP
+440-compatible forms from `ChristineVersion.package_metadata`.
+
+- `0.2.0-alpha.1` maps to `0.2.0a1`.
+- `0.2.0-beta.1` maps to `0.2.0b1`.
+- `0.2.0-rc.1` maps to `0.2.0rc1`.
+- Stable release versions map unchanged, for example `0.2.0` remains `0.2.0`.
+- `pyproject.toml` remains unchanged until a separate migration aligns package
+  metadata with release governance.
 
 ## Legacy Version Labels
 

@@ -224,6 +224,16 @@ def test_versioning_policy_documents_current_development_version():
     assert "package metadata" in policy
 
 
+def test_versioning_policy_documents_pep440_package_metadata_mapping():
+    policy = Path("docs/VERSIONING.md").read_text(encoding="utf-8")
+
+    assert "## PEP 440 Package Metadata" in policy
+    assert "package_metadata" in policy
+    assert "0.2.0-alpha.1" in policy
+    assert "0.2.0a1" in policy
+    assert "separate migration" in policy
+
+
 def test_agent_guide_requires_legacy_version_registration():
     guide = Path("AGENTS.md").read_text(encoding="utf-8")
 
