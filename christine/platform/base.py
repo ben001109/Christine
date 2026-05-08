@@ -39,6 +39,20 @@ class PlatformFeatureRequirement:
     message: str
 
 
+@dataclass(frozen=True)
+class PlatformAvailability:
+    platform_name: str
+    feature: PlatformFeature
+    available: bool
+    message: str
+    detail: str
+
+    def as_text(self) -> str:
+        if self.available:
+            return self.message
+        return f"unavailable:{self.message}"
+
+
 def detect_platform() -> PlatformCapabilities:
     if sys.platform.startswith("win"):
         return PlatformCapabilities("windows", True, True, True, True)
@@ -129,4 +143,15 @@ def require_platform_feature(platform_name: str, feature: PlatformFeature | str)
         supported=support.supported,
         detail=support.detail,
         message=unsupported_message(platform_name, normalized_feature),
+    )
+
+
+def platform_availability(platform_name: str, feature: PlatformFeature | str) -> PlatformAvailability:
+    requirement = require_platform_feature(platform_name, feature)
+    return PlatformAvailability(
+        platform_name=requirement.platform_name,
+        feature=requirement.feature,
+        available=requirement.supported,
+        message=requirement.message,
+        detail=requirement.detail,
     )

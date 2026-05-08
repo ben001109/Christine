@@ -2,6 +2,7 @@
 
 from .base import (
     FeatureSupport,
+    PlatformAvailability,
     PlatformCapabilities,
     PlatformFeatureRequirement,
     PlatformFeature,
@@ -9,12 +10,14 @@ from .base import (
     detect_platform,
     feature_support,
     is_feature_supported,
+    platform_availability,
     require_platform_feature,
     unsupported_message,
 )
 
 __all__ = [
     "FeatureSupport",
+    "PlatformAvailability",
     "PlatformCapabilities",
     "PlatformFeatureRequirement",
     "PlatformFeature",
@@ -22,6 +25,7 @@ __all__ = [
     "detect_platform",
     "feature_support",
     "is_feature_supported",
+    "platform_availability",
     "require_platform_feature",
     "unsupported_message",
 ]

@@ -2,10 +2,12 @@ import pytest
 
 from christine.platform.base import detect_platform
 from christine.platform.base import (
+    PlatformAvailability,
     PlatformFeature,
     capability_matrix,
     feature_support,
     is_feature_supported,
+    platform_availability,
     require_platform_feature,
     unsupported_message,
 )
@@ -65,21 +67,25 @@ def test_unsupported_message_is_user_facing_and_specific():
 def test_platform_exports_capability_matrix_api():
     from christine.platform import (
         FeatureSupport,
+        PlatformAvailability,
         PlatformFeatureRequirement,
         PlatformFeature,
         capability_matrix,
         feature_support,
         is_feature_supported,
+        platform_availability,
         require_platform_feature,
         unsupported_message,
     )
 
     assert FeatureSupport.__name__ == "FeatureSupport"
+    assert PlatformAvailability.__name__ == "PlatformAvailability"
     assert PlatformFeatureRequirement.__name__ == "PlatformFeatureRequirement"
     assert PlatformFeature.SYSTEM_AUDIO.value == "system_audio"
     assert callable(capability_matrix)
     assert callable(feature_support)
     assert callable(is_feature_supported)
+    assert callable(platform_availability)
     assert callable(require_platform_feature)
     assert callable(unsupported_message)
 
@@ -145,3 +151,23 @@ def test_require_platform_feature_keeps_unknown_platform_safe():
     assert result.feature == PlatformFeature.GUI
     assert result.supported is False
     assert result.detail == "unknown platform"
+
+
+def test_platform_availability_wraps_supported_feature():
+    result = platform_availability("windows", "autostart")
+
+    assert result.available is True
+    assert result.platform_name == "windows"
+    assert result.feature == PlatformFeature.AUTOSTART
+    assert result.message == "windows:autostart 已支援"
+    assert result.as_text() == "windows:autostart 已支援"
+
+
+def test_platform_availability_wraps_unsupported_feature():
+    result = platform_availability("linux", "autostart")
+
+    assert result.available is False
+    assert result.platform_name == "linux"
+    assert result.feature == PlatformFeature.AUTOSTART
+    assert "尚未支援" in result.message
+    assert result.as_text().startswith("unavailable:")
