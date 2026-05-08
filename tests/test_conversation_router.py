@@ -1,3 +1,4 @@
+from christine.conversation import router
 from christine.conversation.router import (
     augment_input_with_hint,
     dedupe_tool_specs,
@@ -79,3 +80,54 @@ def test_route_voice_then_fallback_ignores_hint_provider_errors():
 
     assert route_voice_then_fallback("hi", lambda inp: None, fallback, broken_hint) == "ok"
     assert seen["inp"] == "hi"
+
+
+def test_route_observed_voice_then_fallback_observes_before_voice():
+    calls = []
+
+    def observer(inp):
+        calls.append(("observe", inp))
+
+    def voice(inp):
+        calls.append(("voice", inp))
+        return "voice-result"
+
+    def fallback(inp):
+        calls.append(("fallback", inp))
+        return "fallback-result"
+
+    result = router.route_observed_voice_then_fallback(
+        "hi", observer, voice, fallback, lambda: "hint"
+    )
+
+    assert result == "voice-result"
+    assert calls == [("observe", "hi"), ("voice", "hi")]
+
+
+def test_route_observed_voice_then_fallback_ignores_observer_errors():
+    calls = []
+
+    def observer(inp):
+        calls.append(("observe", inp))
+        raise RuntimeError("routing observation failed")
+
+    def fallback(inp, *args, **kwargs):
+        calls.append(("fallback", inp, args, kwargs))
+        return "fallback-result"
+
+    result = router.route_observed_voice_then_fallback(
+        "hi",
+        observer,
+        lambda inp: None,
+        fallback,
+        lambda: "hint",
+        hybrid_enabled=True,
+        args=("extra",),
+        kwargs={"flag": True},
+    )
+
+    assert result == "fallback-result"
+    assert calls == [
+        ("observe", "hi"),
+        ("fallback", "hint\nhi", ("extra",), {"flag": True}),
+    ]

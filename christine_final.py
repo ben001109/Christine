@@ -119192,7 +119192,7 @@ try:
     from pathlib import Path as _v180_Path
     from christine.brain_bridge.service import BrainService, BrainServiceConfig
     from christine.conversation.runtime_routing_hook import RuntimeRoutingHook, observe_direct_runtime_route
-    from christine.conversation.router import route_voice_then_fallback
+    from christine.conversation.router import route_observed_voice_then_fallback
     # 讓 brain/ 可 import（brain 套件就放在 christine_final.py 同資料夾）
     _v180_here = _v180_os.path.dirname(_v180_os.path.abspath(__file__))
     if _v180_here not in _v180_sys.path:
@@ -119750,8 +119750,6 @@ try:
                 except Exception: pass
 
         def ask(inp, *args, **kwargs):
-            _v180_observe_runtime_route(inp)
-
             def _voice_handler(candidate):
                 r = _v180_try_voice(candidate)
                 if r is not None:
@@ -119759,8 +119757,9 @@ try:
                     except Exception: pass
                 return r
 
-            return route_voice_then_fallback(
+            return route_observed_voice_then_fallback(
                 inp,
+                _v180_observe_runtime_route,
                 _voice_handler,
                 _v180_prev_ask,
                 lambda: brain_hint(as_prompt=True),

@@ -47,3 +47,28 @@ def route_voice_then_fallback(
             hint = None
     augmented = augment_input_with_hint(inp, hint, enabled=hybrid_enabled)
     return fallback(augmented, *args, **(kwargs or {}))
+
+
+def route_observed_voice_then_fallback(
+    inp: Any,
+    route_observer: Callable[[Any], Any],
+    voice_handler: Callable[[Any], Any],
+    fallback: Callable[..., Any],
+    hint_provider: Callable[[], str | None] | None = None,
+    hybrid_enabled: bool = True,
+    args: tuple[Any, ...] = (),
+    kwargs: dict[str, Any] | None = None,
+) -> Any:
+    try:
+        route_observer(inp)
+    except Exception:
+        pass
+    return route_voice_then_fallback(
+        inp,
+        voice_handler,
+        fallback,
+        hint_provider,
+        hybrid_enabled=hybrid_enabled,
+        args=args,
+        kwargs=kwargs,
+    )
