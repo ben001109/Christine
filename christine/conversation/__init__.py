@@ -1,7 +1,12 @@
 """Conversation routing helpers for Christine's legacy ask chain."""
 
 from .policy_router import PolicyRouteResult, route_with_policy
-from .router import augment_input_with_hint, dedupe_tool_specs, route_voice_then_fallback
+from .router import (
+    augment_input_with_hint,
+    dedupe_tool_specs,
+    route_observed_voice_then_fallback,
+    route_voice_then_fallback,
+)
 from .runtime_routing_hook import (
     RuntimeRouteObservation,
     RuntimeRoutingHook,
@@ -17,6 +22,7 @@ __all__ = [
     "RuntimeRoutingHook",
     "observe_direct_runtime_route",
     "observe_runtime_route",
+    "route_observed_voice_then_fallback",
     "route_voice_then_fallback",
     "route_with_policy",
 ]
