@@ -24,10 +24,11 @@ def _v1484_ask_wrapper_block() -> str:
     return text[start:end]
 
 
-def test_v1484_ask_wrapper_uses_router_voice_hint_helper():
+def test_v1484_ask_wrapper_uses_observed_router_voice_hint_helper():
     block = _v1484_ask_wrapper_block()
 
-    assert "route_voice_then_fallback" in block
+    assert "route_observed_voice_then_fallback" in block
     assert "_v180_try_voice" in block
     assert "_v180_prev_ask" in block
     assert "brain_hint(as_prompt=True)" in block
+    assert "_v180_observe_runtime_route(inp)" not in block
