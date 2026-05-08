@@ -119191,6 +119191,7 @@ try:
     import os as _v180_os, sys as _v180_sys, time as _v180_time, traceback as _v180_tb
     from pathlib import Path as _v180_Path
     from christine.brain_bridge.service import BrainService, BrainServiceConfig
+    from christine.conversation.runtime_routing_hook import RuntimeRoutingHook, observe_direct_runtime_route
     from christine.conversation.router import route_voice_then_fallback
     # 讓 brain/ 可 import（brain 套件就放在 christine_final.py 同資料夾）
     _v180_here = _v180_os.path.dirname(_v180_os.path.abspath(__file__))
@@ -119739,7 +119740,18 @@ try:
 
     try:
         _v180_prev_ask = globals().get("ask")
+        _V1484_RUNTIME_ROUTING_HOOK = RuntimeRoutingHook(enabled=False)
+
+        def _v180_observe_runtime_route(candidate):
+            try:
+                observe_direct_runtime_route(str(candidate), hook=_V1484_RUNTIME_ROUTING_HOOK)
+            except Exception:
+                try: log.debug("[V1484] runtime routing observation skipped", exc_info=True)
+                except Exception: pass
+
         def ask(inp, *args, **kwargs):
+            _v180_observe_runtime_route(inp)
+
             def _voice_handler(candidate):
                 r = _v180_try_voice(candidate)
                 if r is not None:
