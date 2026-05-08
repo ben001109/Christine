@@ -6,13 +6,27 @@ from christine.platform.windows import autostart_status, setup_autostart, startu
 
 
 def test_linux_autostart_wrappers_return_structured_unavailable():
-    assert linux_setup_autostart().startswith("unavailable:linux:autostart")
-    assert linux_autostart_status().startswith("unavailable:linux:autostart")
+    setup_result = linux_setup_autostart()
+    status_result = linux_autostart_status()
+
+    assert setup_result.startswith("unavailable:linux:autostart")
+    assert "尚未支援" in setup_result
+    assert "not wired yet" in setup_result
+    assert status_result.startswith("unavailable:linux:autostart")
+    assert "尚未支援" in status_result
+    assert "not wired yet" in status_result
 
 
 def test_macos_autostart_wrappers_return_structured_unavailable():
-    assert macos_setup_autostart().startswith("unavailable:macos:autostart")
-    assert macos_autostart_status().startswith("unavailable:macos:autostart")
+    setup_result = macos_setup_autostart()
+    status_result = macos_autostart_status()
+
+    assert setup_result.startswith("unavailable:macos:autostart")
+    assert "尚未支援" in setup_result
+    assert "not wired yet" in setup_result
+    assert status_result.startswith("unavailable:macos:autostart")
+    assert "尚未支援" in status_result
+    assert "not wired yet" in status_result
 
 
 def test_windows_autostart_helpers_still_use_startup_folder(tmp_path):
