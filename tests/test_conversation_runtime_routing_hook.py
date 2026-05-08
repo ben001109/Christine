@@ -1,6 +1,10 @@
 import pytest
 
-from christine.conversation.runtime_routing_hook import RuntimeRoutingHook, observe_runtime_route
+from christine.conversation.runtime_routing_hook import (
+    RuntimeRoutingHook,
+    observe_direct_runtime_route,
+    observe_runtime_route,
+)
 from christine.modelization import RoutePolicy, RoutePrediction
 
 
@@ -61,6 +65,36 @@ def test_enabled_runtime_routing_hook_can_use_explicit_policy_override():
     assert observation.accepted is True
 
 
+def test_direct_runtime_route_observation_defaults_to_disabled_direct_fallback():
+    records = []
+
+    observation = observe_direct_runtime_route("hello", recorder=records.append)
+
+    assert observation.enabled is False
+    assert observation.predicted_target == "direct"
+    assert observation.target == "direct"
+    assert observation.accepted is False
+    assert observation.reason == "runtime-routing-disabled"
+    assert records == []
+
+
+def test_enabled_direct_runtime_route_observation_records_accepted_direct_route():
+    records = []
+
+    observation = observe_direct_runtime_route(
+        "hello",
+        hook=RuntimeRoutingHook(enabled=True),
+        recorder=records.append,
+    )
+
+    assert observation.enabled is True
+    assert observation.predicted_target == "direct"
+    assert observation.target == "direct"
+    assert observation.accepted is True
+    assert observation.reason == "accepted"
+    assert records == [observation]
+
+
 def test_disabled_runtime_routing_hook_rejects_invalid_fallback_target():
     with pytest.raises(ValueError, match="unknown route target"):
         observe_runtime_route(
@@ -71,8 +105,14 @@ def test_disabled_runtime_routing_hook_rejects_invalid_fallback_target():
 
 
 def test_conversation_exports_runtime_routing_hook():
-    from christine.conversation import RuntimeRouteObservation, RuntimeRoutingHook, observe_runtime_route
+    from christine.conversation import (
+        RuntimeRouteObservation,
+        RuntimeRoutingHook,
+        observe_direct_runtime_route,
+        observe_runtime_route,
+    )
 
     assert RuntimeRouteObservation.__name__ == "RuntimeRouteObservation"
     assert RuntimeRoutingHook.__name__ == "RuntimeRoutingHook"
+    assert callable(observe_direct_runtime_route)
     assert callable(observe_runtime_route)

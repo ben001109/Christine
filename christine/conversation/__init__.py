@@ -2,7 +2,12 @@
 
 from .policy_router import PolicyRouteResult, route_with_policy
 from .router import augment_input_with_hint, dedupe_tool_specs, route_voice_then_fallback
-from .runtime_routing_hook import RuntimeRouteObservation, RuntimeRoutingHook, observe_runtime_route
+from .runtime_routing_hook import (
+    RuntimeRouteObservation,
+    RuntimeRoutingHook,
+    observe_direct_runtime_route,
+    observe_runtime_route,
+)
 
 __all__ = [
     "augment_input_with_hint",
@@ -10,6 +15,7 @@ __all__ = [
     "PolicyRouteResult",
     "RuntimeRouteObservation",
     "RuntimeRoutingHook",
+    "observe_direct_runtime_route",
     "observe_runtime_route",
     "route_voice_then_fallback",
     "route_with_policy",

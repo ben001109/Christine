@@ -58,3 +58,17 @@ def observe_runtime_route(
     if recorder is not None:
         recorder(observation)
     return observation
+
+
+def observe_direct_runtime_route(
+    input_text: str,
+    *,
+    hook: RuntimeRoutingHook = RuntimeRoutingHook(),
+    recorder: Callable[[RuntimeRouteObservation], None] | None = None,
+) -> RuntimeRouteObservation:
+    return observe_runtime_route(
+        input_text,
+        RoutePrediction("direct", "legacy ask wrapper"),
+        hook=hook,
+        recorder=recorder,
+    )
