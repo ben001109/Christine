@@ -6055,6 +6055,7 @@ def _continue_after_truncation(prompt, recent, partial_reply, route_tier="normal
 # ║  此函式在載入過程中會被後續 ask() 覆蓋，但透過 _prev_ask_giga 鏈保留。  ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 from christine.conversation.router import dedupe_tool_specs
+from christine.tools.dispatch import format_tool_result_message
 
 def ask(inp):
     global mem
@@ -6109,14 +6110,7 @@ def ask(inp):
                         r={"ok":False,"e":"tool error: "+str(tool_e)}
                 if b.name.startswith("self_"):
                     print("\n  >> "+b.name+": "+str(r)[:100])
-                if b.name in("capture_screen","capture_camera") and isinstance(r,dict) and r.get("ok"):
-                    results.append({"type":"tool_result","tool_use_id":b.id,"content":[{"type":"image","source":{"type":"base64","media_type":"image/png","data":r["img"]}},{"type":"text","text":"Describe and help."}]})
-                else:
-                    if isinstance(r,dict):
-                        rx=r.get("e","err") if not r.get("ok",True) else json.dumps(r, ensure_ascii=False)
-                    else:
-                        rx=str(r)
-                    results.append({"type":"tool_result","tool_use_id":b.id,"content":rx[:3000]})
+                results.append(format_tool_result_message(b.id, b.name, r))
         recent.append({"role":"assistant","content":resp.content})
         recent.append({"role":"user","content":results})
         try:
