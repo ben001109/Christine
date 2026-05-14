@@ -1,10 +1,42 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable, Mapping
 from typing import Any
 
 
 IMAGE_RESULT_TOOLS = frozenset({"capture_screen", "capture_camera"})
+
+ToolHandlerMap = Mapping[str, Callable[[Any], Any]]
+
+LEGACY_TOOL_FALLBACK_ALIASES = {
+    "codeforge_write_any_file": "write_file",
+    "codeforge_patch_any_file": "write_file",
+    "docstudio_create_pdf": "create_pdf",
+    "docstudio_create_docx": "create_pdf",
+}
+
+
+def execute_tool_handler(
+    tool_name: str,
+    tool_input: Any,
+    handlers: ToolHandlerMap,
+    *,
+    fallback_aliases: Mapping[str, str] = LEGACY_TOOL_FALLBACK_ALIASES,
+) -> Any:
+    if tool_name not in handlers:
+        return "tool_not_mapped:" + tool_name
+    try:
+        return handlers[tool_name](tool_input)
+    except Exception as tool_error:
+        fallback_name = fallback_aliases.get(tool_name)
+        if fallback_name and fallback_name in handlers:
+            try:
+                fallback_result = handlers[fallback_name](tool_input)
+                return str(fallback_result) + " (fallback:" + fallback_name + ")"
+            except Exception:
+                pass
+        return {"ok": False, "e": "tool error: " + str(tool_error)}
 
 
 def format_tool_result_message(

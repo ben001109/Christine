@@ -6055,7 +6055,7 @@ def _continue_after_truncation(prompt, recent, partial_reply, route_tier="normal
 # ║  此函式在載入過程中會被後續 ask() 覆蓋，但透過 _prev_ask_giga 鏈保留。  ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 from christine.conversation.router import dedupe_tool_specs
-from christine.tools.dispatch import format_tool_result_message
+from christine.tools.dispatch import execute_tool_handler, format_tool_result_message
 
 def ask(inp):
     global mem
@@ -6094,20 +6094,7 @@ def ask(inp):
         for b in getattr(resp, "content", []):
             if getattr(b, "type", "")=="tool_use":
                 print(f"\r  {_C.BLU}[>] {b.name}{_C.RST}",end="",flush=True); rs(b.name)
-                try:
-                    r=TM[b.name](b.input) if b.name in TM else "tool_not_mapped:"+b.name
-                except Exception as tool_e:
-                    # 智能錯誤恢復：嘗試替代工具
-                    fallback_map={"codeforge_write_any_file":"write_file","codeforge_patch_any_file":"write_file","docstudio_create_pdf":"create_pdf","docstudio_create_docx":"create_pdf"}
-                    fb=fallback_map.get(b.name)
-                    if fb and fb in TM:
-                        try:
-                            r=TM[fb](b.input)
-                            r=str(r)+" (fallback:"+fb+")"
-                        except:
-                            r={"ok":False,"e":"tool error: "+str(tool_e)}
-                    else:
-                        r={"ok":False,"e":"tool error: "+str(tool_e)}
+                r = execute_tool_handler(b.name, b.input, TM)
                 if b.name.startswith("self_"):
                     print("\n  >> "+b.name+": "+str(r)[:100])
                 results.append(format_tool_result_message(b.id, b.name, r))
