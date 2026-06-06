@@ -8,23 +8,13 @@ def _v10_ask_block() -> str:
     return text[start:end]
 
 
-def test_v10_tool_loop_delegates_tool_result_formatting():
+def test_v10_tool_loop_delegates_runtime_tool_use_path():
     block = _v10_ask_block()
 
     assert "from christine.tools.dispatch import" in block
-    assert "format_tool_result_message" in block
-    assert "format_tool_result_message(b.id, b.name, r)" in block
-    assert 'media_type":"image/png' not in block
-    assert "json.dumps(r, ensure_ascii=False)" not in block
-    assert "rx[:3000]" not in block
-
-
-def test_v10_tool_loop_delegates_tool_execution():
-    block = _v10_ask_block()
-
-    assert "from christine.tools.dispatch import" in block
-    assert "execute_tool_handler" in block
-    assert "execute_tool_handler(b.name, b.input, TM)" in block
-    assert "fallback_map={" not in block
-    assert "TM[b.name](b.input)" not in block
-    assert "tool_not_mapped:" not in block
+    assert "build_tool_loop_results" in block
+    assert "on_tool_use=_v10_on_tool_use" in block
+    assert "on_self_tool_result=_v10_on_self_tool_result" in block
+    assert "execute_tool_handler(b.name, b.input, TM)" not in block
+    assert "format_tool_result_message(b.id, b.name, r)" not in block
+    assert "for b in getattr(resp, \"content\", [])" not in block
