@@ -8,6 +8,8 @@ from typing import Any
 IMAGE_RESULT_TOOLS = frozenset({"capture_screen", "capture_camera"})
 
 ToolHandlerMap = Mapping[str, Callable[[Any], Any]]
+ToolUseCallback = Callable[[Any], None]
+SelfToolResultCallback = Callable[[str, Any], None]
 
 LEGACY_TOOL_FALLBACK_ALIASES = {
     "codeforge_write_any_file": "write_file",
@@ -67,3 +69,24 @@ def format_tool_result_message(
     else:
         text = str(result)
     return {"type": "tool_result", "tool_use_id": tool_use_id, "content": text[:text_limit]}
+
+
+def build_tool_loop_results(
+    blocks: Any,
+    handlers: ToolHandlerMap,
+    *,
+    on_tool_use: ToolUseCallback | None = None,
+    on_self_tool_result: SelfToolResultCallback | None = None,
+) -> list[dict[str, Any]]:
+    results = []
+    for block in blocks or []:
+        if getattr(block, "type", "") != "tool_use":
+            continue
+        if on_tool_use is not None:
+            on_tool_use(block)
+        name = block.name
+        result = execute_tool_handler(name, block.input, handlers)
+        if name.startswith("self_") and on_self_tool_result is not None:
+            on_self_tool_result(name, result)
+        results.append(format_tool_result_message(block.id, name, result))
+    return results
