@@ -1,5 +1,6 @@
 """Conversation routing helpers for Christine's legacy ask chain."""
 
+from .context import build_recent_messages, build_v10_system_prompt
 from .policy_router import PolicyRouteResult, route_with_policy
 from .router import (
     augment_input_with_hint,
@@ -16,6 +17,8 @@ from .runtime_routing_hook import (
 
 __all__ = [
     "augment_input_with_hint",
+    "build_recent_messages",
+    "build_v10_system_prompt",
     "dedupe_tool_specs",
     "PolicyRouteResult",
     "RuntimeRouteObservation",
