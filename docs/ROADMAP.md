@@ -77,10 +77,10 @@ Completed M1 slices:
   `christine.tools.dispatch.format_tool_result_message()`.
 - V10 tool execution lookup, fallback aliases, and error shaping delegate to
   `christine.tools.dispatch.execute_tool_handler()`.
+- V10 prompt and recent-message context assembly delegates to
+  `christine.conversation.context`.
 
 Remaining M1 slices:
-- Extract prompt/context construction around `build_prompt()`, `_get_smart_recent()`,
-  and startup memory injection.
 - Add a memory/session boundary for `conv`, `mem`, and save/update calls without
   changing persisted formats.
 - Clean up GUI command queue and listener seams around `process_next_gui_command()`.
@@ -89,7 +89,7 @@ Remaining M1 slices:
 - Audit and remove or fully isolate legacy five-tensor formula dependencies from
   runtime-facing paths before relying on broader modular architecture.
 
-Estimated remaining M1 effort: 11-17 small slices.
+Estimated remaining M1 effort: 10-16 small slices.
 
 Exit criteria:
 - V10/V1484 ask paths still answer through the same wrapper chain.
@@ -237,7 +237,6 @@ Stable release requirements:
 ## Immediate Next Slices
 
 Recommended order:
-- Extract prompt/context construction for the V10 ask path.
 - Add runtime/mock tests for one tool-use loop path.
 - Add GUI command loop cleanup around `process_next_gui_command()`.
 - Start a formula-layer runtime dependency audit.
