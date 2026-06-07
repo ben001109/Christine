@@ -171,7 +171,7 @@ from tkinter import filedialog, scrolledtext, ttk
 from fpdf import FPDF
 import pyautogui
 from christine.gui.app import create_legacy_queue_adapters
-from christine.gui.commands import process_next_gui_command
+from christine.gui.commands import process_next_gui_command, run_gui_command_listener
 from christine.gui.presentation import format_chat_prefix
 from christine.gui.theme import fallback_chat_theme
 from christine.platform import windows as _christine_windows
@@ -9922,14 +9922,13 @@ def main():
 
     # GUI input listener
     def _gui_listener():
-        while True:
-            process_next_gui_command(
-                _christine_gui_queues,
-                ask=ask,
-                understand_image=understand_image,
-                generate_image_style=generate_image_style,
-            )
-            time.sleep(0.1)
+        run_gui_command_listener(
+            _christine_gui_queues,
+            ask=ask,
+            understand_image=understand_image,
+            generate_image_style=generate_image_style,
+            sleep=time.sleep,
+        )
     threading.Thread(target=_gui_listener,daemon=True).start()
     # V13.5: find_mic() + init_mic() 已移至背景線程 _bg_mic_init
     threading.Thread(target=reminder_thread,daemon=True).start()
@@ -13425,14 +13424,13 @@ def install_v38_esp_and_standby(ns):
             start_global_hotkeys()
 
             def _gui_listener():
-                while True:
-                    process_next_gui_command(
-                        _christine_gui_queues,
-                        ask=ask,
-                        understand_image=understand_image,
-                        generate_image_style=generate_image_style,
-                    )
-                    time.sleep(0.1)
+                run_gui_command_listener(
+                    _christine_gui_queues,
+                    ask=ask,
+                    understand_image=understand_image,
+                    generate_image_style=generate_image_style,
+                    sleep=time.sleep,
+                )
 
             threading.Thread(target=_gui_listener,daemon=True).start()
             # V13.5: 麥克風初始化移至背景（與主 main() 同步優化）

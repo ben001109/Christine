@@ -151,11 +151,26 @@ def test_legacy_queue_adapters_preserve_list_style_append_pop_bool():
     assert queues.drain_outputs() == []
 
 
+def _gui_listener_blocks(text: str) -> str:
+    blocks = []
+    start = 0
+    marker = "def _gui_listener():"
+    while True:
+        try:
+            idx = text.index(marker, start)
+        except ValueError:
+            return "\n".join(blocks)
+        end = text.index("threading.Thread(target=_gui_listener", idx)
+        blocks.append(text[idx:end])
+        start = end + 1
+
+
 def test_monolith_gui_queues_delegate_to_christine_gui_modules():
     repo_root = Path(__file__).resolve().parents[1]
     text = (repo_root / "christine_final.py").read_text(encoding="utf-8")
 
     assert "from christine.gui.app import create_legacy_queue_adapters" in text
-    assert "from christine.gui.commands import process_next_gui_command" in text
+    assert "from christine.gui.commands import process_next_gui_command, run_gui_command_listener" in text
     assert "_christine_gui_queues, _gui_input_queue, _gui_output_queue = create_legacy_queue_adapters()" in text
-    assert "process_next_gui_command(" in text
+    assert "run_gui_command_listener(" in text
+    assert "process_next_gui_command(" not in _gui_listener_blocks(text)
