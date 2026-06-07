@@ -93,6 +93,17 @@ def test_process_next_gui_command_moves_reply_to_output_queue():
     assert process_next_gui_command(queues, ask=lambda text: text) is False
 
 
+def test_process_next_gui_command_shapes_errors_with_err_prefix():
+    queues = GuiQueues()
+    queues.submit_command("hello")
+
+    def ask(_text):
+        raise RuntimeError("boom")
+
+    assert process_next_gui_command(queues, ask=ask) is True
+    assert queues.drain_outputs() == ["err:boom"]
+
+
 def test_run_gui_command_listener_processes_one_command_per_tick_and_sleeps():
     queues = GuiQueues()
     queues.submit_command("one")
