@@ -80,17 +80,17 @@ Completed M1 slices:
 - V10 prompt and recent-message context assembly delegates to
   `christine.conversation.context`.
 - V10 tool-use loop block processing delegates to a runtime-tested helper.
+- GUI command listener loops delegate to `christine.gui.commands`.
 
 Remaining M1 slices:
 - Add a memory/session boundary for `conv`, `mem`, and save/update calls without
   changing persisted formats.
-- Clean up GUI command queue and listener seams around `process_next_gui_command()`.
 - Extract audio/voice availability and fallback boundaries for non-Windows
   environments.
 - Audit and remove or fully isolate legacy five-tensor formula dependencies from
   runtime-facing paths before relying on broader modular architecture.
 
-Estimated remaining M1 effort: 10-16 small slices.
+Estimated remaining M1 effort: 9-15 small slices.
 
 Exit criteria:
 - V10/V1484 ask paths still answer through the same wrapper chain.
@@ -238,7 +238,6 @@ Stable release requirements:
 ## Immediate Next Slices
 
 Recommended order:
-- Add GUI command loop cleanup around `process_next_gui_command()`.
 - Start a formula-layer runtime dependency audit.
 
 ## Tracking Notes
