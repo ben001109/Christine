@@ -109,20 +109,21 @@ def test_execute_tool_handler_reports_original_error_when_fallback_fails():
 
 def test_build_tool_loop_results_executes_and_formats_tool_use_blocks():
     calls = []
-    started = []
+    events = []
 
     def handler(payload):
+        events.append("executed")
         calls.append(payload)
         return {"ok": True, "value": payload["x"]}
 
     results = tools.build_tool_loop_results(
         [_TextBlock(), _ToolUseBlock("tool-1", "known", {"x": 7})],
         {"known": handler},
-        on_tool_use=lambda block: started.append(block.name),
+        on_tool_use=lambda block: events.append("started:" + block.name),
     )
 
     assert calls == [{"x": 7}]
-    assert started == ["known"]
+    assert events == ["started:known", "executed"]
     assert results == [
         {"type": "tool_result", "tool_use_id": "tool-1", "content": '{"ok": true, "value": 7}'}
     ]
@@ -139,3 +140,12 @@ def test_build_tool_loop_results_reports_self_tool_result_after_execution():
 
     assert reports == [("self_patch", "patched x.py")]
     assert results == [{"type": "tool_result", "tool_use_id": "tool-2", "content": "patched x.py"}]
+
+
+def test_build_tool_loop_results_preserves_unmapped_tool_result():
+    results = tools.build_tool_loop_results(
+        [_ToolUseBlock("tool-3", "missing", {})],
+        {},
+    )
+
+    assert results == [{"type": "tool_result", "tool_use_id": "tool-3", "content": "tool_not_mapped:missing"}]
