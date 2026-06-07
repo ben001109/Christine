@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from christine.gui.app import GuiMessage, GuiQueues, create_legacy_queue_adapters
-from christine.gui.commands import handle_gui_command, process_next_gui_command
+from christine.gui.commands import handle_gui_command, process_next_gui_command, run_gui_command_listener
 
 
 def test_gui_queues_store_user_and_assistant_messages():
@@ -91,6 +91,49 @@ def test_process_next_gui_command_moves_reply_to_output_queue():
     assert processed is True
     assert queues.drain_outputs() == ["reply:hello"]
     assert process_next_gui_command(queues, ask=lambda text: text) is False
+
+
+def test_run_gui_command_listener_processes_one_command_per_tick_and_sleeps():
+    queues = GuiQueues()
+    queues.submit_command("one")
+    queues.submit_command("two")
+    calls = []
+    sleeps = []
+
+    def ask(text):
+        calls.append(text)
+        return "reply:" + text
+
+    ticks = iter([True, True, False])
+
+    run_gui_command_listener(
+        queues,
+        ask=ask,
+        sleep=sleeps.append,
+        should_continue=lambda: next(ticks),
+        interval=0.1,
+    )
+
+    assert calls == ["one", "two"]
+    assert sleeps == [0.1, 0.1]
+    assert queues.drain_outputs() == ["reply:one", "reply:two"]
+
+
+def test_run_gui_command_listener_sleeps_even_when_queue_is_empty():
+    queues = GuiQueues()
+    sleeps = []
+    ticks = iter([True, False])
+
+    run_gui_command_listener(
+        queues,
+        ask=lambda text: text,
+        sleep=sleeps.append,
+        should_continue=lambda: next(ticks),
+        interval=0.25,
+    )
+
+    assert sleeps == [0.25]
+    assert queues.drain_outputs() == []
 
 
 def test_legacy_queue_adapters_preserve_list_style_append_pop_bool():
