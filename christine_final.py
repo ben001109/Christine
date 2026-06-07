@@ -6021,7 +6021,7 @@ def _continue_after_truncation(prompt, recent, partial_reply, route_tier="normal
 # ║  此函式在載入過程中會被後續 ask() 覆蓋，但透過 _prev_ask_giga 鏈保留。  ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 from christine.conversation.router import dedupe_tool_specs
-from christine.tools.dispatch import execute_tool_handler, format_tool_result_message
+from christine.tools.dispatch import build_tool_loop_results
 
 def ask(inp):
     global mem
@@ -6059,16 +6059,22 @@ def ask(inp):
     except Exception as e:
         if any(w in str(e).lower() for w in ["connect","network","timeout"]): return offline_reply(inp)
         return "err:"+str(e)
+    def _v10_on_tool_use(block):
+        print(f"\r  {_C.BLU}[>] {block.name}{_C.RST}", end="", flush=True)
+        rs(block.name)
+
+    def _v10_on_self_tool_result(name, result):
+        print("\n  >> "+name+": "+str(result)[:100])
+
     loops=0
     while getattr(resp, "stop_reason", "")=="tool_use" and loops<8:  # v14.1: max 8 tool loops (was 18)
-        loops+=1; results=[]
-        for b in getattr(resp, "content", []):
-            if getattr(b, "type", "")=="tool_use":
-                print(f"\r  {_C.BLU}[>] {b.name}{_C.RST}",end="",flush=True); rs(b.name)
-                r = execute_tool_handler(b.name, b.input, TM)
-                if b.name.startswith("self_"):
-                    print("\n  >> "+b.name+": "+str(r)[:100])
-                results.append(format_tool_result_message(b.id, b.name, r))
+        loops+=1
+        results = build_tool_loop_results(
+            getattr(resp, "content", []),
+            TM,
+            on_tool_use=_v10_on_tool_use,
+            on_self_tool_result=_v10_on_self_tool_result,
+        )
         recent.append({"role":"assistant","content":resp.content})
         recent.append({"role":"user","content":results})
         try:

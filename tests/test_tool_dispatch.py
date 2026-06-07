@@ -1,6 +1,19 @@
 import christine.tools as tools
 
 
+class _ToolUseBlock:
+    type = "tool_use"
+
+    def __init__(self, tool_use_id, name, tool_input):
+        self.id = tool_use_id
+        self.name = name
+        self.input = tool_input
+
+
+class _TextBlock:
+    type = "text"
+
+
 def test_format_tool_result_message_preserves_image_result_shape():
     result = tools.format_tool_result_message("tool-1", "capture_screen", {"ok": True, "img": "abc123"})
 
@@ -92,3 +105,47 @@ def test_execute_tool_handler_reports_original_error_when_fallback_fails():
     )
 
     assert result == {"ok": False, "e": "tool error: original"}
+
+
+def test_build_tool_loop_results_executes_and_formats_tool_use_blocks():
+    calls = []
+    events = []
+
+    def handler(payload):
+        events.append("executed")
+        calls.append(payload)
+        return {"ok": True, "value": payload["x"]}
+
+    results = tools.build_tool_loop_results(
+        [_TextBlock(), _ToolUseBlock("tool-1", "known", {"x": 7})],
+        {"known": handler},
+        on_tool_use=lambda block: events.append("started:" + block.name),
+    )
+
+    assert calls == [{"x": 7}]
+    assert events == ["started:known", "executed"]
+    assert results == [
+        {"type": "tool_result", "tool_use_id": "tool-1", "content": '{"ok": true, "value": 7}'}
+    ]
+
+
+def test_build_tool_loop_results_reports_self_tool_result_after_execution():
+    reports = []
+
+    results = tools.build_tool_loop_results(
+        [_ToolUseBlock("tool-2", "self_patch", {"path": "x.py"})],
+        {"self_patch": lambda payload: "patched " + payload["path"]},
+        on_self_tool_result=lambda name, result: reports.append((name, result)),
+    )
+
+    assert reports == [("self_patch", "patched x.py")]
+    assert results == [{"type": "tool_result", "tool_use_id": "tool-2", "content": "patched x.py"}]
+
+
+def test_build_tool_loop_results_preserves_unmapped_tool_result():
+    results = tools.build_tool_loop_results(
+        [_ToolUseBlock("tool-3", "missing", {})],
+        {},
+    )
+
+    assert results == [{"type": "tool_result", "tool_use_id": "tool-3", "content": "tool_not_mapped:missing"}]

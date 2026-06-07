@@ -79,6 +79,7 @@ Completed M1 slices:
   `christine.tools.dispatch.execute_tool_handler()`.
 - V10 prompt and recent-message context assembly delegates to
   `christine.conversation.context`.
+- V10 tool-use loop block processing delegates to a runtime-tested helper.
 
 Remaining M1 slices:
 - Add a memory/session boundary for `conv`, `mem`, and save/update calls without
@@ -237,7 +238,6 @@ Stable release requirements:
 ## Immediate Next Slices
 
 Recommended order:
-- Add runtime/mock tests for one tool-use loop path.
 - Add GUI command loop cleanup around `process_next_gui_command()`.
 - Start a formula-layer runtime dependency audit.
 
