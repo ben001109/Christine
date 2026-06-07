@@ -43,3 +43,17 @@ def process_next_gui_command(queues, **dependencies) -> bool:
         reply = "err:" + str(exc)
     queues.submit_output(reply)
     return True
+
+
+def run_gui_command_listener(
+    queues,
+    *,
+    sleep: Callable[[float], None],
+    should_continue: Callable[[], bool] | None = None,
+    interval: float = 0.1,
+    **dependencies,
+) -> None:
+    keep_running = should_continue or (lambda: True)
+    while keep_running():
+        process_next_gui_command(queues, **dependencies)
+        sleep(interval)
