@@ -83,14 +83,15 @@ Completed M1 slices:
 - GUI command listener loops delegate to `christine.gui.commands`.
 - Legacy five-tensor formula runtime dependency audit is codified in
   `christine.runtime.formula_audit`.
+- V10 session turn recording delegates to `christine.conversation.session`.
 
 Remaining M1 slices:
-- Add a memory/session boundary for `conv`, `mem`, and save/update calls without
-  changing persisted formats.
+- Continue migrating remaining historical ask wrappers and memory tool writes to
+  session/memory boundaries without changing persisted formats.
 - Extract audio/voice availability and fallback boundaries for non-Windows
   environments.
 
-Estimated remaining M1 effort: 8-14 small slices.
+Estimated remaining M1 effort: 7-13 small slices.
 
 Exit criteria:
 - V10/V1484 ask paths still answer through the same wrapper chain.
