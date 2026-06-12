@@ -1,6 +1,7 @@
 """Runtime helpers for Christine."""
 
 from .boot_config import compute_cpu_budget
+from .formula_audit import FormulaRuntimeFinding, audit_formula_runtime_dependencies
 from .health_summary import (
     RuntimeHealthItem,
     RuntimeHealthSummary,
@@ -20,6 +21,7 @@ from .paths import RuntimePaths
 
 __all__ = [
     "OptionalDependencyStatus",
+    "FormulaRuntimeFinding",
     "RuntimeHealthItem",
     "RuntimeHealthSummary",
     "RuntimeVersionInfo",
@@ -29,6 +31,7 @@ __all__ = [
     "check_optional_module",
     "check_optional_service",
     "compute_cpu_budget",
+    "audit_formula_runtime_dependencies",
     "optional_dependency_report",
     "render_runtime_health_summary",
     "render_optional_dependency_diagnostics",
