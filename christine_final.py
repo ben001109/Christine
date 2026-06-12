@@ -5900,6 +5900,7 @@ def offline_reply(inp):
     return "老闆我斷網了，基本功能還能用～"
 
 from christine.conversation.context import build_recent_messages, build_v10_system_prompt
+from christine.conversation.session import append_user_message, commit_assistant_turn
 
 
 def build_prompt(inp=''):
@@ -6025,7 +6026,7 @@ from christine.tools.dispatch import build_tool_loop_results
 
 def ask(inp):
     global mem
-    rs("chat"); conv.append({"role":"user","content":inp})
+    rs("chat"); append_user_message(conv, inp)
     recent = build_recent_messages(
         conv,
         12,
@@ -6096,10 +6097,7 @@ def ask(inp):
         reply=_continue_after_truncation(prompt, recent, reply, route_tier=route_tier, rounds=1)  # v14.1: 1 round (was 2)
     elapsed=round(time.time()-t0,1)
     print(f"\r  {_C.BGRN}OK{_C.RST} {_C.GRN}{elapsed}s{_C.RST}                    ")
-    conv.append({"role":"assistant","content":reply})
-    mem["tc"]=mem.get("tc",0)+1
-    mem["lc"]=datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-    sm(mem)
+    commit_assistant_turn(conv, mem, reply, save_memory=sm)
     return reply
 
 # === BUILT-IN EVOLUTION ADDON ===
