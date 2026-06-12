@@ -81,16 +81,16 @@ Completed M1 slices:
   `christine.conversation.context`.
 - V10 tool-use loop block processing delegates to a runtime-tested helper.
 - GUI command listener loops delegate to `christine.gui.commands`.
+- Legacy five-tensor formula runtime dependency audit is codified in
+  `christine.runtime.formula_audit`.
 
 Remaining M1 slices:
 - Add a memory/session boundary for `conv`, `mem`, and save/update calls without
   changing persisted formats.
 - Extract audio/voice availability and fallback boundaries for non-Windows
   environments.
-- Audit and remove or fully isolate legacy five-tensor formula dependencies from
-  runtime-facing paths before relying on broader modular architecture.
 
-Estimated remaining M1 effort: 9-15 small slices.
+Estimated remaining M1 effort: 8-14 small slices.
 
 Exit criteria:
 - V10/V1484 ask paths still answer through the same wrapper chain.
@@ -238,7 +238,6 @@ Stable release requirements:
 ## Immediate Next Slices
 
 Recommended order:
-- Start a formula-layer runtime dependency audit.
 
 ## Tracking Notes
 

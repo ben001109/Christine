@@ -1,50 +1,39 @@
 from pathlib import Path
 
+from christine.runtime.formula_audit import (
+    LEGACY_FORMULA_ARTIFACTS,
+    LEGACY_FORMULA_IMPORTS,
+    LEGACY_FORMULA_TOKENS,
+    RUNTIME_FORMULA_AUDIT_TARGETS,
+    audit_formula_runtime_dependencies,
+)
+
 
 def test_core_runtime_does_not_import_legacy_formula_engine():
-    forbidden_imports = [
-        "brain.intersubjective",
-        "from .intersubjective",
-        "from .philosophy",
-    ]
     for path in [Path("boot_christine.py"), Path("brain/brain.py")]:
         text = path.read_text(encoding="utf-8")
-        for forbidden in forbidden_imports:
+        for forbidden in LEGACY_FORMULA_IMPORTS:
             assert forbidden not in text
 
 
 def test_legacy_formula_artifacts_are_absent():
-    legacy_artifacts = [
-        Path("brain/intersubjective.py"),
-        Path("brain/intersubjective.py.bak_v6"),
-        Path("brain/intersubjective_v6_backup.py"),
-        Path("brain/philosophy.py"),
-        Path("research/five_tensor/README.md"),
-        Path("research/five_tensor/audit/README.md"),
-        Path("research/five_tensor/legacy/README.md"),
-        Path("research/five_tensor/legacy/intersubjective.py"),
-        Path("research/five_tensor/legacy/intersubjective.py.bak_v6"),
-        Path("research/five_tensor/legacy/intersubjective_v6_backup.py"),
-        Path("research/five_tensor/legacy/philosophy.py"),
-        Path("_inter_peek.py"),
-        Path("_new_intersubjective.py"),
-        Path("_v1455_selftest.py"),
-        Path("_diag_isub.py"),
-        Path("_cf_peek.py"),
-        Path("_brain_peek.py"),
-        Path("_brain_integration_test.py"),
-    ]
-    for path in legacy_artifacts:
+    for path in LEGACY_FORMULA_ARTIFACTS:
         assert not path.exists()
 
 
 def test_monolith_does_not_embed_five_tensor_formula_blocks():
     text = Path("christine_final.py").read_text(encoding="utf-8")
-    forbidden = [
-        "V1450FiveTensorEmpathyEngine",
-        "V1455Paper4Engine",
-        "Five-Tensor Empathy Engine",
-        "PAPER-4 FULL EQUATIONS",
-    ]
-    for token in forbidden:
+    for token in LEGACY_FORMULA_TOKENS:
         assert token not in text
+
+
+def test_runtime_formula_dependency_audit_is_clean():
+    assert audit_formula_runtime_dependencies() == []
+
+
+def test_formula_audit_targets_runtime_facing_entrypoints():
+    assert RUNTIME_FORMULA_AUDIT_TARGETS == (
+        Path("boot_christine.py"),
+        Path("christine_final.py"),
+        Path("brain/brain.py"),
+    )
