@@ -91,4 +91,4 @@ Do not report suspected security vulnerabilities in a public issue. See `SECURIT
 
 ## License
 
-A repository-wide open-source license has not yet been selected. Until a license is added, the public source code should not be assumed to grant general redistribution or modification rights.
+Christine is licensed under the **Apache License 2.0**. See `LICENSE` for the full license text.
