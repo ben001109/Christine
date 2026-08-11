@@ -59,4 +59,4 @@ Do not publish suspected vulnerabilities in a public issue. See `SECURITY.md`.
 
 ## Licensing
 
-A repository-wide open-source license has not yet been selected. Do not copy third-party code into the repository unless its license and attribution requirements are clearly understood and documented.
+Christine is licensed under the Apache License 2.0. Unless explicitly stated otherwise, contributions intentionally submitted for inclusion in Christine are accepted under the same Apache-2.0 terms. Do not copy third-party code into the repository unless its license and attribution requirements are clearly understood and documented.
