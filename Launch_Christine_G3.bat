@@ -3,33 +3,42 @@ setlocal
 chcp 65001 >nul 2>&1
 set PYTHONUTF8=1
 set PYTHONIOENCODING=utf-8
-title Christine G3 Frontier Runtime
+set CHRISTINE_5D9A_TOKEN_CAPACITY=138000000000
+set CHRISTINE_G3_WEB_POLICY=aggressive
+title Christine G3 Web+138B Runtime
 color 0B
 
 cd /d "%~dp0"
 
 echo.
 echo ===============================================================
-echo  Christine G3 Frontier Runtime
-echo  Task Contract ^| ORBIT Web ^| 5D9A Memory ^| ARGUS Verify
+echo  Christine G3 Web+138B Runtime
+echo  Task Contract ^| ORBIT Web ^| 5D9A 138B ^| ARGUS Verify
 echo ===============================================================
 echo.
 
+where ollama >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo [G3] Ensuring Ollama service is available...
+    start "" /B ollama serve >nul 2>&1
+    timeout /t 2 /nobreak >nul
+)
+
 where uv >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    echo [G3] Starting with uv...
-    uv run python -X utf8 "%~dp0christine_g3_frontier.py" %*
+    echo [G3] Starting Web+138B runtime with uv...
+    uv run python -X utf8 "%~dp0christine_g3_web138.py" %*
     set ERR=%ERRORLEVEL%
 ) else (
     echo [G3] uv not found. Falling back to python...
-    python -X utf8 "%~dp0christine_g3_frontier.py" %*
+    python -X utf8 "%~dp0christine_g3_web138.py" %*
     set ERR=%ERRORLEVEL%
 )
 
 if %ERR% NEQ 0 (
     echo.
     echo [!] Christine G3 exited with code %ERR%
-    echo [!] Make sure dependencies are installed and Ollama is running.
+    echo [!] The previous christine_g3_frontier.py is still available for rollback.
     pause
 )
 endlocal
