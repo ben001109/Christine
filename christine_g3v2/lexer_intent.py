@@ -120,7 +120,7 @@ class IntentKernel:
 
     @staticmethod
     def _factual(text):
-        return .76 if re.search(r"(是誰|是什麼|為什麼|怎麼|如何|哪裡|何時|多少|有沒有|在幹嘛|做什麼|幹嘛|嗎|？|\?)",text) else 0.0
+        return .82 if re.search(r"(是誰|是什麼|是啥|啥意思|什麼意思|意思是什麼|為什麼|怎麼|如何|哪裡|何時|多少|有沒有|在幹嘛|做什麼|幹嘛|解釋|說明|介紹|嗎|？|\?)",text) else 0.0
 
     @staticmethod
     def _entities(residual,urls):
@@ -129,10 +129,14 @@ class IntentKernel:
             h=handle_from_url(url)
             if h: entities.append(h)
         for h in re.findall(r"@([A-Za-z0-9_.-]{2,64})",residual): entities.append("@"+h)
-        m=re.search(r"([^\s，。？！?：:]{2,30})\s*是誰",residual)
+        m=re.search(r"([^\s，。？！?：:]{2,40})\s*(?:是誰|是什麼|是啥|啥意思|什麼意思|意思是什麼|是幹嘛的)",residual)
         if m:
-            subject=re.sub(r"^(?:看一下|看看|查一下|幫我查|查查|介紹一下|告訴我)","",m.group(1)).strip()
-            if subject and subject not in {"這個人","這人","他","她"} and not subject.endswith(("這個人","這人")): entities.append(subject)
+            subject=re.sub(r"^(?:看一下|看看|查一下|幫我查|查查|介紹一下|介紹|解釋一下|解釋|說明一下|說明|告訴我)","",m.group(1)).strip()
+            if subject and subject not in {"這個人","這人","他","她","這個","這東西"} and not subject.endswith(("這個人","這人")): entities.append(subject)
+        m2=re.match(r"^(?:解釋|說明|介紹)(?:一下)?\s*([^，。？！?]{2,40})",residual)
+        if m2:
+            subject=m2.group(1).strip()
+            if subject and subject not in {"這個","這東西"}: entities.append(subject)
         for key in re.findall(r"(錫蘭|PUA\s*影片|PUA影片|花栗鼠🍋?)",residual,re.I): entities.append(key)
         return tuple(dict.fromkeys(entities))
 
