@@ -9,14 +9,15 @@ from .lexer_intent import IntentKernel
 from .longform import LongFormStore
 from .memory138 import Memory138
 from .research import ResearchEngine
-from .synthesis import FactGraph,NativeNarrator
+from .synthesis import FactGraph
+from .prism import PRISMPlanner,PRISMNarrator
 from .utils import clean
 from .verify_nova import NoveltyGate,Verifier
 
 class UnifiedKernel:
-    """G3 v2.0 single state machine. No v1.x wrapper imports."""
+    """G3 v2.1 single state machine with PRISM multi-view factual synthesis."""
     def __init__(self,*,context=None,memory=None,research=None,documents=None,generator=None,novelty=None):
-        self.intent_kernel=IntentKernel();self.context=context or ContextGraph();self.memory=memory or Memory138();self.research=research or ResearchEngine();self.documents=documents or LongFormStore();self.generator=generator or NativeGeneratorAdapter();self.facts=FactGraph();self.narrator=NativeNarrator();self.dialogue=NativeDialogue();self.clarifier=Clarifier();self.verifier=Verifier();self.novelty=novelty or NoveltyGate()
+        self.intent_kernel=IntentKernel();self.context=context or ContextGraph();self.memory=memory or Memory138();self.research=research or ResearchEngine();self.documents=documents or LongFormStore();self.generator=generator or NativeGeneratorAdapter();self.facts=FactGraph();self.prism=PRISMPlanner();self.narrator=PRISMNarrator();self.dialogue=NativeDialogue();self.clarifier=Clarifier();self.verifier=Verifier();self.novelty=novelty or NoveltyGate()
     def ask(self,raw):
         raw=clean(raw);turn=TurnState(raw);intent=self.intent_kernel.analyze(raw);turn.intent=intent;turn.trace.append(f'intent:{intent.kind}');ctx=self.context.resolve(raw,intent);turn.context=ctx;turn.trace.append(f'context:{ctx.continuity:.2f}')
         if intent.kind=='compute':ans=self._calculate(intent.goal);self.context.commit(raw,intent,ctx);return ans,turn
@@ -30,7 +31,7 @@ class UnifiedKernel:
         intent,ctx=turn.intent,turn.context;mem=self.memory.retrieve(ctx.topic,16);turn.evidence.extend(mem);turn.trace.append(f'memory:{len(mem)}/138B');docs=self.documents.retrieve(ctx.topic,token_budget=12000);turn.evidence.extend(docs);turn.trace.append(f'longdoc:{len(docs)}') if docs else None
         strength=max((e.confidence*max(.15,e.relevance) for e in mem+docs),default=0);packet=None;should=intent.requires_web or intent.kind in {'research','inspect_url'} or (intent.requires_facts and strength<.60)
         if should:packet=self.research.research(intent,ctx);turn.evidence.extend(packet.evidence);turn.trace.append(f'orbit:{len(packet.evidence)}:{packet.confidence:.2f}')
-        subject=self._subject(intent,ctx);facts=self.facts.extract(subject,turn.evidence);turn.facts=facts;turn.trace.append(f'facts:{len(facts)}');social=subject.startswith('@') or intent.source_hint in {'threads','instagram','facebook'};answer=self.narrator.narrate(subject=subject,facts=facts,packet=packet,social=social)
+        subject=self._subject(intent,ctx);facts=self.facts.extract(subject,turn.evidence);turn.facts=facts;turn.trace.append(f'facts:{len(facts)}');plan=self.prism.plan(question=intent.goal or ctx.topic,subject=subject,facts=facts,packet=packet,token_budget=1200);turn.trace.append(f'prism:{plan.mode}:{len(plan.facets)}:cov={plan.coverage_score:.2f}:div={plan.diversity_score:.2f}');answer=self.narrator.narrate(subject=subject,question=intent.goal or ctx.topic,plan=plan,packet=packet)
         v=self.verifier.verify_text(answer);turn.trace.append(f'verify:{v.reason}')
         if not v.accepted:return '我這輪有取得資料，但整理結果沒有通過輸出驗證，所以先不輸出可能損壞的內容。'
         n=self.novelty.accept(intent.goal or ctx.topic,'text',answer);turn.trace.append(f'nova:{n.reason}')
@@ -38,7 +39,7 @@ class UnifiedKernel:
         self.memory.remember_verified([{'content':f'{f.subject} {f.predicate} {f.value}','source':','.join(f.sources),'confidence':f.confidence} for f in facts if f.confidence>=.86]);return answer
     def _code(self,turn):
         intent,ctx=turn.intent,turn.context;artifact=self.generator.code(intent.goal,{'topic':ctx.topic,'entities':intent.entities+ctx.inherited_entities,'memory':self.memory.retrieve(ctx.topic,8)})
-        if artifact is None:return '這是一個具體程式任務，但目前沒有接上 Christine 自己的 NativeGenerator。v2.0 不會再用 quicksort 或固定模板冒充完成；把你的原生生成器提供成 `christine_native_generator.generate_code(goal, context)` 後，這條路會直接使用它。'
+        if artifact is None:return '這是一個具體程式任務，但目前沒有接上 Christine 自己的 NativeGenerator。v2.1 不會再用 quicksort 或固定模板冒充完成；把你的原生生成器提供成 `christine_native_generator.generate_code(goal, context)` 後，這條路會直接使用它。'
         turn.artifact=artifact;v=self.verifier.verify_artifact(artifact);turn.trace.append(f'verify:{v.reason}')
         if not v.accepted:return 'Christine 原生生成器有輸出程式碼，但沒有通過語法／artifact 驗證，所以我沒有顯示它。'
         n=self.novelty.accept(intent.goal or ctx.topic,'code',artifact.content);turn.trace.append(f'nova:{n.reason}')
@@ -46,7 +47,7 @@ class UnifiedKernel:
         return artifact.content
     def _image(self,turn):
         intent,ctx=turn.intent,turn.context;artifact=self.generator.image(intent.goal,{'topic':ctx.topic})
-        if artifact is None:return '我已確認這是圖片生成任務，但目前沒有接上 Christine 自己的 Native Image Generator。v2.0 不會用一句「已生成」假裝完成。'
+        if artifact is None:return '我已確認這是圖片生成任務，但目前沒有接上 Christine 自己的 Native Image Generator。v2.1 不會用一句「已生成」假裝完成。'
         turn.artifact=artifact;v=self.verifier.verify_artifact(artifact);turn.trace.append(f'verify:{v.reason}');return artifact.path if v.accepted else '圖片生成器有回傳結果，但 artifact 驗證失敗。'
     @staticmethod
     def _subject(intent,ctx):
