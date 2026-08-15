@@ -16,4 +16,6 @@ Rules:
 - NOVA blocks repetition;
 - `/ingest <path>` loads a text/Markdown file into the session long-document index.
 
-Windows: double-click `Launch_Christine_G3_v2.bat`.
+Windows: double-click `Launch_Christine_G3.bat` or `Launch_Christine_G3_v2.bat`.
+
+Rollback: `Launch_Christine_G3_v1_6.bat` keeps the previous entity-resolution runtime available.
