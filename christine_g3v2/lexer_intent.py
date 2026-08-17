@@ -5,6 +5,7 @@ import urllib.parse
 
 from .contracts import Intent
 from .utils import clean, clamp01
+from .cedar import CEDAR
 
 URL_RE = re.compile(
     r"https?://[A-Za-z0-9.-]+(?::\d+)?(?:/[A-Za-z0-9._~:/?#\[\]@!$&'()*+,;=%-]*)?",
@@ -99,9 +100,13 @@ class IntentKernel:
 
     @staticmethod
     def _code(text):
-        create=len(re.findall(r"(寫|做|建立|生成|實作|開發|create|build|implement)",text,re.I))
-        tech=len(re.findall(r"(python|javascript|typescript|java|rust|go|程式|腳本|外掛|plugin|addon|api|爬蟲|bot|函式|演算法|asyncio|aiohttp)",text,re.I))
-        return clamp01(.35*create+.42*tech)
+        create=len(re.findall(r"(寫|做|建立|生成|實作|實現|開發|create|build|implement)",text,re.I))
+        tech=len(re.findall(r"(python|javascript|typescript|java|rust|go|程式|腳本|外掛|plugin|addon|api|爬蟲|bot|函式|演算法|asyncio|aiohttp|class|function)",text,re.I))
+        base=clamp01(.35*create+.42*tech)
+        try:specificity=CEDAR.specificity_score(text)
+        except Exception:specificity=0.0
+        if create and specificity>=.50:base=max(base,.82)
+        return base
 
     @staticmethod
     def _image(text):
@@ -109,50 +114,43 @@ class IntentKernel:
 
     @staticmethod
     def _research(text,urls,hint):
-        explicit=bool(re.search(r"(上網|網路|網上|搜尋|搜索|查一下|幫我查|去查|上查|查查|search|look up)",text,re.I))
-        current=bool(re.search(r"(最新|今天|現在|目前|即時|最近)",text,re.I))
+        explicit=bool(re.search(r"(上網|網路|網上|搜尋|搜索|查一下|幫我查|去查|上查|查查|search|look up)",text,re.I));current=bool(re.search(r"(最新|今天|現在|目前|即時|最近)",text,re.I))
         return clamp01(.60*explicit+.25*current+.22*bool(hint)+.50*bool(urls))
 
     @staticmethod
     def _conversation(text):
-        greet=bool(re.search(r"^(你好|嗨|哈囉|hi|hello)",text,re.I)); social=bool(re.search(r"(@[\w\u3400-\u9fff]+|斗內|donate|感謝他|謝謝他|我想跟他說|可以幫我@)",text,re.I)); opinion=bool(re.search(r"(我覺得|我想|我希望|我都想|真的很)",text))
+        greet=bool(re.search(r"^(你好|嗨|哈囉|hi|hello)",text,re.I));social=bool(re.search(r"(@[\w\u3400-\u9fff]+|斗內|donate|感謝他|謝謝他|我想跟他說|可以幫我@)",text,re.I));opinion=bool(re.search(r"(我覺得|我想|我希望|我都想|真的很)",text))
         return clamp01(.65*greet+.62*social+.25*opinion)
 
     @staticmethod
-    def _factual(text):
-        return .82 if re.search(r"(是誰|是什麼|是啥|啥意思|什麼意思|意思是什麼|為什麼|怎麼|如何|哪裡|何時|多少|有沒有|在幹嘛|做什麼|幹嘛|解釋|說明|介紹|嗎|？|\?)",text) else 0.0
+    def _factual(text):return .82 if re.search(r"(是誰|是什麼|是啥|啥意思|什麼意思|意思是什麼|為什麼|怎麼|如何|哪裡|何時|多少|有沒有|在幹嘛|做什麼|幹嘛|解釋|說明|介紹|嗎|？|\?)",text) else 0.0
 
     @staticmethod
     def _entities(residual,urls):
         entities=[]
         for url in urls:
             h=handle_from_url(url)
-            if h: entities.append(h)
-        for h in re.findall(r"@([A-Za-z0-9_.-]{2,64})",residual): entities.append("@"+h)
+            if h:entities.append(h)
+        for h in re.findall(r"@([A-Za-z0-9_.-]{2,64})",residual):entities.append("@"+h)
         m=re.search(r"([^\s，。？！?：:]{2,40})\s*(?:是誰|是什麼|是啥|啥意思|什麼意思|意思是什麼|是幹嘛的)",residual)
         if m:
             subject=re.sub(r"^(?:看一下|看看|查一下|幫我查|查查|介紹一下|介紹|解釋一下|解釋|說明一下|說明|告訴我)","",m.group(1)).strip()
-            if subject and subject not in {"這個人","這人","他","她","這個","這東西"} and not subject.endswith(("這個人","這人")): entities.append(subject)
+            if subject and subject not in {"這個人","這人","他","她","這個","這東西"} and not subject.endswith(("這個人","這人")):entities.append(subject)
         m2=re.match(r"^(?:解釋|說明|介紹)(?:一下)?\s*([^，。？！?]{2,40})",residual)
         if m2:
             subject=m2.group(1).strip()
-            if subject and subject not in {"這個","這東西"}: entities.append(subject)
-        for key in re.findall(r"(錫蘭|PUA\s*影片|PUA影片|花栗鼠🍋?)",residual,re.I): entities.append(key)
+            if subject and subject not in {"這個","這東西"}:entities.append(subject)
+        for key in re.findall(r"(錫蘭|PUA\s*影片|PUA影片|花栗鼠🍋?)",residual,re.I):entities.append(key)
         return tuple(dict.fromkeys(entities))
 
     @staticmethod
     def _code_missing(text):
-        objective=bool(re.search(r"(抓取|下載|分析|排序|搜尋|監控|轉換|讀取|寫入|連線|api|網頁|網站|檔案|資料|影像|圖片|遊戲|minecraft|discord|瀏覽器|chrome|自動|asyncio|aiohttp|伺服器|server|bot|計算|模擬)",text,re.I))
-        missing=[]
-        if not objective: missing.append("purpose")
-        if re.search(r"(外掛|plugin|addon)",text,re.I) and not re.search(r"(minecraft|chrome|瀏覽器|遊戲|discord|vscode|wordpress|網站|app|平台)",text,re.I): missing.append("target_platform")
-        return list(dict.fromkeys(missing))
+        try:return list(CEDAR().parse(text).missing_slots)
+        except Exception:return ["purpose"]
 
     @staticmethod
     def _image_has_subject(text):
-        stripped=re.sub(r"(幫我|請|畫|生成|做|製作|設計|一張|圖片|圖|image|picture)"," ",text,flags=re.I)
-        return len(clean(stripped))>=2
+        stripped=re.sub(r"(幫我|請|畫|生成|做|製作|設計|一張|圖片|圖|image|picture)"," ",text,flags=re.I);return len(clean(stripped))>=2
 
     @staticmethod
-    def _explicit_web(text):
-        return bool(re.search(r"(上網|網路|搜尋|最新|目前|threads|instagram|github|reddit)",text,re.I))
+    def _explicit_web(text):return bool(re.search(r"(上網|網路|搜尋|最新|目前|threads|instagram|github|reddit)",text,re.I))
