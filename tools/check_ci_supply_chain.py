@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 import re
 import subprocess
@@ -18,12 +19,13 @@ IMAGE_DIGEST_RE = re.compile(
     r"^[A-Za-z0-9._-]+(?::[0-9]+)?(?:/[A-Za-z0-9._-]+)*"
     r"(?::[A-Za-z0-9][A-Za-z0-9._-]*)?@sha256:[0-9a-fA-F]{64}$"
 )
-MAPPING_RE = re.compile(r"^(?:-\s+)?([A-Za-z_][A-Za-z0-9_.-]*)\s*:\s*(.*)$")
+MAPPING_RE = re.compile(r"^(?:-\s+)?([A-Za-z_][A-Za-z0-9_.-]*)\s*:(?:\s+(.*))?$")
 BLOCK_SCALAR_RE = re.compile(r"^[|>](?:[1-9][+-]?|[+-][1-9]?)?$")
 SIMPLE_FLOW_SEQUENCE_RE = re.compile(
-    r"^\[\s*[A-Za-z0-9_.-]+(?:\s*,\s*[A-Za-z0-9_.-]+)*\s*\]$"
+    r"^\[\s*[A-Za-z0-9_./:@-]+(?:\s*,\s*[A-Za-z0-9_./:@-]+)*\s*\]$"
 )
 GITHUB_EXPRESSION_RE = re.compile(r"\$\{\{.*?\}\}")
+MATRIX_EXPRESSION_RE = re.compile(r"^\$\{\{\s*matrix\.([A-Za-z_][A-Za-z0-9_]*)\s*\}\}$")
 
 EXPECTED_POLICY_SHAPE = (
     (0, "name: CI supply-chain policy"),
@@ -41,6 +43,15 @@ EXPECTED_POLICY_SHAPE = (
     (6, f"- uses: actions/checkout@{CHECKOUT_SHA}"),
     (6, "- run: python3 tools/check_ci_supply_chain.py"),
 )
+
+
+@dataclass(frozen=True)
+class _Entry:
+    line: int
+    indent: int
+    key: str | None
+    value: str
+    sequence: bool = False
 
 
 def _without_comment(value: str) -> str:
@@ -127,13 +138,13 @@ def _semantic_lines(text: str) -> tuple[tuple[int, str], ...]:
         body = content.lstrip(" ")
         semantic.append((indent, body))
         match = MAPPING_RE.fullmatch(body)
-        if match and BLOCK_SCALAR_RE.fullmatch(_scalar(match.group(2))):
+        if match and BLOCK_SCALAR_RE.fullmatch(_scalar(match.group(2) or "")):
             block_indent = indent
     return tuple(semantic)
 
 
-def _parse_entries(text: str) -> tuple[list[tuple[int, int, str, str]], list[str]]:
-    entries: list[tuple[int, int, str, str]] = []
+def _parse_entries(text: str) -> tuple[list[_Entry], list[str]]:
+    entries: list[_Entry] = []
     errors: list[str] = []
     block_indent: int | None = None
     for line_number, raw_line in enumerate(text.splitlines(), start=1):
@@ -158,21 +169,23 @@ def _parse_entries(text: str) -> tuple[list[tuple[int, int, str, str]], list[str
         match = MAPPING_RE.fullmatch(body)
         if match is None:
             if body.startswith("- "):
-                value = body[2:].strip()
-                problem = _unsupported_value_construct(value)
+                raw_value = body[2:].strip()
+                value = _scalar(raw_value)
+                problem = _unsupported_value_construct(raw_value)
                 if not value or problem:
                     errors.append(f"line {line_number}: unsupported sequence value" + (f": {problem}" if problem else ""))
+                entries.append(_Entry(line_number, indent, None, value, sequence=True))
                 continue
             errors.append(f"line {line_number}: unsupported YAML mapping-key construct")
             continue
 
         key = match.group(1)
-        raw_value = match.group(2)
+        raw_value = match.group(2) or ""
         value = _scalar(raw_value)
         problem = _unsupported_value_construct(raw_value)
         if problem:
             errors.append(f"line {line_number}: {problem}")
-        entries.append((line_number, indent, key, value))
+        entries.append(_Entry(line_number, indent, key, value, sequence=body.startswith("- ")))
         if BLOCK_SCALAR_RE.fullmatch(value):
             block_indent = indent
     return entries, errors
@@ -207,25 +220,191 @@ def _validate_image(reference: str) -> str | None:
     return None
 
 
+def _flow_sequence_values(value: str) -> tuple[str, ...]:
+    if not SIMPLE_FLOW_SEQUENCE_RE.fullmatch(value):
+        return ()
+    return tuple(item.strip() for item in value[1:-1].split(","))
+
+
+def _job_bounds(entries: list[_Entry], position: int) -> tuple[int, int] | None:
+    job_start: int | None = None
+    for index in range(position - 1, -1, -1):
+        entry = entries[index]
+        if entry.indent == 2 and entry.key is not None and not entry.sequence and not entry.value:
+            job_start = index
+            break
+    if job_start is None:
+        return None
+    for index in range(job_start + 1, len(entries)):
+        if entries[index].indent <= 2:
+            return job_start, index
+    return job_start, len(entries)
+
+
+def _direct_children(
+    entries: list[_Entry], start: int, end: int, parent_indent: int, key: str
+) -> list[int]:
+    return [
+        index
+        for index in range(start + 1, end)
+        if entries[index].indent == parent_indent + 2
+        and entries[index].key == key
+        and not entries[index].sequence
+    ]
+
+
+def _section_end(entries: list[_Entry], start: int, limit: int) -> int:
+    indent = entries[start].indent
+    for index in range(start + 1, limit):
+        if entries[index].indent <= indent:
+            return index
+    return limit
+
+
+def _include_matrix_values(
+    entries: list[_Entry], include_start: int, include_end: int, matrix_key: str
+) -> tuple[list[str], str | None]:
+    include = entries[include_start]
+    if include.value:
+        return [], "matrix include must use a literal block sequence"
+    rows = [
+        index
+        for index in range(include_start + 1, include_end)
+        if entries[index].indent == include.indent + 2 and entries[index].sequence
+    ]
+    if not rows:
+        return [], "matrix include must contain literal rows"
+
+    values: list[str] = []
+    for row_position, row_start in enumerate(rows):
+        row_end = rows[row_position + 1] if row_position + 1 < len(rows) else include_end
+        row = entries[row_start]
+        if row.key is None:
+            return [], "matrix include rows must be literal mappings"
+        candidates: list[str] = []
+        if row.key == matrix_key and row.value:
+            candidates.append(row.value)
+        candidates.extend(
+            entry.value
+            for entry in entries[row_start + 1 : row_end]
+            if entry.key == matrix_key
+            and entry.indent == row.indent + 2
+            and entry.value
+        )
+        if len(candidates) != 1:
+            return [], f"every matrix include row must contain one literal {matrix_key} value"
+        values.extend(candidates)
+    return values, None
+
+
+def _static_matrix_values(
+    entries: list[_Entry], reference_position: int, matrix_key: str
+) -> tuple[list[str], str | None]:
+    bounds = _job_bounds(entries, reference_position)
+    if bounds is None:
+        return [], "matrix image expression must be inside a literal job"
+    job_start, job_end = bounds
+    job = entries[job_start]
+    strategies = _direct_children(entries, job_start, job_end, job.indent, "strategy")
+    if len(strategies) != 1 or entries[strategies[0]].value:
+        return [], "matrix image expression requires one literal strategy mapping"
+    strategy_start = strategies[0]
+    strategy_end = _section_end(entries, strategy_start, job_end)
+    matrices = _direct_children(entries, strategy_start, strategy_end, entries[strategy_start].indent, "matrix")
+    if len(matrices) != 1 or entries[matrices[0]].value:
+        return [], "matrix image expression requires one literal matrix mapping"
+    matrix_start = matrices[0]
+    matrix_end = _section_end(entries, matrix_start, strategy_end)
+    matrix = entries[matrix_start]
+
+    values: list[str] = []
+    axes = _direct_children(entries, matrix_start, matrix_end, matrix.indent, matrix_key)
+    if len(axes) > 1:
+        return [], f"matrix.{matrix_key} must not be duplicated"
+    if axes:
+        axis_start = axes[0]
+        axis = entries[axis_start]
+        axis_end = _section_end(entries, axis_start, matrix_end)
+        if axis.value:
+            values.extend(_flow_sequence_values(axis.value))
+            if not values:
+                return [], f"matrix.{matrix_key} must use a literal scalar sequence"
+        else:
+            sequence_values = [
+                entry.value
+                for entry in entries[axis_start + 1 : axis_end]
+                if entry.sequence and entry.indent == axis.indent + 2 and entry.key is None
+            ]
+            if not sequence_values:
+                return [], f"matrix.{matrix_key} must contain literal scalar values"
+            values.extend(sequence_values)
+
+    includes = _direct_children(entries, matrix_start, matrix_end, matrix.indent, "include")
+    if len(includes) > 1:
+        return [], "matrix.include must not be duplicated"
+    if includes:
+        include_start = includes[0]
+        include_end = _section_end(entries, include_start, matrix_end)
+        include_values, problem = _include_matrix_values(entries, include_start, include_end, matrix_key)
+        if problem:
+            return [], problem
+        values.extend(include_values)
+
+    if not values:
+        return [], f"matrix.{matrix_key} has no statically auditable values"
+    return values, None
+
+
+def _inside_matrix(entries: list[_Entry], position: int) -> bool:
+    threshold = entries[position].indent
+    for index in range(position - 1, -1, -1):
+        entry = entries[index]
+        if entry.indent >= threshold:
+            continue
+        if entry.key == "matrix" and not entry.value:
+            return True
+        threshold = entry.indent
+        if threshold <= 2:
+            return False
+    return False
+
+
+def _validate_image_reference(
+    entries: list[_Entry], position: int, reference: str
+) -> str | None:
+    expression = MATRIX_EXPRESSION_RE.fullmatch(reference)
+    if expression is None:
+        return _validate_image(reference)
+    values, problem = _static_matrix_values(entries, position, expression.group(1))
+    if problem:
+        return problem
+    mutable = [value for value in values if _validate_image(value)]
+    if mutable:
+        return "all static matrix image values must use full sha256 digests"
+    return None
+
+
 def validate_workflow_text(text: str, *, source: str = "<workflow>") -> tuple[str, ...]:
     """Validate immutable references in the supported, bounded YAML subset."""
 
     entries, errors = _parse_entries(text)
-    for position, (line_number, indent, key, value) in enumerate(entries):
+    for position, entry in enumerate(entries):
+        line_number, indent, key, value = entry.line, entry.indent, entry.key, entry.value
         problem: str | None = None
         if key == "uses":
             problem = _validate_action(value)
         elif key == "image":
-            problem = _validate_image(value)
+            if not _inside_matrix(entries, position):
+                problem = _validate_image_reference(entries, position, value)
         elif key == "container":
             if value:
-                problem = _validate_image(value)
+                problem = _validate_image_reference(entries, position, value)
             else:
                 has_image = False
-                for _, child_indent, child_key, _ in entries[position + 1 :]:
-                    if child_indent <= indent:
+                for child in entries[position + 1 :]:
+                    if child.indent <= indent:
                         break
-                    if child_key == "image":
+                    if child.key == "image":
                         has_image = True
                 if not has_image:
                     problem = "container mapping must contain a digest-pinned image"
@@ -256,8 +435,6 @@ def tracked_workflow_paths(repository_root: Path) -> tuple[Path, ...]:
             "ls-files",
             "-z",
             "--cached",
-            "--others",
-            "--exclude-standard",
             "--",
             ":(glob).github/workflows/*.yml",
             ":(glob).github/workflows/*.yaml",
