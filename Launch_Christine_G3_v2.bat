@@ -4,13 +4,13 @@ chcp 65001 >nul 2>&1
 set PYTHONUTF8=1
 set PYTHONIOENCODING=utf-8
 set CHRISTINE_5D9A_TOKEN_CAPACITY=138000000000
-title Christine G3 v2.3 Truth Gate + Real 138B + Self Map
+title Christine G3 v2.4 5D9A-OMEGA Cognitive Field Engine
 color 0B
 cd /d "%~dp0"
 echo.
 echo ====================================================================================================
-echo  Christine G3 v2.3 - TRUTH-GATE + REAL-138 ACCOUNTING + SELF-MAP
-echo  Intent ^> Context ^> SelfMap/138B/LongDoc/ORBIT ^> Hygiene ^> FactGraph ^> PRISM ^> TruthGate ^> Verify ^> NOVA
+echo  Christine G3 v2.4 - 5D9A-OMEGA Cognitive Field Engine
+echo  5D9A-OMEGA: Acquire ^> Abstract ^> Assess ^> Access ^> Assemble ^> Architect ^> Act ^> Audit ^> Adapt
 echo  5D9A virtual address capacity: 138,000,000,000 tokens
 echo ====================================================================================================
 echo.
@@ -24,7 +24,7 @@ if %ERRORLEVEL% EQU 0 (
 )
 if %ERR% NEQ 0 (
     echo.
-    echo [!] Christine G3 v2.3 exited with code %ERR%
+    echo [!] Christine G3 v2.4 exited with code %ERR%
     echo [!] v1.x rollback launchers remain available on the feature branch.
     pause
 )
