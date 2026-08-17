@@ -19,6 +19,20 @@ class NativeGeneratorAdapter:
         try:path=str(self.generator.generate_image(goal,context) or '').strip()
         except Exception:return None
         return Artifact('image','',path=path)
+    def reason(self,goal,context):
+        """Use only Christine-owned native reasoning hooks when present."""
+        if self.generator is None:return None
+        for name in ('reason','generate_text','generate_answer','respond'):
+            fn=getattr(self.generator,name,None)
+            if not callable(fn):continue
+            try:value=fn(goal,context)
+            except TypeError:
+                try:value=fn(goal)
+                except Exception:continue
+            except Exception:continue
+            text=str(value or '').strip()
+            if text:return text
+        return None
 class Clarifier:
     @staticmethod
     def respond(intent:Intent):
