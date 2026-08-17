@@ -64,3 +64,11 @@ def test_collector_reports_a_generic_focused_suite_failure(capsys):
 
     assert main(["--run-suite"], runner=lambda command, check: Result()) == 1
     assert capsys.readouterr().out == '{"status":"focused-suite-failed"}\n'
+
+
+def test_collector_preserves_argparse_exit_codes(capsys):
+    assert main(["--help"]) == 0
+    assert "usage:" in capsys.readouterr().out
+
+    assert main(["--not-an-option"]) == 2
+    assert "unrecognized arguments" in capsys.readouterr().err

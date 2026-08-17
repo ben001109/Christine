@@ -1,7 +1,8 @@
 """Collect the minimal native platform-evidence substrate.
 
-This tool does not inspect application state.  It emits only the v1 portable
-schema and may run the five approved focused test targets.
+This tool does not inspect application state.  Dry-runs emit the v1 portable
+evidence document; output writes emit a content-free write receipt.  It may run
+only the five approved focused test targets.
 """
 
 from __future__ import annotations
@@ -49,8 +50,10 @@ def main(argv: Sequence[str] | None = None, *, runner=subprocess.run) -> int:
     parser = build_parser()
     try:
         arguments = parser.parse_args(argv)
-    except (argparse.ArgumentError, SystemExit):
+    except argparse.ArgumentError:
         return 2
+    except SystemExit as exc:
+        return exc.code if isinstance(exc.code, int) else 1
 
     if arguments.run_suite and not run_focused_suite(runner):
         print('{"status":"focused-suite-failed"}')
