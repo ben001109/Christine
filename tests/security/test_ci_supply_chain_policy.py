@@ -51,6 +51,60 @@ jobs:
 """
 
 
+def _matrix_workflow(matrix: str, *, image_field: str = "container") -> str:
+    return f"""\
+name: static matrix fixture
+on: push
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    {image_field}: ${{{{ matrix.image }}}}
+    strategy:
+      matrix:
+{matrix}
+    steps:
+      - uses: owner/action@{SHA}
+"""
+
+
+PROSPECTIVE_PINNED_NATIVE_WORKFLOW = f"""\
+name: Prospective native evidence
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  desktop-core:
+    name: ${{{{ matrix.target }}}} native core
+    runs-on: ${{{{ matrix.runner }}}}
+    strategy:
+      matrix:
+        include:
+          - target: windows
+            runner: windows-2022
+          - target: macos
+            runner: macos-14
+    steps:
+      - uses: actions/checkout@{'a' * 40}
+      - uses: actions/setup-python@{'b' * 40}
+  linux-container-core:
+    runs-on: ubuntu-24.04
+    container: ${{{{ matrix.image }}}}
+    strategy:
+      matrix:
+        include:
+          - target: debian
+            image: debian:12@sha256:{DIGEST}
+          - target: fedora
+            image: fedora:42@sha256:{'c' * 64}
+    steps:
+      - uses: actions/checkout@{'a' * 40}
+      - run: python3 tools/collect_platform_evidence.py
+"""
+
+
 class CiSupplyChainPolicyTests(unittest.TestCase):
     def assert_policy_rejected(self, text: str) -> None:
         self.assertTrue(validate_policy_workflow(text))
@@ -157,6 +211,78 @@ class CiSupplyChainPolicyTests(unittest.TestCase):
 """
         self.assertEqual(validate_workflow_text(workflow), ())
 
+    def test_accepts_digest_pinned_static_matrix_image_axes(self):
+        block_axis = _matrix_workflow(
+            f"""\
+        image:
+          - debian:12@sha256:{DIGEST}
+          - fedora:42@sha256:{'c' * 64}
+"""
+        )
+        flow_axis = _matrix_workflow(
+            f"        image: [debian:12@sha256:{DIGEST}, fedora:42@sha256:{'c' * 64}]\n"
+        )
+        for workflow in (block_axis, flow_axis):
+            with self.subTest(workflow=workflow):
+                self.assertEqual(validate_workflow_text(workflow), ())
+
+    def test_accepts_digest_pinned_static_matrix_include_images(self):
+        matrix = f"""\
+        include:
+          - target: debian
+            image: debian:12@sha256:{DIGEST}
+          - target: fedora
+            image: fedora:42@sha256:{'c' * 64}
+"""
+        container_workflow = _matrix_workflow(matrix)
+        service_workflow = _matrix_workflow(
+            matrix,
+            image_field="services:\n      database:\n        image",
+        )
+
+        self.assertEqual(validate_workflow_text(container_workflow), ())
+        self.assertEqual(validate_workflow_text(service_workflow), ())
+
+    def test_prospective_pinned_native_workflow_is_not_required_but_validates(self):
+        self.assertEqual(validate_workflow_text(PROSPECTIVE_PINNED_NATIVE_WORKFLOW), ())
+
+    def test_rejects_mutable_incomplete_or_dynamic_matrix_images(self):
+        cases = (
+            _matrix_workflow(
+                f"""\
+        include:
+          - target: debian
+            image: debian:12@sha256:{DIGEST}
+          - target: fedora
+            image: fedora:42
+"""
+            ),
+            _matrix_workflow(
+                f"""\
+        include:
+          - target: debian
+            image: debian:12@sha256:{DIGEST}
+          - target: fedora
+"""
+            ),
+            _matrix_workflow("        image: ${{ fromJSON(vars.IMAGES) }}\n"),
+            _matrix_workflow("        include: ${{ fromJSON(needs.prepare.outputs.matrix) }}\n"),
+            _matrix_workflow(
+                f"        other_image: [debian:12@sha256:{DIGEST}]\n"
+            ),
+            _matrix_workflow(
+                f"""\
+        include:
+          - target: debian
+            nested:
+              image: debian:12@sha256:{DIGEST}
+"""
+            ),
+        )
+        for workflow in cases:
+            with self.subTest(workflow=workflow):
+                self.assertTrue(validate_workflow_text(workflow))
+
     def test_rejects_mutable_or_dynamic_container_service_and_image_fields(self):
         workflows = (
             _workflow(container="debian:12"),
@@ -233,13 +359,30 @@ class CiSupplyChainPolicyTests(unittest.TestCase):
         workflows = (
             '? uses\n: actions/checkout@v4\n',
             '"u\\u0073es": actions/checkout@v4\n',
+            "? |-\n  uses\n: actions/checkout@v4\n",
+            "? !!str uses\n: actions/checkout@v4\n",
+            "!!str uses: actions/checkout@v4\n",
             "&key uses: actions/checkout@v4\n",
+            "? &key uses\n: actions/checkout@v4\n",
+            "name: &u uses\n*u : actions/checkout@v4\n",
             "jobs: {check: {steps: [{uses: actions/checkout@v4}]}}\n",
+            "steps: [{? uses: actions/checkout@v4}]\n",
             "steps: [uses: actions/checkout@v4]\n",
         )
         for workflow in workflows:
             with self.subTest(workflow=workflow):
                 self.assertTrue(validate_workflow_text(workflow))
+
+    def test_comments_quoted_values_and_run_blocks_do_not_create_structural_keys(self):
+        workflow = _workflow().replace("name: fixture", 'name: "inline {? uses: actions/checkout@v4}"')
+        workflow += """
+      - name: Quoted structural text
+        run: |
+          # ? container
+          !!str uses: actions/checkout@v4
+          {services: {database: {image: postgres:17}}}
+"""
+        self.assertEqual(validate_workflow_text(workflow), ())
 
     def test_policy_has_no_native_evidence_dependency_or_external_trust_claim(self):
         checker = Path("tools/check_ci_supply_chain.py").read_text(encoding="utf-8")
