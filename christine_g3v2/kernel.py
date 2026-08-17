@@ -15,12 +15,14 @@ from .memory_hygiene import EvidenceHygiene
 from .prism import PRISMPlanner, PRISMNarrator
 from .research import ResearchEngine
 from .synthesis import FactGraph
+from .truth_gate import TruthGate
+from .self_map import SelfMap
 from .utils import clean
 from .verify_nova import NoveltyGate, Verifier
 
 
 class UnifiedKernel:
-    """G3 v2.2: semantic routing + memory hygiene + PRISM."""
+    """G3 v2.3: truth gate + truthful 138B accounting + SELF-MAP."""
 
     def __init__(
         self,
@@ -32,6 +34,8 @@ class UnifiedKernel:
         generator=None,
         novelty=None,
         hygiene=None,
+        truth_gate=None,
+        self_map=None,
     ):
         self.intent_kernel = IntentKernel()
         self.context = context or ContextGraph()
@@ -40,6 +44,8 @@ class UnifiedKernel:
         self.documents = documents or LongFormStore()
         self.generator = generator or NativeGeneratorAdapter()
         self.hygiene = hygiene or EvidenceHygiene()
+        self.truth_gate = truth_gate or TruthGate()
+        self.self_map = self_map or SelfMap()
         self.facts = FactGraph()
         self.prism = PRISMPlanner()
         self.narrator = PRISMNarrator()
@@ -94,6 +100,23 @@ class UnifiedKernel:
         intent, ctx = turn.intent, turn.context
         subject = self._subject(intent, ctx)
 
+        if self.self_map.is_self_query(intent.goal or ctx.topic):
+            self_answer, self_evidence = self.self_map.describe(intent.goal or ctx.topic)
+            turn.evidence.extend(self_evidence)
+            turn.trace.append(f"selfmap:{len(self_evidence)}")
+            truth = self.truth_gate.evaluate(
+                self_answer,
+                evidence=self_evidence,
+                facts=(),
+                verifier_backed=True,
+            )
+            turn.trace.append(
+                f"truth:{truth.reason}:gr={truth.grounding_ratio:.2f}:src={truth.independent_sources}"
+            )
+            if not truth.accepted:
+                return self.truth_gate.safe_fallback(subject, truth)
+            return self_answer
+
         memory_raw = self.memory.retrieve(ctx.topic, 16)
         documents_raw = self.documents.retrieve(ctx.topic, token_budget=12000)
         pre_web, report1 = self.hygiene.sanitize(
@@ -102,6 +125,8 @@ class UnifiedKernel:
             evidence=list(memory_raw) + list(documents_raw),
         )
         turn.evidence.extend(pre_web)
+        if hasattr(self.memory, "note_active"):
+            self.memory.note_active(pre_web)
         turn.trace.append(
             f"hygiene:local:{report1.kept}/{report1.kept + report1.rejected}:reject={report1.rejected}"
         )
@@ -154,6 +179,18 @@ class UnifiedKernel:
         if not verified.accepted:
             return "我這輪有取得資料，但整理結果沒有通過輸出驗證，所以先不輸出可能損壞的內容。"
 
+        truth = self.truth_gate.evaluate(
+            answer,
+            evidence=turn.evidence,
+            facts=turn.facts,
+            verifier_backed=False,
+        )
+        turn.trace.append(
+            f"truth:{truth.reason}:gr={truth.grounding_ratio:.2f}:src={truth.independent_sources}"
+        )
+        if not truth.accepted:
+            return self.truth_gate.safe_fallback(subject, truth)
+
         novelty = self.novelty.accept(intent.goal or ctx.topic, "text", answer)
         turn.trace.append(f"nova:{novelty.reason}")
         if not novelty.accepted:
@@ -177,6 +214,8 @@ class UnifiedKernel:
             subject=self._subject(intent, ctx),
             evidence=list(raw_memory),
         )
+        if hasattr(self.memory, "note_active"):
+            self.memory.note_active(code_context)
         turn.trace.append(f"hygiene:code:{report.kept}/{report.kept + report.rejected}")
         artifact = self.generator.code(
             intent.goal,
@@ -189,7 +228,7 @@ class UnifiedKernel:
         if artifact is None:
             return (
                 "這是一個具體程式任務，但目前沒有接上 Christine 自己的 NativeGenerator。"
-                "v2.2 不會再用 quicksort 或固定模板冒充完成；把你的原生生成器提供成 "
+                "v2.3 不會用 quicksort 或固定模板冒充完成；把你的原生生成器提供成 "
                 "`christine_native_generator.generate_code(goal, context)` 後，這條路會直接使用它。"
             )
         turn.artifact = artifact
@@ -209,7 +248,7 @@ class UnifiedKernel:
         if artifact is None:
             return (
                 "我已確認這是圖片生成任務，但目前沒有接上 Christine 自己的 Native Image Generator。"
-                "v2.2 不會用一句「已生成」假裝完成。"
+                "v2.3 不會用一句「已生成」假裝完成。"
             )
         turn.artifact = artifact
         verified = self.verifier.verify_artifact(artifact)
