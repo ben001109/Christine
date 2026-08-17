@@ -1,4 +1,6 @@
+import importlib
 from pathlib import Path
+import sys
 
 from christine.release_readiness import assess_package_readiness
 
@@ -84,3 +86,12 @@ def test_assess_package_readiness_rejects_unpinned_build_backend(tmp_path: Path)
 
     assert result.ready is False
     assert "build requirements must be exactly ['setuptools==81.0.0']" in result.errors
+
+
+def test_assess_package_tool_does_not_mutate_sys_path_when_imported():
+    before = list(sys.path)
+
+    module = importlib.import_module("tools.assess_package_readiness")
+
+    assert module.__package__ == "tools"
+    assert sys.path == before

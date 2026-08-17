@@ -45,6 +45,9 @@ FORBIDDEN_FILENAMES = frozenset(
 ALLOWED_DIST_INFO_FILES = frozenset({"METADATA", "RECORD", "WHEEL", "entry_points.txt", "top_level.txt"})
 REQUIRED_DIST_INFO_FILES = frozenset({"METADATA", "RECORD", "WHEEL", "entry_points.txt"})
 WINDOWS_DRIVE_RE = re.compile(r"^[A-Za-z]:")
+DEFAULT_SECTION_RE = re.compile(r"(?mi)^\s*\[DEFAULT\]\s*$")
+MAX_MEMBER_UNCOMPRESSED_BYTES = 1_000_000
+MAX_TOTAL_UNCOMPRESSED_BYTES = 10_000_000
 
 
 @dataclass(frozen=True)
@@ -103,20 +106,37 @@ def _path_violation(path: PurePosixPath, *, is_directory: bool) -> str | None:
 def _validated_members(archive: zipfile.ZipFile, errors: list[str]) -> tuple[tuple[zipfile.ZipInfo, PurePosixPath], ...]:
     validated: list[tuple[zipfile.ZipInfo, PurePosixPath]] = []
     seen: set[PurePosixPath] = set()
+    total_size = 0
+    total_limit_exceeded = False
     for info in archive.infolist():
         member = _normal_member_name(info.filename, is_directory=info.is_dir())
+        valid = True
         if member is None:
             errors.append("wheel contains an unsafe member path")
-            continue
-        if member in seen:
+            valid = False
+        elif member in seen:
             errors.append(f"duplicate wheel member path: {member.as_posix()}")
-            continue
-        seen.add(member)
-        violation = _path_violation(member, is_directory=info.is_dir())
-        if violation is not None:
-            errors.append(f"{member.as_posix()}: {violation}")
-            continue
-        validated.append((info, member))
+            valid = False
+        else:
+            seen.add(member)
+            violation = _path_violation(member, is_directory=info.is_dir())
+            if violation is not None:
+                errors.append(f"{member.as_posix()}: {violation}")
+                valid = False
+
+        member_size = info.file_size
+        if member_size < 0 or member_size > MAX_MEMBER_UNCOMPRESSED_BYTES:
+            errors.append("wheel member uncompressed size exceeds limit")
+            valid = False
+        elif not total_limit_exceeded:
+            total_size += member_size
+            if total_size > MAX_TOTAL_UNCOMPRESSED_BYTES:
+                errors.append("wheel total uncompressed size exceeds limit")
+                total_limit_exceeded = True
+                valid = False
+
+        if valid and member is not None:
+            validated.append((info, member))
     return tuple(validated)
 
 
@@ -168,10 +188,14 @@ def _required_metadata_errors(destination: Path, members: tuple[str, ...]) -> li
     entry_points = destination / dist_info / "entry_points.txt"
     if entry_points.is_file():
         try:
-            parser = configparser.ConfigParser()
-            parser.read_string(entry_points.read_text(encoding="utf-8"))
+            content = entry_points.read_text(encoding="utf-8")
+            parser = configparser.ConfigParser(interpolation=None)
+            parser.optionxform = str
+            parser.read_string(content)
             valid_entry_point = (
-                parser.sections() == ["console_scripts"]
+                DEFAULT_SECTION_RE.search(content) is None
+                and not parser.defaults()
+                and parser.sections() == ["console_scripts"]
                 and parser.options("console_scripts") == [ENTRY_POINT_NAME]
                 and parser.get("console_scripts", ENTRY_POINT_NAME, fallback=None) == ENTRY_POINT_TARGET
             )

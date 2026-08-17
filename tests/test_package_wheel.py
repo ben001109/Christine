@@ -10,7 +10,7 @@ DIST_INFO = "christine-0.2.0a1.dist-info"
 def _write_wheel(
     path: Path,
     *extra_members: str,
-    entry_points: str = "[console_scripts]\nchristine-package-readiness = christine.release_readiness:main\n",
+    entry_points: str | bytes = "[console_scripts]\nchristine-package-readiness = christine.release_readiness:main\n",
 ) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     members = {
@@ -72,6 +72,18 @@ def test_verify_package_wheel_rejects_extra_public_entry_point(tmp_path: Path):
 
     assert result.valid is False
     assert "wheel entry point must expose only the package readiness command" in result.errors
+
+
+def test_verify_package_wheel_rejects_case_altered_entry_point_name(tmp_path: Path):
+    result = verify_package_wheel(
+        _write_wheel(
+            tmp_path / "christine.whl",
+            entry_points="[console_scripts]\nChristine-package-readiness = christine.release_readiness:main\n",
+        )
+    )
+
+    assert result.valid is False
+    assert result.errors == ("wheel entry point must expose only the package readiness command",)
 
 
 def test_verify_package_wheel_rejects_traversal_and_absolute_directory_members(tmp_path: Path):
@@ -179,3 +191,78 @@ def test_verify_package_wheel_rejects_entry_point_read_error_without_echoing_con
     assert "untrusted" not in "\n".join(result.errors)
     assert main([str(wheel)]) == 1
     assert "untrusted" not in capsys.readouterr().out
+
+
+def test_verify_package_wheel_rejects_member_uncompressed_size_before_extraction(tmp_path: Path, monkeypatch):
+    payload = b"x" * 129
+    monkeypatch.setattr("tools.verify_package_wheel.MAX_MEMBER_UNCOMPRESSED_BYTES", len(payload) - 1)
+    wheel = _write_wheel(tmp_path / "christine.whl")
+    with zipfile.ZipFile(wheel, "a") as archive:
+        archive.writestr("christine/large.py", payload)
+
+    result = verify_package_wheel(wheel)
+
+    assert result.valid is False
+    assert result.members == ()
+    assert result.errors == ("wheel member uncompressed size exceeds limit",)
+
+
+def test_verify_package_wheel_accepts_member_at_uncompressed_size_limit(tmp_path: Path, monkeypatch):
+    payload = b"x" * 129
+    monkeypatch.setattr("tools.verify_package_wheel.MAX_MEMBER_UNCOMPRESSED_BYTES", len(payload))
+    wheel = _write_wheel(tmp_path / "christine.whl")
+    with zipfile.ZipFile(wheel, "a") as archive:
+        archive.writestr("christine/at_limit.py", payload)
+
+    result = verify_package_wheel(wheel)
+
+    assert result.valid is True
+    assert "christine/at_limit.py" in result.members
+
+
+def test_verify_package_wheel_rejects_aggregate_uncompressed_size_before_extraction(tmp_path: Path, monkeypatch):
+    wheel = _write_wheel(tmp_path / "christine.whl")
+    with zipfile.ZipFile(wheel) as archive:
+        existing_size = sum(info.file_size for info in archive.infolist())
+    monkeypatch.setattr("tools.verify_package_wheel.MAX_MEMBER_UNCOMPRESSED_BYTES", 1_000)
+    monkeypatch.setattr("tools.verify_package_wheel.MAX_TOTAL_UNCOMPRESSED_BYTES", existing_size + 10)
+    with zipfile.ZipFile(wheel, "a") as archive:
+        archive.writestr("christine/aggregate.py", b"x" * 11)
+
+    result = verify_package_wheel(wheel)
+
+    assert result.valid is False
+    assert result.members == ()
+    assert result.errors == ("wheel total uncompressed size exceeds limit",)
+
+
+def test_verify_package_wheel_accepts_aggregate_at_uncompressed_size_limit(tmp_path: Path, monkeypatch):
+    wheel = _write_wheel(tmp_path / "christine.whl")
+    with zipfile.ZipFile(wheel) as archive:
+        existing_size = sum(info.file_size for info in archive.infolist())
+    monkeypatch.setattr("tools.verify_package_wheel.MAX_MEMBER_UNCOMPRESSED_BYTES", 1_000)
+    monkeypatch.setattr("tools.verify_package_wheel.MAX_TOTAL_UNCOMPRESSED_BYTES", existing_size + 11)
+    with zipfile.ZipFile(wheel, "a") as archive:
+        archive.writestr("christine/at_total_limit.py", b"x" * 11)
+
+    result = verify_package_wheel(wheel)
+
+    assert result.valid is True
+    assert "christine/at_total_limit.py" in result.members
+
+
+def test_verify_package_wheel_rejects_default_section_interpolation_bypass(tmp_path: Path):
+    result = verify_package_wheel(
+        _write_wheel(
+            tmp_path / "christine.whl",
+            entry_points=(
+                "[DEFAULT]\n"
+                "target = christine.release_readiness:main\n"
+                "[console_scripts]\n"
+                "christine-package-readiness = %(target)s\n"
+            ),
+        )
+    )
+
+    assert result.valid is False
+    assert result.errors == ("wheel entry point must expose only the package readiness command",)
