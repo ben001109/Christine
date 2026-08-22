@@ -17,6 +17,9 @@ dependencies = [
     "pyaudiowpatch>=0.2.12; sys_platform == 'win32'",
 ]
 
+[project.scripts]
+christine-package-readiness = "christine.release_readiness:main"
+
 [project.optional-dependencies]
 gpu = [
     "torch>=2.3.0",
@@ -35,6 +38,18 @@ dev = [
     "pytest>=8.0.0",
     "ruff>=0.13.0",
 ]
+
+[build-system]
+requires = ["setuptools==81.0.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["christine", "christine.*"]
+namespaces = false
 
 [tool.ruff]
 target-version = "py310"
