@@ -1,0 +1,29 @@
+# Active extracted source is maintained as LF.  Legacy root scripts, snapshots,
+# and Windows launchers retain their historical line endings until a dedicated,
+# reviewed normalization migration is approved.
+.github/** text eol=lf
+christine/** text eol=lf
+docs/** text eol=lf
+tests/** text eol=lf
+tools/** text eol=lf
+.gitignore text eol=lf
+*.lock text eol=lf
+*.toml text eol=lf
+
+# Retained state, model, and archive artifacts must not be treated as text.
+# They remain ordinary Git objects until a separately reviewed LFS migration.
+*.7z binary
+*.db binary
+*.gguf binary
+*.gif binary
+*.jpeg binary
+*.jpg binary
+*.mp3 binary
+*.mp4 binary
+*.pdf binary
+*.png binary
+*.pt binary
+*.pth binary
+*.safetensors binary
+*.wav binary
+*.zip binary
