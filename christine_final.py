@@ -96,6 +96,9 @@
 # ║  brainr              ──→ BRAIN-R 演算法介紹                                  ║
 # ║                                                                              ║
 # ╚════════════════════════════════════════════════════════════════════════════════╝
+from christine.legacy.runtime_gate import require_legacy_runtime_authorization
+require_legacy_runtime_authorization(globals().get("_CHRISTINE_LEGACY_RUNTIME_AUTHORIZATION"))
+
 CHRISTINE_VERSION = "600.0-final-agi-opus"
 def christine_self_improve():
     """Christine認知到自己可以自我改進和進化，並且不斷學習新的技能"""

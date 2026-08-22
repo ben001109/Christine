@@ -17,10 +17,13 @@ boot_christine.py — V1485 Christine 快速啟動器（CPU/GPU 預算）
   python boot_christine.py --nogpu      # 強制 CPU-only
   python boot_christine.py --fast       # 相容旗標；不做額外檢查
   python boot_christine.py --check      # 只檢查啟動流程、不啟動主程式
+  python boot_christine.py --legacy-monolith --allow-legacy-side-effects
+                                       # 明確允許舊 monolith 與其副作用
 """
 from __future__ import annotations
 import os, sys, time, argparse, multiprocessing, platform, subprocess
 
+from christine.legacy.runtime_gate import _issue_legacy_runtime_authorization
 from christine.runtime.boot_banner import render_boot_banner
 from christine.runtime.boot_config import build_basic_hardware_info, build_cpu_thread_env, compute_cpu_budget
 from christine.runtime.health_summary import RuntimeVersionInfo, build_runtime_health_summary, render_runtime_health_summary
@@ -196,7 +199,12 @@ def main():
     ap.add_argument("--fast", action="store_true", help="相容旗標；目前不做額外檢查")
     ap.add_argument("--check", action="store_true", help="只跑自檢、不啟動主程式")
     ap.add_argument("--no-banner", action="store_true", help="不顯示 banner")
+    ap.add_argument("--legacy-monolith", action="store_true", help="明確選擇啟動舊 monolith")
+    ap.add_argument("--allow-legacy-side-effects", action="store_true", help="明確允許舊 monolith 副作用")
     args, extra = ap.parse_known_args()
+
+    if not args.check and not (args.legacy_monolith and args.allow_legacy_side_effects):
+        raise SystemExit(86)
 
     # 強制 unbuffered stdout（Windows 有時會 buffer 4KB）
     try: sys.stdout.reconfigure(line_buffering=True)
@@ -236,15 +244,16 @@ def main():
 
     elapsed = time.time() - t0
 
+    if args.check:
+        if not args.no_banner:
+            print_boot_banner(hw, cpu_cores, gpu_ready, elapsed)
+        print(f"  {_D}[--check] 自檢完成，不啟動主程式。{_R}")
+        return 0
+
     print_runtime_health_summary()
 
     if not args.no_banner:
         print_boot_banner(hw, cpu_cores, gpu_ready, elapsed)
-
-    if args.check:
-        # 只檢不啟動
-        print(f"  {_D}[--check] 自檢完成，不啟動主程式。{_R}")
-        return 0
 
     # ── exec christine_final.py ──
     target = os.path.join(HERE, "christine_final.py")
@@ -263,8 +272,13 @@ def main():
 
     # ── exec in-process（比 subprocess 省 2~3 秒，大腦也只載入一次） ──
     import runpy
+    authorization = _issue_legacy_runtime_authorization()
     try:
-        runpy.run_path(target, run_name="__main__")
+        runpy.run_path(
+            target,
+            run_name="__main__",
+            init_globals={"_CHRISTINE_LEGACY_RUNTIME_AUTHORIZATION": authorization},
+        )
     except SystemExit as se:
         return int(se.code or 0)
     except KeyboardInterrupt:
