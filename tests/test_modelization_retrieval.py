@@ -37,6 +37,14 @@ def test_search_repository_corpus_returns_empty_for_blank_query(tmp_path):
     assert search_repository_corpus(tmp_path, "   ") == ()
 
 
+def test_search_repository_corpus_matches_traditional_chinese(tmp_path):
+    _write(tmp_path, "docs/zh.md", "Christine 的向量檢索需要安全且可驗證的契約")
+
+    (result,) = search_repository_corpus(tmp_path, "向量檢索")
+
+    assert result.path == "docs/zh.md"
+
+
 def test_modelization_exports_repository_retrieval_boundary():
     from christine.modelization import RepositorySearchResult, search_repository_corpus
 

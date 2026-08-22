@@ -18,6 +18,7 @@ from .model_provider import ModelProvider, ModelProviderRequest, ModelProviderRe
 from .model_registry import ModelArtifactRecord, validate_model_artifact_path, validate_model_eval_report_path
 from .repository_index import CorpusDocument, CorpusManifest, build_corpus_document, build_corpus_manifest
 from .retrieval import RepositorySearchResult, search_repository_corpus
+from .vector_contract import VectorMetadata, validate_vector
 from .routing_eval import (
     ROUTE_TARGETS,
     RouteEvalExample,
@@ -51,6 +52,7 @@ __all__ = [
     "ROUTING_EVAL_FIXTURES",
     "SIDE_EFFECT_TARGETS",
     "RepositorySearchResult",
+    "VectorMetadata",
     "RouteEvalExample",
     "RouteEvalResult",
     "RoutePolicy",
@@ -67,6 +69,7 @@ __all__ = [
     "validate_distillation_source",
     "validate_model_artifact_path",
     "validate_model_eval_report_path",
+    "validate_vector",
     "search_repository_corpus",
     "score_route_predictions",
 ]
