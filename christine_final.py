@@ -98,6 +98,7 @@
 # ╚════════════════════════════════════════════════════════════════════════════════╝
 from christine.legacy.runtime_gate import require_legacy_runtime_authorization
 require_legacy_runtime_authorization(globals().get("_CHRISTINE_LEGACY_RUNTIME_AUTHORIZATION"))
+from christine.legacy.side_effect_quarantine import deny_legacy_code_execution as _deny_legacy_code_execution
 
 CHRISTINE_VERSION = "600.0-final-agi-opus"
 def christine_self_improve():
@@ -2196,11 +2197,9 @@ def get_running_processes():
     except Exception as e: return "err:"+str(e)
 def kill_process(n): os.system("taskkill /f /im "+n); return "ok"
 def run_command(cmd):
-    try: r=subprocess.run(cmd,shell=True,capture_output=True,timeout=30); return(r.stdout.decode("utf-8",errors="ignore").strip() or r.stderr.decode("utf-8",errors="ignore").strip() or "done")[:600]
-    except: return "failed"
+    return _deny_legacy_code_execution()
 def run_python_code(code):
-    try: r=subprocess.run([sys.executable,"-c",code],capture_output=True,text=True,timeout=15); return(r.stdout.strip() or r.stderr.strip() or "done")[:600]
-    except: return "failed"
+    return _deny_legacy_code_execution()
 def shutdown_computer(mode):
     c={"shutdown":"shutdown /s /t 60","restart":"shutdown /r /t 60","sleep":"rundll32.exe powrprof.dll,SetSuspendState 0,1,0","lock":"rundll32.exe user32.dll,LockWorkStation"}
     if mode in c: os.system(c[mode]); return mode
