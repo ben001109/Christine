@@ -8,7 +8,7 @@ from pathlib import Path
 from .corpus import iter_model_corpus_paths
 
 
-TOKEN_RE = re.compile(r"[A-Za-z0-9_]+")
+TOKEN_RE = re.compile(r"[A-Za-z0-9_]+|[\u3400-\u9fff]")
 
 
 @dataclass(frozen=True)
