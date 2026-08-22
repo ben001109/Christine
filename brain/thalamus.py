@@ -6,6 +6,9 @@ Thalamus = 皮質之間的中繼。First-order (lateral geniculate) + Higher-ord
 → gated relay.
 """
 from __future__ import annotations
+from collections.abc import Sequence
+import math
+from numbers import Real
 try:
     import numpy as _np
     _HAS_NP = True
@@ -35,7 +38,23 @@ class Thalamus:
 
     def set_gate(self, g):
         """g: 長度 n 的 0..1 向量（TRN 抑制後剩下的通過率）"""
+        gate = self._validate_gate(g)
         if _HAS_NP:
-            self.gate = _np.clip(_np.asarray(g, _np.float32), 0.0, 1.0)
+            self.gate = _np.clip(_np.asarray(gate, _np.float32), 0.0, 1.0)
         else:
-            self.gate = [min(1.0, max(0.0, float(x))) for x in g]
+            self.gate = [min(1.0, max(0.0, value)) for value in gate]
+
+    def _validate_gate(self, g):
+        is_numpy_array = _HAS_NP and isinstance(g, _np.ndarray)
+        if isinstance(g, (str, bytes)) or not (isinstance(g, Sequence) or is_numpy_array):
+            raise ValueError("invalid-thalamus-gate")
+        values = list(g)
+        if len(values) != self.n or any(isinstance(value, bool) or not isinstance(value, Real) for value in values):
+            raise ValueError("invalid-thalamus-gate")
+        try:
+            gate = [float(value) for value in values]
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ValueError("invalid-thalamus-gate") from exc
+        if not all(math.isfinite(value) for value in gate):
+            raise ValueError("invalid-thalamus-gate")
+        return gate
