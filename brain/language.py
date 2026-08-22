@@ -22,12 +22,19 @@ except Exception: _HAS_NP = False
 
 
 class CharTokenizer:
-    def __init__(self):
+    def __init__(self, vocab_max=256):
+        if type(vocab_max) is not int or vocab_max < 2:
+            raise ValueError("vocab_max must be an integer of at least two")
+        self.vocab_max = vocab_max
+        self.unknown_token_id = vocab_max - 1
         self.c2i = {}; self.i2c = []
     def encode(self, s):
         out = []
         for ch in s:
             if ch not in self.c2i:
+                if len(self.i2c) >= self.unknown_token_id:
+                    out.append(self.unknown_token_id)
+                    continue
                 self.c2i[ch] = len(self.i2c); self.i2c.append(ch)
             out.append(self.c2i[ch])
         return out
@@ -37,6 +44,8 @@ class CharTokenizer:
 class SRN:
     """Elman 1990 SRN。hidden → output，hidden 有 self-loop."""
     def __init__(self, vocab_max=256, hidden=64, eta=0.05, seed=0):
+        if type(vocab_max) is not int or vocab_max < 2:
+            raise ValueError("vocab_max must be an integer of at least two")
         self.vmax=vocab_max; self.h=hidden; self.eta=eta
         if _HAS_NP:
             rs = _np.random.RandomState(seed)
@@ -56,10 +65,13 @@ class SRN:
         if _HAS_NP: return _np.tanh(x)
         return [math.tanh(v) for v in x]
 
+    def _bounded_token_id(self, token_id):
+        return token_id % self.vmax
+
     def step(self, token_id):
         """給一個 token id，更新 hidden，回預測分佈。"""
+        token_id = self._bounded_token_id(token_id)
         if _HAS_NP:
-            if token_id >= self.vmax: token_id %= self.vmax
             ih = self.W_ih[token_id]
             h_new = _np.tanh(ih + self.hid @ self.W_hh)
             out = h_new @ self.W_ho
@@ -68,7 +80,6 @@ class SRN:
             self.hid = h_new
             return probs
         # pure python
-        if token_id >= self.vmax: token_id %= self.vmax
         h_new = [0.0]*self.h
         for j in range(self.h):
             s = self.W_ih[token_id][j]
@@ -84,14 +95,16 @@ class SRN:
 
     def learn(self, token_id, target_id):
         """線上 SGD；只更新 output layer（簡化）."""
+        token_id = self._bounded_token_id(token_id)
+        target_id = self._bounded_token_id(target_id)
         if _HAS_NP:
             # forward
             ih = self.W_ih[token_id]
             h_new = _np.tanh(ih + self.hid @ self.W_hh)
             out = h_new @ self.W_ho
             e = _np.exp(out - out.max()); p = e / e.sum()
-            target = _np.zeros(self.vmax, _np.float32); 
-            if target_id < self.vmax: target[target_id] = 1.0
+            target = _np.zeros(self.vmax, _np.float32)
+            target[target_id] = 1.0
             g = p - target
             self.W_ho -= self.eta * _np.outer(h_new, g)
             self.hid = h_new
@@ -106,8 +119,8 @@ class SRN:
 class LanguageModule:
     """整合 tokenizer + SRN + 簡單 n-gram 共現統計。"""
     def __init__(self, hidden=64, seed=0):
-        self.tok = CharTokenizer()
         self.srn = SRN(hidden=hidden, seed=seed)
+        self.tok = CharTokenizer(vocab_max=self.srn.vmax)
         self.bigram = {}   # (a,b) -> count
 
     def ingest(self, text):
